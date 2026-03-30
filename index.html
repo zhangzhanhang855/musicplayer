@@ -139,7 +139,7 @@
 
     // 获取数据
     async function fetchSongs() {
-        const url = `https://api.github.com/repos/${GITHUB_CONFIG.user}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+        const url = `https://api.github.com/repos/zhangzhanhang855/musicplayer/contents/path:""`;
         try {
             const res = await fetch(url);
             const data = await res.json();
