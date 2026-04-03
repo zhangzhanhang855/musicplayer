@@ -3,43 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hi-Res Pro Player</title>
+    <title>Hi-Res 极限直连版</title>
+    
+    <link rel="dns-prefetch" href="https://api.github.com">
+    <link rel="preconnect" href="https://api.github.com" crossorigin>
+    <link rel="dns-prefetch" href="https://media.githubusercontent.com">
+    <link rel="preconnect" href="https://media.githubusercontent.com" crossorigin>
+
     <style>
-        :root { --accent: #00d2ff; --bg: #050505; --panel: rgba(255,255,255,0.08); }
+        :root { --accent: #ff0055; --bg: #000000; --panel: rgba(20,20,20,0.8); }
         body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
         
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; filter: blur(100px) brightness(0.3); z-index: -1; transition: background 2s; }
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; filter: blur(80px) brightness(0.4); z-index: -1; transition: background 1s ease-out; }
         .container { display: flex; flex-direction: column; align-items: center; height: 100vh; padding: 20px; box-sizing: border-box; }
         
         .glass-card {
-            background: var(--panel); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255,255,255,0.1); padding: 35px; border-radius: 40px;
-            width: 100%; max-width: 420px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+            background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 30px;
+            width: 100%; max-width: 420px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
         }
 
-        .visualizer { width: 120px; height: 120px; margin: 0 auto 25px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .disk { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, #222, #444, #222); border: 5px solid rgba(255,255,255,0.1); animation: spin 10s linear infinite; animation-play-state: paused; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        h2 { margin: 5px 0; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
+        #speed-tag { font-size: 0.65rem; background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 6px; font-weight: 900; margin-bottom: 12px; display: inline-block; letter-spacing: 1px; }
+        #status { font-size: 0.75rem; color: #888; margin-bottom: 25px; font-variant-numeric: tabular-nums; }
 
-        h2 { margin: 10px 0; font-size: 1.2rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #speed-tag { font-size: 0.65rem; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        #status { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-bottom: 20px; letter-spacing: 1px; }
+        .progress-box { width: 100%; position: relative; margin-bottom: 25px; height: 30px; display: flex; align-items: center; }
+        .bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; overflow: hidden; }
+        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
+        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
 
-        .progress-box { width: 100%; position: relative; margin-bottom: 25px; }
-        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; position: relative; }
-        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.2); width: 0%; transition: width 0.4s; border-radius: 2px; }
-        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; border-radius: 2px; box-shadow: 0 0 15px var(--accent); }
-
-        .btns { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
-        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem; transition: 0.2s; padding: 10px; }
-        .btns .main-play { font-size: 4rem; color: #fff; }
+        .btns { display: flex; justify-content: center; gap: 30px; align-items: center; }
+        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem; transition: 0.1s; }
+        .btns button:active { transform: scale(0.9); }
+        .btns .main-play { font-size: 3.5rem; }
         
-        .list-wrap { flex: 1; width: 100%; max-width: 420px; margin-top: 30px; overflow: hidden; display: flex; flex-direction: column; }
-        .search { background: rgba(255,255,255,0.05); border: none; padding: 15px; border-radius: 20px; color: #fff; margin-bottom: 15px; outline: none; border: 1px solid transparent; transition: 0.3s; }
-        .search:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
-        #list { list-style: none; padding: 0; overflow-y: auto; flex: 1; border-radius: 20px; }
-        #list li { padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        #list li.active { background: rgba(0,210,255,0.1); border-left: 4px solid var(--accent); color: var(--accent); }
+        .list-wrap { flex: 1; width: 100%; max-width: 420px; margin-top: 20px; overflow: hidden; display: flex; flex-direction: column; }
+        .search { background: rgba(255,255,255,0.08); border: none; padding: 16px; border-radius: 16px; color: #fff; margin-bottom: 12px; outline: none; font-size: 1rem; }
+        #list { list-style: none; padding: 0; overflow-y: auto; flex: 1; margin: 0; }
+        #list li { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        #list li.active { color: var(--accent); font-weight: bold; background: linear-gradient(90deg, rgba(255,0,85,0.15) 0%, transparent 100%); border-left: 3px solid var(--accent); }
     </style>
 </head>
 <body>
@@ -48,12 +50,9 @@
 
 <div class="container">
     <div class="glass-card">
-        <div class="visualizer">
-            <div class="disk" id="disk"></div>
-        </div>
-        <div id="speed-tag">LFS HIGH-SPEED</div>
-        <h2 id="title">INITIATING...</h2>
-        <div id="status">WAKING UP GITHUB NODES</div>
+        <div id="speed-tag">DIRECT LFS LINK ACTIVE</div>
+        <h2 id="title">WAITING FOR GITHUB</h2>
+        <div id="status">INITIALIZING BYPASS...</div>
         
         <div class="progress-box">
             <div class="bar-bg" id="seek-bar">
@@ -67,17 +66,16 @@
             <button onclick="step(-1)">⏮</button>
             <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
             <button onclick="step(1)">⏭</button>
-            <button onclick="dl()">📥</button>
         </div>
     </div>
 
     <div class="list-wrap">
-        <input type="text" class="search" id="q" placeholder="SEARCH MUSIC..." oninput="doSearch()">
+        <input type="text" class="search" id="q" placeholder="SEARCH..." oninput="doSearch()">
         <ul id="list"></ul>
     </div>
 </div>
 
-<audio id="player" crossorigin="anonymous" preload="auto"></audio>
+<audio id="player" preload="auto"></audio>
 
 <script>
     const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
@@ -87,10 +85,10 @@
     const status = document.getElementById('status');
     const prog = document.getElementById('prog-bar');
     const buf = document.getElementById('buf-bar');
-    const disk = document.getElementById('disk');
+    const playBtn = document.getElementById('play-btn');
 
-    // 自动构建 CDN 链接
-    const getLink = (n) => `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(n)}`;
+    // 极限提速核心 3：LFS 直连穿透。跳过 api，跳过 50MB 限制的 jsDelivr，跳过 raw.githubusercontent 的 302 重定向
+    const getDirectMediaLink = (file) => `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(file)}`;
 
     async function start() {
         try {
@@ -99,38 +97,39 @@
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
                 t: f.name.replace(/\.[^/.]+$/, ""),
                 f: f.name,
-                u: getLink(f.name)
+                u: getDirectMediaLink(f.name) // 使用穿透链接
             }));
             filtered = [...all];
             drawList();
             if(all.length > 0) loadTrack(0, false);
-            status.innerText = "NODES READY. ENJOY LOSSLESS.";
-        } catch (e) { status.innerText = "CONNECTION ERROR"; }
+            status.innerText = "READY. DIRECT STREAM ENABLED.";
+        } catch (e) { status.innerText = "API LIMIT OR NETWORK ERROR"; }
     }
 
     function drawList() {
-        document.getElementById('list').innerHTML = filtered.map((s, i) => `
-            <li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
+        let html = '';
+        for(let i=0; i<filtered.length; i++) {
+            let s = filtered[i];
+            html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
                 <span>${s.t}</span>
-                <span style="opacity:0.3;font-size:0.6rem;">${s.f.split('.').pop().toUpperCase()}</span>
-            </li>`).join('');
+                <span style="opacity:0.4;font-size:0.7rem;">${s.f.split('.').pop().toUpperCase()}</span>
+            </li>`;
+        }
+        document.getElementById('list').innerHTML = html;
     }
 
     function loadTrack(idx, auto = true) {
         cur = idx;
         const s = filtered[cur];
         
-        // 核心加速优化：双重预解析
         audio.pause();
-        audio.src = s.u;
-        audio.load(); // 触发抢占式下载
+        audio.src = s.u; 
+        audio.load(); 
 
         document.getElementById('title').innerText = s.t;
-        status.innerText = "STREAMING FROM EDGE NODES...";
+        status.innerText = "OPENING TCP SOCKET...";
         
-        const h = Math.floor(Math.random() * 360);
-        document.getElementById('bg-canvas').style.background = `radial-gradient(circle at center, hsl(${h}, 50%, 20%), #000)`;
-        
+        document.getElementById('bg-canvas').style.background = `hsl(${Math.random() * 360}, 50%, 15%)`;
         drawList();
 
         if (auto || isP) {
@@ -139,21 +138,17 @@
         }
     }
 
-    // 缓冲监控：计算秒级加载量
-    audio.onprogress = () => {
+    // 极端精简的事件监听器（防止高频触发导致的主线程阻塞）
+    audio.addEventListener('progress', () => {
         if (audio.buffered.length > 0) {
-            const bEnd = audio.buffered.end(audio.buffered.length - 1);
-            const d = audio.duration;
-            if (d > 0) {
-                const pct = (bEnd / d) * 100;
-                buf.style.width = pct + "%";
-                if(pct < 100 && isP) status.innerText = `BUFFERING HI-RES: ${Math.round(pct)}%`;
-            }
+            const pct = (audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0;
+            buf.style.width = pct + "%";
         }
-    };
+    });
 
-    audio.oncanplaythrough = () => { if(isP) status.innerText = "HI-RES BITSTREAM ACTIVE"; };
-    audio.onstalled = () => { status.innerText = "RECONNECTING TO LFS..."; };
+    audio.addEventListener('playing', () => { status.innerText = "ULTRA-STREAMING LIVE"; isP = true; ui(); });
+    audio.addEventListener('waiting', () => { status.innerText = "FETCHING RAW PACKETS..."; });
+    audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
 
     function playToggle() {
         if (audio.paused) { audio.play(); isP = true; } 
@@ -161,10 +156,7 @@
         ui();
     }
 
-    function ui() {
-        document.getElementById('play-btn').innerText = isP ? '⏸' : '▶️';
-        disk.style.animationPlayState = isP ? 'running' : 'paused';
-    }
+    function ui() { playBtn.innerText = isP ? '⏸' : '▶️'; }
 
     function step(d) {
         let n = (cur + d + filtered.length) % filtered.length;
@@ -174,14 +166,8 @@
 
     function selectTrack(i) { loadTrack(i); isP = true; ui(); }
 
-    audio.ontimeupdate = () => {
-        const p = (audio.currentTime / audio.duration) * 100 || 0;
-        prog.style.width = p + '%';
-    };
-
     document.getElementById('seek-bar').onclick = (e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+        audio.currentTime = ((e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth) * audio.duration;
     };
 
     audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
@@ -197,8 +183,6 @@
         filtered = all.filter(s => s.f.toLowerCase().includes(val));
         drawList();
     }
-
-    function dl() { window.open(filtered[cur].u); }
 
     start();
 </script>
