@@ -3,217 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hi-Res 流式播放器</title>
+    <title>Hi-Res Pro Player</title>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.1); --accent: #00d2ff; --bg: #0a0a0b; }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
+        :root { --accent: #00d2ff; --bg: #050505; --panel: rgba(255,255,255,0.08); }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
         
-        #bg-blur { position: fixed; top: 0; left: 0; width: 100%; height: 100%; filter: blur(80px) brightness(0.3); z-index: -1; transition: background 2s; transform: scale(1.2); }
+        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; filter: blur(100px) brightness(0.3); z-index: -1; transition: background 2s; }
         .container { display: flex; flex-direction: column; align-items: center; height: 100vh; padding: 20px; box-sizing: border-box; }
         
-        /* 播放器卡片 */
-        .player-card {
-            background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 30px;
-            width: 100%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        .glass-card {
+            background: var(--panel); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255,255,255,0.1); padding: 35px; border-radius: 40px;
+            width: 100%; max-width: 420px; text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.8);
         }
 
-        .cover-art {
-            width: 140px; height: 140px; border-radius: 50%; margin: 0 auto 20px;
-            background: linear-gradient(135deg, #333, #000); border: 4px solid rgba(255,255,255,0.05);
-            display: flex; align-items: center; justify-content: center; font-size: 50px;
-            animation: rotate 15s linear infinite; animation-play-state: paused;
-        }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .visualizer { width: 120px; height: 120px; margin: 0 auto 25px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .disk { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, #222, #444, #222); border: 5px solid rgba(255,255,255,0.1); animation: spin 10s linear infinite; animation-play-state: paused; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        h2 { margin: 10px 0 5px; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
-        #status-text { font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; }
+        h2 { margin: 10px 0; font-size: 1.2rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #speed-tag { font-size: 0.65rem; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        #status { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-bottom: 20px; letter-spacing: 1px; }
+
+        .progress-box { width: 100%; position: relative; margin-bottom: 25px; }
+        .bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; position: relative; }
+        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.2); width: 0%; transition: width 0.4s; border-radius: 2px; }
+        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; border-radius: 2px; box-shadow: 0 0 15px var(--accent); }
+
+        .btns { display: flex; justify-content: space-around; align-items: center; margin-top: 10px; }
+        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem; transition: 0.2s; padding: 10px; }
+        .btns .main-play { font-size: 4rem; color: #fff; }
         
-        /* 进度条与缓冲条 */
-        .progress-wrapper { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 20px 0; cursor: pointer; position: relative; overflow: hidden; }
-        #buffer-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.15); width: 0%; transition: width 0.3s; }
-        #progress { position: absolute; height: 100%; background: var(--accent); width: 0%; box-shadow: 0 0 12px var(--accent); z-index: 2; }
-
-        .controls { display: flex; justify-content: center; gap: 20px; align-items: center; }
-        button { background: none; border: none; color: white; cursor: pointer; font-size: 1.5rem; transition: 0.3s; }
-        button:hover { transform: scale(1.1); color: var(--accent); }
-        .play-btn { font-size: 3.5rem; }
-
-        /* 搜索与列表 */
-        .list-section { margin-top: 25px; width: 100%; max-width: 400px; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .search-bar { width: 100%; padding: 12px 15px; border-radius: 15px; border: none; background: rgba(255,255,255,0.07); color: white; margin-bottom: 12px; outline: none; }
-        #playlist { list-style: none; padding: 0; overflow-y: auto; flex: 1; border-radius: 15px; background: rgba(0,0,0,0.2); }
-        #playlist li { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; display: flex; justify-content: space-between; font-size: 0.9rem; transition: 0.2s; }
-        #playlist li.active { background: rgba(0,210,255,0.15); color: var(--accent); }
+        .list-wrap { flex: 1; width: 100%; max-width: 420px; margin-top: 30px; overflow: hidden; display: flex; flex-direction: column; }
+        .search { background: rgba(255,255,255,0.05); border: none; padding: 15px; border-radius: 20px; color: #fff; margin-bottom: 15px; outline: none; border: 1px solid transparent; transition: 0.3s; }
+        .search:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+        #list { list-style: none; padding: 0; overflow-y: auto; flex: 1; border-radius: 20px; }
+        #list li { padding: 18px; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        #list li.active { background: rgba(0,210,255,0.1); border-left: 4px solid var(--accent); color: var(--accent); }
     </style>
 </head>
 <body>
 
-<div id="bg-blur"></div>
+<div id="bg-canvas"></div>
 
 <div class="container">
-    <div class="player-card">
-        <div class="cover-art" id="main-cover">🎵</div>
-        <h2 id="track-title">同步中...</h2>
-        <div id="status-text">CONNECTING GITHUB</div>
+    <div class="glass-card">
+        <div class="visualizer">
+            <div class="disk" id="disk"></div>
+        </div>
+        <div id="speed-tag">LFS HIGH-SPEED</div>
+        <h2 id="title">INITIATING...</h2>
+        <div id="status">WAKING UP GITHUB NODES</div>
         
-        <div class="progress-wrapper" id="progress-bar">
-            <div id="buffer-bar"></div>
-            <div id="progress"></div>
+        <div class="progress-box">
+            <div class="bar-bg" id="seek-bar">
+                <div id="buf-bar"></div>
+                <div id="prog-bar"></div>
+            </div>
         </div>
 
-        <div class="controls">
-            <button onclick="toggleMode()" id="mode-icon">🔁</button>
-            <button onclick="changeTrack(-1)">⏮</button>
-            <button onclick="togglePlay()" class="play-btn" id="play-btn">▶️</button>
-            <button onclick="changeTrack(1)">⏭</button>
-            <button onclick="download()">📥</button>
+        <div class="btns">
+            <button onclick="setMode()" id="mode-btn">🔁</button>
+            <button onclick="step(-1)">⏮</button>
+            <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
+            <button onclick="step(1)">⏭</button>
+            <button onclick="dl()">📥</button>
         </div>
     </div>
 
-    <div class="list-section">
-        <input type="text" class="search-bar" id="search" placeholder="搜索歌曲或格式..." oninput="filterList()">
-        <ul id="playlist"></ul>
+    <div class="list-wrap">
+        <input type="text" class="search" id="q" placeholder="SEARCH MUSIC..." oninput="doSearch()">
+        <ul id="list"></ul>
     </div>
 </div>
 
-<audio id="audio" crossorigin="anonymous" preload="auto"></audio>
+<audio id="player" crossorigin="anonymous" preload="auto"></audio>
 
 <script>
-    const CONFIG = {
-        user: 'zhangzhanhang855',
-        repo: 'musicplayer',
-        branch: 'main'
-    };
+    const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
+    let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
+    
+    const audio = document.getElementById('player');
+    const status = document.getElementById('status');
+    const prog = document.getElementById('prog-bar');
+    const buf = document.getElementById('buf-bar');
+    const disk = document.getElementById('disk');
 
-    let songs = [], filtered = [], currentIndex = 0, isPlaying = false, mode = 'list';
-    const audio = document.getElementById('audio');
-    const status = document.getElementById('status-text');
-    const progress = document.getElementById('progress');
-    const bufferBar = document.getElementById('buffer-bar');
-    const cover = document.getElementById('main-cover');
+    // 自动构建 CDN 链接
+    const getLink = (n) => `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(n)}`;
 
-    // 自动切换加速链接
-    const getUrl = (file) => `https://cdn.jsdelivr.net/gh/${CONFIG.user}/${CONFIG.repo}@${CONFIG.branch}/${encodeURIComponent(file)}`;
-
-    async function init() {
+    async function start() {
         try {
-            const res = await fetch(`https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/`);
-            const data = await res.json();
-            songs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                title: f.name.replace(/\.[^/.]+$/, ""),
-                file: f.name,
-                url: getUrl(f.name)
+            const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
+            const d = await r.json();
+            all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
+                t: f.name.replace(/\.[^/.]+$/, ""),
+                f: f.name,
+                u: getLink(f.name)
             }));
-            filtered = [...songs];
-            render();
-            if(songs.length > 0) load(0, false);
-            status.innerText = "库已就绪 - 点击播放";
-        } catch (e) { status.innerText = "连接失败"; }
+            filtered = [...all];
+            drawList();
+            if(all.length > 0) loadTrack(0, false);
+            status.innerText = "NODES READY. ENJOY LOSSLESS.";
+        } catch (e) { status.innerText = "CONNECTION ERROR"; }
     }
 
-    function render() {
-        document.getElementById('playlist').innerHTML = filtered.map((s, i) => `
-            <li class="${currentIndex === i ? 'active' : ''}" onclick="select(${i})">
-                <span>${s.title}</span>
-                <span style="opacity:0.3;font-size:0.7rem">${s.file.split('.').pop().toUpperCase()}</span>
+    function drawList() {
+        document.getElementById('list').innerHTML = filtered.map((s, i) => `
+            <li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
+                <span>${s.t}</span>
+                <span style="opacity:0.3;font-size:0.6rem;">${s.f.split('.').pop().toUpperCase()}</span>
             </li>`).join('');
     }
 
-    function load(index, autoPlay = true) {
-        currentIndex = index;
-        const s = filtered[currentIndex];
+    function loadTrack(idx, auto = true) {
+        cur = idx;
+        const s = filtered[cur];
         
-        // 核心：边缓冲边播放优化
+        // 核心加速优化：双重预解析
         audio.pause();
-        audio.src = s.url;
-        audio.load(); // 强制触发浏览器 HTTP Range 请求
-        
-        document.getElementById('track-title').innerText = s.title;
-        status.innerText = "正在建立流媒体连接...";
-        
-        // 随机背景
-        const h = Math.floor(Math.random() * 360);
-        document.getElementById('bg-blur').style.background = `linear-gradient(135deg, hsl(${h}, 40%, 20%), #000)`;
-        
-        render();
+        audio.src = s.u;
+        audio.load(); // 触发抢占式下载
 
-        if (autoPlay || isPlaying) {
+        document.getElementById('title').innerText = s.t;
+        status.innerText = "STREAMING FROM EDGE NODES...";
+        
+        const h = Math.floor(Math.random() * 360);
+        document.getElementById('bg-canvas').style.background = `radial-gradient(circle at center, hsl(${h}, 50%, 20%), #000)`;
+        
+        drawList();
+
+        if (auto || isP) {
             const p = audio.play();
-            if (p) p.catch(() => { isPlaying = false; updateBtn(); });
+            if (p) p.then(() => { isP = true; ui(); }).catch(() => { isP = false; ui(); });
         }
     }
 
-    // 实时监控缓冲进度
+    // 缓冲监控：计算秒级加载量
     audio.onprogress = () => {
         if (audio.buffered.length > 0) {
-            const bufferedEnd = audio.buffered.end(audio.buffered.length - 1);
-            const duration = audio.duration;
-            if (duration > 0) {
-                const pct = (bufferedEnd / duration) * 100;
-                bufferBar.style.width = pct + "%";
-                if(pct < 100 && isPlaying) status.innerText = `流式缓冲中: ${Math.round(pct)}%`;
+            const bEnd = audio.buffered.end(audio.buffered.length - 1);
+            const d = audio.duration;
+            if (d > 0) {
+                const pct = (bEnd / d) * 100;
+                buf.style.width = pct + "%";
+                if(pct < 100 && isP) status.innerText = `BUFFERING HI-RES: ${Math.round(pct)}%`;
             }
         }
     };
 
-    audio.onplaying = () => { status.innerText = "正在播放 Hi-Res 音频"; isPlaying = true; updateBtn(); };
-    audio.onwaiting = () => { status.innerText = "网络缓慢，正在努力加载..."; };
+    audio.oncanplaythrough = () => { if(isP) status.innerText = "HI-RES BITSTREAM ACTIVE"; };
+    audio.onstalled = () => { status.innerText = "RECONNECTING TO LFS..."; };
 
-    function togglePlay() {
-        if (audio.paused) {
-            audio.play();
-            isPlaying = true;
-        } else {
-            audio.pause();
-            isPlaying = false;
-        }
-        updateBtn();
+    function playToggle() {
+        if (audio.paused) { audio.play(); isP = true; } 
+        else { audio.pause(); isP = false; }
+        ui();
     }
 
-    function updateBtn() {
-        document.getElementById('play-btn').innerText = isPlaying ? '⏸' : '▶️';
-        cover.style.animationPlayState = isPlaying ? 'running' : 'paused';
+    function ui() {
+        document.getElementById('play-btn').innerText = isP ? '⏸' : '▶️';
+        disk.style.animationPlayState = isP ? 'running' : 'paused';
     }
 
-    function changeTrack(dir) {
-        let n = (currentIndex + dir + filtered.length) % filtered.length;
-        if (mode === 'random') n = Math.floor(Math.random() * filtered.length);
-        load(n);
+    function step(d) {
+        let n = (cur + d + filtered.length) % filtered.length;
+        if (loop === 'random') n = Math.floor(Math.random() * filtered.length);
+        loadTrack(n);
     }
 
-    function select(i) { load(i); isPlaying = true; updateBtn(); }
+    function selectTrack(i) { loadTrack(i); isP = true; ui(); }
 
     audio.ontimeupdate = () => {
-        const pct = (audio.currentTime / audio.duration) * 100 || 0;
-        progress.style.width = pct + '%';
+        const p = (audio.currentTime / audio.duration) * 100 || 0;
+        prog.style.width = p + '%';
     };
 
-    document.getElementById('progress-bar').onclick = (e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+    document.getElementById('seek-bar').onclick = (e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
     };
 
-    audio.onended = () => {
-        if (mode === 'single') audio.play();
-        else changeTrack(1);
-    };
+    audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
 
-    function toggleMode() {
+    function setMode() {
         const m = { list: '🔁', random: '🔀', single: '🔂' };
-        mode = mode === 'list' ? 'random' : (mode === 'random' ? 'single' : 'list');
-        document.getElementById('mode-icon').innerText = m[mode];
+        loop = loop === 'list' ? 'random' : (loop === 'random' ? 'single' : 'list');
+        document.getElementById('mode-btn').innerText = m[loop];
     }
 
-    function filterList() {
-        const q = document.getElementById('search').value.toLowerCase();
-        filtered = songs.filter(s => s.file.toLowerCase().includes(q));
-        render();
+    function doSearch() {
+        const val = document.getElementById('q').value.toLowerCase();
+        filtered = all.filter(s => s.f.toLowerCase().includes(val));
+        drawList();
     }
 
-    function download() { window.open(filtered[currentIndex].url); }
+    function dl() { window.open(filtered[cur].u); }
 
-    init();
+    start();
 </script>
 </body>
 </html>
