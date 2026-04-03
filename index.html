@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hi-Res 极限直连版</title>
+    <title>ZZH音乐播放器终极版</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
@@ -13,7 +13,6 @@
     <style>
         :root { --accent: #ff0055; --bg: #000000; --panel: rgba(20,20,20,0.8); }
         
-        /* 修复移动端滚动遮挡的基础设置 */
         body, html { 
             margin: 0; padding: 0; 
             height: 100%; height: 100dvh; 
@@ -28,43 +27,42 @@
             transition: background 1s ease-out; 
         }
 
-        /* 关键修复：加入 100dvh 与 底部安全区 (safe-area) */
         .container { 
             display: flex; flex-direction: column; align-items: center; 
             height: 100%; height: 100dvh; 
             padding: 20px; 
-            padding-bottom: calc(20px + env(safe-area-inset-bottom)); /* 避开 iOS 底部横条 */
+            padding-bottom: calc(20px + env(safe-area-inset-bottom)); 
             box-sizing: border-box; 
         }
         
         .glass-card {
             background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; border-radius: 30px;
             width: 100%; max-width: 420px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-            flex-shrink: 0; /* 防止上方卡片被压缩 */
+            flex-shrink: 0; 
         }
 
         h2 { margin: 5px 0; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
         #speed-tag { font-size: 0.65rem; background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 6px; font-weight: 900; margin-bottom: 12px; display: inline-block; letter-spacing: 1px; }
         #status { font-size: 0.75rem; color: #888; margin-bottom: 25px; font-variant-numeric: tabular-nums; }
 
-        .progress-box { width: 100%; position: relative; margin-bottom: 25px; height: 30px; display: flex; align-items: center; }
+        .progress-box { width: 100%; position: relative; margin-bottom: 20px; height: 30px; display: flex; align-items: center; }
         .bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; overflow: hidden; }
         #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
         #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
 
-        .btns { display: flex; justify-content: center; gap: 30px; align-items: center; }
-        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.5rem; transition: 0.1s; }
-        .btns button:active { transform: scale(0.9); }
-        .btns .main-play { font-size: 3.5rem; }
+        /* 修复居中对齐：使用 space-evenly 让 5 个按钮绝对对称 */
+        .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; }
+        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.4rem; transition: 0.1s; width: 45px; display: flex; justify-content: center; align-items: center; padding: 0; }
+        .btns button:active { transform: scale(0.85); color: var(--accent); }
+        .btns .main-play { font-size: 3.5rem; width: 70px; }
         
         .list-wrap { flex: 1; width: 100%; max-width: 420px; margin-top: 20px; overflow: hidden; display: flex; flex-direction: column; }
         .search { background: rgba(255,255,255,0.08); border: none; padding: 16px; border-radius: 16px; color: #fff; margin-bottom: 12px; outline: none; font-size: 1rem; flex-shrink: 0; }
         
-        /* 关键修复：加入底部留白 30px，以及平滑滚动优化 */
         #list { 
             list-style: none; padding: 0 0 30px 0; overflow-y: auto; flex: 1; margin: 0; 
-            -webkit-overflow-scrolling: touch; /* iPad 滑动更丝滑 */
+            -webkit-overflow-scrolling: touch; 
         }
         #list li { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         #list li.active { color: var(--accent); font-weight: bold; background: linear-gradient(90deg, rgba(255,0,85,0.15) 0%, transparent 100%); border-left: 3px solid var(--accent); }
@@ -88,10 +86,11 @@
         </div>
 
         <div class="btns">
-            <button onclick="setMode()" id="mode-btn">🔁</button>
-            <button onclick="step(-1)">⏮</button>
+            <button onclick="setMode()" id="mode-btn" title="播放模式">🔁</button>
+            <button onclick="step(-1)" title="上一首">⏮</button>
             <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
-            <button onclick="step(1)">⏭</button>
+            <button onclick="step(1)" title="下一首">⏭</button>
+            <button onclick="dl()" title="下载当前歌曲">📥</button>
         </div>
     </div>
 
@@ -207,6 +206,18 @@
         const val = document.getElementById('q').value.toLowerCase();
         filtered = all.filter(s => s.f.toLowerCase().includes(val));
         drawList();
+    }
+
+    // 下载触发逻辑
+    function dl() { 
+        if (filtered.length === 0) return;
+        const link = document.createElement('a');
+        link.href = filtered[cur].u;
+        link.download = filtered[cur].f; // 尝试强制唤起浏览器保存窗口
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     start();
