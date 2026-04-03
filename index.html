@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Hi-Res 极限直连版</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
@@ -12,15 +12,36 @@
 
     <style>
         :root { --accent: #ff0055; --bg: #000000; --panel: rgba(20,20,20,0.8); }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: #fff; overflow: hidden; }
         
-        #bg-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; filter: blur(80px) brightness(0.4); z-index: -1; transition: background 1s ease-out; }
-        .container { display: flex; flex-direction: column; align-items: center; height: 100vh; padding: 20px; box-sizing: border-box; }
+        /* 修复移动端滚动遮挡的基础设置 */
+        body, html { 
+            margin: 0; padding: 0; 
+            height: 100%; height: 100dvh; 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); color: #fff; 
+            overflow: hidden; 
+        }
+        
+        #bg-canvas { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            filter: blur(80px) brightness(0.4); z-index: -1; 
+            transition: background 1s ease-out; 
+        }
+
+        /* 关键修复：加入 100dvh 与 底部安全区 (safe-area) */
+        .container { 
+            display: flex; flex-direction: column; align-items: center; 
+            height: 100%; height: 100dvh; 
+            padding: 20px; 
+            padding-bottom: calc(20px + env(safe-area-inset-bottom)); /* 避开 iOS 底部横条 */
+            box-sizing: border-box; 
+        }
         
         .glass-card {
             background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 30px;
             width: 100%; max-width: 420px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            flex-shrink: 0; /* 防止上方卡片被压缩 */
         }
 
         h2 { margin: 5px 0; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
@@ -38,8 +59,13 @@
         .btns .main-play { font-size: 3.5rem; }
         
         .list-wrap { flex: 1; width: 100%; max-width: 420px; margin-top: 20px; overflow: hidden; display: flex; flex-direction: column; }
-        .search { background: rgba(255,255,255,0.08); border: none; padding: 16px; border-radius: 16px; color: #fff; margin-bottom: 12px; outline: none; font-size: 1rem; }
-        #list { list-style: none; padding: 0; overflow-y: auto; flex: 1; margin: 0; }
+        .search { background: rgba(255,255,255,0.08); border: none; padding: 16px; border-radius: 16px; color: #fff; margin-bottom: 12px; outline: none; font-size: 1rem; flex-shrink: 0; }
+        
+        /* 关键修复：加入底部留白 30px，以及平滑滚动优化 */
+        #list { 
+            list-style: none; padding: 0 0 30px 0; overflow-y: auto; flex: 1; margin: 0; 
+            -webkit-overflow-scrolling: touch; /* iPad 滑动更丝滑 */
+        }
         #list li { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         #list li.active { color: var(--accent); font-weight: bold; background: linear-gradient(90deg, rgba(255,0,85,0.15) 0%, transparent 100%); border-left: 3px solid var(--accent); }
     </style>
@@ -87,7 +113,7 @@
     const buf = document.getElementById('buf-bar');
     const playBtn = document.getElementById('play-btn');
 
-    // 极限提速核心 3：LFS 直连穿透。跳过 api，跳过 50MB 限制的 jsDelivr，跳过 raw.githubusercontent 的 302 重定向
+    // LFS 直连穿透链接
     const getDirectMediaLink = (file) => `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(file)}`;
 
     async function start() {
@@ -97,7 +123,7 @@
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
                 t: f.name.replace(/\.[^/.]+$/, ""),
                 f: f.name,
-                u: getDirectMediaLink(f.name) // 使用穿透链接
+                u: getDirectMediaLink(f.name)
             }));
             filtered = [...all];
             drawList();
@@ -138,7 +164,6 @@
         }
     }
 
-    // 极端精简的事件监听器（防止高频触发导致的主线程阻塞）
     audio.addEventListener('progress', () => {
         if (audio.buffered.length > 0) {
             const pct = (audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0;
