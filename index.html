@@ -3,34 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hi-Res 智能双轨版 Pro</title>
+    <title>Hi-Res 智能双轨像素版 Pro</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 
     <style>
-        :root { --accent: #ff0055; --bg: #000000; --panel: rgba(20,20,20,0.8); }
+        /* 🌟 像素风格全局变量与设置 */
+        :root { 
+            --accent: #00d2ff; /* 像素青 */
+            --accent-bg: rgba(0, 210, 255, 0.15); /* 激活背景 */
+            --bg: #050507; /* 复古黑 */
+            --panel: #101015; /* 卡片黑 */
+            --text-main: #fff;
+            --text-sub: #aaa;
+            /* 块状边框粗度 */
+            --pixel-border: 4px; 
+        }
         
         body, html { 
             margin: 0; padding: 0; 
             height: 100%; height: 100dvh; 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background: var(--bg); color: #fff; 
+            font-family: 'VT323', 'Courier New', monospace; /* 全像素字体 */
+            font-size: 20px; /* 字体默认放大以适应像素风格 */
+            background: var(--bg); color: var(--text-main); 
             overflow: hidden; 
+            image-rendering: pixelated; /* 🌟 核心：强制像素级渲染 */
         }
         
-        #bg-canvas { 
+        /* 🌟 核心修改 2：复古像素背景网格，替换模糊渐变 */
+        #bg-pattern { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            filter: blur(80px) brightness(0.4); z-index: -1; 
-            transition: background 1s ease-out; 
+            filter: brightness(0.2); z-index: -1;
+            background-size: 16px 16px;
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%), 
+                linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
         }
 
         .container { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+            display: flex; flex-direction: column; align-items: center; 
             height: 100%; height: 100dvh; 
             padding: 20px; 
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
@@ -38,81 +58,98 @@
         }
 
         .layout-wrapper {
-            display: flex;
-            flex-direction: column; 
-            width: 100%;
-            max-width: 420px;
-            flex: 1;
-            overflow: hidden;
-            align-items: center;
+            display: flex; flex-direction: column; /* 手机堆叠 */
+            width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center;
         }
         
+        /* 🌟 像素卡片样式：直角、硬边框、块阴影 */
         .glass-card {
-            background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; border-radius: 30px;
-            width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-            flex-shrink: 0; margin-bottom: 20px;
+            background: var(--panel); 
+            border: var(--pixel-border) solid var(--accent); /* 硬边框 */
+            padding: 25px 20px;
+            width: 100%; text-align: center;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.5); /* 块状外阴影 */
+            flex-shrink: 0; margin-bottom: 25px;
+            border-radius: 0 !not; /* NO圆角 */
         }
 
-        h2 { margin: 5px 0; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #speed-tag { font-size: 0.65rem; background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 6px; font-weight: 900; margin-bottom: 12px; display: inline-block; }
-        #status { font-size: 0.75rem; color: #888; margin-bottom: 25px; min-height: 1rem; }
+        h2 { margin: 5px 0; font-size: 1.5rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 15px; display: inline-block; }
+        #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 30px; min-height: 1.1rem; }
 
-        .progress-box { width: 100%; height: 30px; display: flex; align-items: center; margin-bottom: 10px; }
-        .bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; overflow: hidden; }
-        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
-        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
+        /* 🌟 像素进度条：直角、块状 */
+        .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
+        .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; }
+        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; box-shadow: none !not; }
 
-        .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; }
-        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.4rem; width: 45px; display: flex; justify-content: center; align-items: center; padding: 0; }
+        /* 🌟 像素按钮区：直角、交互清晰 */
+        .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; margin-top: 15px; }
+        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.6rem; width: 60px; display: flex; justify-content: center; align-items: center; padding: 0; font-family: 'VT323', monospace; }
+        /* 模式按钮改为像素文字显示 */
+        #mode-btn { font-size: 1rem; color: var(--text-sub); border: 2px solid rgba(255,255,255,0.1); width: 50px; height: 35px; }
+        .btns button:active { color: var(--accent); border-color: var(--accent); }
+        .btns button:hover { color: var(--accent); }
         .btns .main-play { font-size: 3.5rem; width: 70px; }
         
         .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-        .search { background: rgba(255,255,255,0.08); border: none; padding: 16px; border-radius: 16px; color: #fff; margin-bottom: 12px; outline: none; font-size: 1rem; flex-shrink: 0; }
         
+        /* 🌟 像素搜索框：直角、块边框 */
+        .search { 
+            background: rgba(255,255,255,0.05); 
+            border: var(--pixel-border) solid rgba(255,255,255,0.1); 
+            padding: 14px; 
+            color: #fff; margin-bottom: 15px; outline: none; font-size: 1.1rem; flex-shrink: 0; 
+            font-family: 'VT323', monospace;
+        }
+        .search:focus { border-color: rgba(255,255,255,0.3); }
+        
+        /* 🌟 像素播放列表：直角边框、硬分割线 */
         #list { 
             list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; 
             -webkit-overflow-scrolling: touch; 
+            border: var(--pixel-border) solid rgba(255,255,255,0.1);
         }
-        #list li { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        #list li.active { color: var(--accent); font-weight: bold; background: linear-gradient(90deg, rgba(255,0,85,0.1) 0%, transparent 100%); border-left: 3px solid var(--accent); }
+        #list li { 
+            padding: 16px 20px; 
+            border-bottom: 2px solid rgba(255,255,255,0.03); 
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center; 
+            font-size: 1.1rem;
+        }
+        /* 激活态：块状左边框 */
+        #list li.active { color: var(--accent); background: var(--accent-bg); border-left: 6px solid var(--accent); }
 
         .footer-info {
             width: 100%; max-width: 420px; display: flex; justify-content: space-between; 
-            align-items: flex-end; margin-top: 10px; flex-shrink: 0;
-            font-size: 0.65rem; color: rgba(255,255,255,0.3); line-height: 1.5;
+            align-items: flex-end; margin-top: 15px; flex-shrink: 0;
+            font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.6;
         }
 
+        /* 🌟 iPad 横屏/大屏适配：左右分栏模式（保留智能布局逻辑） */
         @media (min-width: 900px) and (orientation: landscape) {
+            body, html { font-size: 22px; } /* 大屏字体微调 */
             .container { padding: 40px; }
             .layout-wrapper {
                 flex-direction: row; 
-                max-width: 1000px;
-                gap: 40px;
+                max-width: 1050px;
+                gap: 50px;
                 align-items: stretch;
             }
             .glass-card {
-                width: 400px; 
+                width: 430px; /* 播放器固定宽度 */
                 margin-bottom: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
+                display: flex; flex-direction: column; justify-content: center;
+                box-shadow: 15px 15px 0 rgba(0,0,0,0.5); /* 大屏加大阴影 */
             }
             .list-wrap { flex: 1; }
-            .footer-info {
-                max-width: 1000px;
-                justify-content: flex-end; 
-            }
-            .footer-info .left {
-                margin-right: 30px;
-                text-align: right;
-            }
+            .footer-info { max-width: 1050px; justify-content: flex-end; }
+            .footer-info .left { margin-right: 40px; text-align: right; }
         }
     </style>
 </head>
 <body>
 
-<div id="bg-canvas"></div>
+<div id="bg-pattern"></div>
 
 <div class="container">
     <div class="layout-wrapper">
@@ -121,19 +158,19 @@
             <h2 id="title">WAITING...</h2>
             <div id="status">INITIALIZING...</div>
             
-            <div class="progress-box">
-                <div class="bar-bg" id="seek-bar">
+            <div class="progress-box" id="seek-bar">
+                <div class="bar-bg">
                     <div id="buf-bar"></div>
                     <div id="prog-bar"></div>
                 </div>
             </div>
 
             <div class="btns">
-                <button onclick="setMode()" id="mode-btn">🔁</button>
-                <button onclick="step(-1)">⏮</button>
+                <button onclick="setMode()" id="mode-btn" title="播放模式">LIST</button>
+                <button onclick="step(-1)" title="上一首">⏮</button>
                 <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
-                <button onclick="step(1)">⏭</button>
-                <button onclick="dl()">📥</button>
+                <button onclick="step(1)" title="下一首">⏭</button>
+                <button onclick="dl()" title="下载歌曲">📥</button>
             </div>
         </div>
 
@@ -152,6 +189,7 @@
 <audio id="player" preload="auto"></audio>
 
 <script>
+    // 配置信息（你的信息开箱即用）
     const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main', token: '' };
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
@@ -163,47 +201,30 @@
     const speedTag = document.getElementById('speed-tag');
 
     const getOptimalUrl = (fileObj) => {
+        // 大小判断逻辑保持不变，依然智能分发路由
         if (fileObj.size < 1024) {
-            return { url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'LFS DIRECT' };
+            return {
+                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'LFS DIRECT'
+            };
         } else {
-            return { url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'CDN EDGE' };
+            return {
+                url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'CDN EDGE' 
+            };
         }
     };
 
-    // 🌟 核心一：更新 Apple/Android 原生媒体控制中心信息
-    function updateMediaSession(songTitle, fileType) {
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: songTitle,               // 锁屏显示：当前真实的歌名
-                artist: 'Hi-Res Audio (' + fileType + ')', // 锁屏显示：副标题（音频格式）
-                album: 'ZZH 云音乐库'            // 锁屏显示：专辑名
-            });
-        }
-    }
-
-    // 🌟 核心二：绑定 Apple/Android 原生按键事件（比如耳机的双击切歌、锁屏控制）
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
-        navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
-        navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
-        navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
-        // 允许在锁屏界面拖动进度条
-        navigator.mediaSession.setActionHandler('seekto', (details) => {
-            if (details.fastSeek && ('fastSeek' in audio)) {
-                audio.fastSeek(details.seekTime);
-            } else {
-                audio.currentTime = details.seekTime;
-            }
-        });
-    }
-
     async function start() {
         try {
+            // 保留详细报错排查逻辑
             const fetchOptions = G.token ? { headers: { 'Authorization': `token ${G.token}` } } : {};
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
             
-            if (r.status === 403) throw new Error("HTTP 403: API频率超限");
-            if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库`);
+            if (r.status === 403) {
+                throw new Error("HTTP 403: API频率超限，请填入Token或等待1小时");
+            }
+            if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库，请检查配置`);
 
             const d = await r.json();
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
@@ -227,7 +248,7 @@
             let s = filtered[i];
             html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
                 <span>${s.t}</span>
-                <span style="opacity:0.4;font-size:0.7rem;">${s.f.split('.').pop().toUpperCase()}</span>
+                <span style="opacity:0.4;font-size:0.8rem;">${s.f.split('.').pop().toUpperCase()}</span>
             </li>`;
         }
         document.getElementById('list').innerHTML = html;
@@ -241,13 +262,14 @@
         audio.load(); 
         document.getElementById('title').innerText = s.t;
         speedTag.innerText = s.routeType;
+        // LFS 直连设为粉红，CDN 设为青，块状背景
         speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
         status.innerText = `CONNECTING VIA ${s.routeType}...`;
-        document.getElementById('bg-canvas').style.background = `hsl(${Math.random() * 360}, 50%, 15%)`;
         
-        // 🌟 触发原生锁屏信息的更新
-        updateMediaSession(s.t, s.f.split('.').pop().toUpperCase());
-
+        // 🌟 核心修改：在像素模式下禁用动态 Hue，改为随机硬背景颜色变化
+        const h = Math.floor(Math.random() * 360);
+        document.getElementById('bg-pattern').style.background = `hsl(${h}, 50%, 15%)`;
+        
         drawList();
         if (auto || isP) {
             const p = audio.play();
@@ -288,10 +310,15 @@
 
     audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
 
+    // 🌟 核心修改 2：在像素模式下更新模式文字显示逻辑，禁用 🔁
     function setMode() {
-        const m = { list: '🔁', random: '🔀', single: '🔂' };
-        loop = loop === 'list' ? 'random' : (loop === 'random' ? 'single' : 'list');
-        document.getElementById('mode-btn').innerText = m[loop];
+        const mArr = ['list', 'random', 'single'];
+        const mText = { list: 'LIST', random: 'RND', single: 'ONE' };
+        
+        let idx = mArr.indexOf(loop);
+        loop = mArr[(idx + 1) % 3];
+        
+        document.getElementById('mode-btn').innerText = mText[loop];
     }
 
     function doSearch() {
