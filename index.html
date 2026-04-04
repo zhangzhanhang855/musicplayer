@@ -102,7 +102,17 @@
 <audio id="player" preload="auto"></audio>
 
 <script>
-    const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
+    // ==========================================
+    // ⬇️ 如果你急着测试，在这里填入你的 Token ⬇️
+    // ==========================================
+    const G = { 
+        user: 'zhangzhanhang855', 
+        repo: 'musicplayer', 
+        ver: 'main',
+        token: '' // <-- 将你的 Token 粘贴在引号里面，例如：'ghp_xxxxxxx'
+    };
+    // ==========================================
+
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
     
     const audio = document.getElementById('player');
@@ -112,25 +122,30 @@
     const playBtn = document.getElementById('play-btn');
     const speedTag = document.getElementById('speed-tag');
 
-    // 🌟 核心：智能分发路由
     const getOptimalUrl = (fileObj) => {
-        // 音频文件绝对不可能小于 1KB。如果小于 1KB (1024 bytes)，它 100% 是 GitHub LFS 的文本指针。
         if (fileObj.size < 1024) {
             return {
                 url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                type: 'LFS DIRECT' // 大文件直连
+                type: 'LFS DIRECT'
             };
         } else {
             return {
                 url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                type: 'CDN EDGE' // 小文件走 CDN 极速节点
+                type: 'CDN EDGE' 
             };
         }
     };
 
     async function start() {
         try {
-            const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
+            // 加入 Token 突破频率限制
+            const fetchOptions = G.token ? { headers: { 'Authorization': `token ${G.token}` } } : {};
+            const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
+            
+            // 如果超限，会返回 403 错误
+            if (r.status === 403) throw new Error('API LIMIT: 刷新太快了，请填入 Token 或等待一小时');
+            if (!r.ok) throw new Error('NETWORK ERROR: 找不到仓库，请检查是否公开');
+
             const d = await r.json();
             
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
@@ -147,7 +162,10 @@
             drawList();
             if(all.length > 0) loadTrack(0, false);
             status.innerText = "READY. SMART ROUTING ENABLED.";
-        } catch (e) { status.innerText = "API LIMIT OR NETWORK ERROR"; }
+        } catch (e) { 
+            status.innerText = e.message; 
+            document.getElementById('title').innerText = "加载失败";
+        }
     }
 
     function drawList() {
@@ -172,7 +190,6 @@
 
         document.getElementById('title').innerText = s.t;
         
-        // 动态显示当前走的是哪条线路
         speedTag.innerText = s.routeType;
         speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
         
