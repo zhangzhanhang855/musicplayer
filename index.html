@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ZZH音乐播放器终极版</title>
+    <title>Hi-Res 智能双轨版</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
-    <link rel="dns-prefetch" href="https://media.githubusercontent.com">
-    <link rel="preconnect" href="https://media.githubusercontent.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
     <style>
         :root { --accent: #ff0055; --bg: #000000; --panel: rgba(20,20,20,0.8); }
@@ -51,7 +51,6 @@
         #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
         #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
 
-        /* 修复居中对齐：使用 space-evenly 让 5 个按钮绝对对称 */
         .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; }
         .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.4rem; transition: 0.1s; width: 45px; display: flex; justify-content: center; align-items: center; padding: 0; }
         .btns button:active { transform: scale(0.85); color: var(--accent); }
@@ -74,7 +73,7 @@
 
 <div class="container">
     <div class="glass-card">
-        <div id="speed-tag">DIRECT LFS LINK ACTIVE</div>
+        <div id="speed-tag">SMART ROUTING ENGINE</div>
         <h2 id="title">WAITING FOR GITHUB</h2>
         <div id="status">INITIALIZING BYPASS...</div>
         
@@ -90,7 +89,7 @@
             <button onclick="step(-1)" title="上一首">⏮</button>
             <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
             <button onclick="step(1)" title="下一首">⏭</button>
-            <button onclick="dl()" title="下载当前歌曲">📥</button>
+            <button onclick="dl()" title="下载歌曲">📥</button>
         </div>
     </div>
 
@@ -111,23 +110,43 @@
     const prog = document.getElementById('prog-bar');
     const buf = document.getElementById('buf-bar');
     const playBtn = document.getElementById('play-btn');
+    const speedTag = document.getElementById('speed-tag');
 
-    // LFS 直连穿透链接
-    const getDirectMediaLink = (file) => `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(file)}`;
+    // 🌟 核心：智能分发路由
+    const getOptimalUrl = (fileObj) => {
+        // 音频文件绝对不可能小于 1KB。如果小于 1KB (1024 bytes)，它 100% 是 GitHub LFS 的文本指针。
+        if (fileObj.size < 1024) {
+            return {
+                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'LFS DIRECT' // 大文件直连
+            };
+        } else {
+            return {
+                url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'CDN EDGE' // 小文件走 CDN 极速节点
+            };
+        }
+    };
 
     async function start() {
         try {
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
             const d = await r.json();
-            all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                t: f.name.replace(/\.[^/.]+$/, ""),
-                f: f.name,
-                u: getDirectMediaLink(f.name)
-            }));
+            
+            all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
+                const routeInfo = getOptimalUrl(f);
+                return {
+                    t: f.name.replace(/\.[^/.]+$/, ""),
+                    f: f.name,
+                    u: routeInfo.url,
+                    routeType: routeInfo.type
+                };
+            });
+            
             filtered = [...all];
             drawList();
             if(all.length > 0) loadTrack(0, false);
-            status.innerText = "READY. DIRECT STREAM ENABLED.";
+            status.innerText = "READY. SMART ROUTING ENABLED.";
         } catch (e) { status.innerText = "API LIMIT OR NETWORK ERROR"; }
     }
 
@@ -152,7 +171,12 @@
         audio.load(); 
 
         document.getElementById('title').innerText = s.t;
-        status.innerText = "OPENING TCP SOCKET...";
+        
+        // 动态显示当前走的是哪条线路
+        speedTag.innerText = s.routeType;
+        speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
+        
+        status.innerText = `CONNECTING VIA ${s.routeType}...`;
         
         document.getElementById('bg-canvas').style.background = `hsl(${Math.random() * 360}, 50%, 15%)`;
         drawList();
@@ -170,8 +194,8 @@
         }
     });
 
-    audio.addEventListener('playing', () => { status.innerText = "ULTRA-STREAMING LIVE"; isP = true; ui(); });
-    audio.addEventListener('waiting', () => { status.innerText = "FETCHING RAW PACKETS..."; });
+    audio.addEventListener('playing', () => { status.innerText = "STREAMING ACTIVE"; isP = true; ui(); });
+    audio.addEventListener('waiting', () => { status.innerText = "BUFFERING..."; });
     audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
 
     function playToggle() {
@@ -208,12 +232,11 @@
         drawList();
     }
 
-    // 下载触发逻辑
     function dl() { 
         if (filtered.length === 0) return;
         const link = document.createElement('a');
         link.href = filtered[cur].u;
-        link.download = filtered[cur].f; // 尝试强制唤起浏览器保存窗口
+        link.download = filtered[cur].f; 
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
