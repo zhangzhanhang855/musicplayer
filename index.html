@@ -27,7 +27,6 @@
             transition: background 1s ease-out; 
         }
 
-        /* 基础容器：默认手机竖屏样式 (上下堆叠) */
         .container { 
             display: flex; 
             flex-direction: column; 
@@ -38,10 +37,9 @@
             box-sizing: border-box; 
         }
 
-        /* 布局包装器：用于左右分栏切换 */
         .layout-wrapper {
             display: flex;
-            flex-direction: column; /* 手机默认上下 */
+            flex-direction: column; 
             width: 100%;
             max-width: 420px;
             flex: 1;
@@ -85,28 +83,25 @@
             font-size: 0.65rem; color: rgba(255,255,255,0.3); line-height: 1.5;
         }
 
-        /* 🌟 iPad 横屏/大屏适配：开启左右分栏模式 */
         @media (min-width: 900px) and (orientation: landscape) {
             .container { padding: 40px; }
             .layout-wrapper {
-                flex-direction: row; /* 关键：横向排列 */
+                flex-direction: row; 
                 max-width: 1000px;
                 gap: 40px;
                 align-items: stretch;
             }
             .glass-card {
-                width: 400px; /* 播放器固定宽度 */
+                width: 400px; 
                 margin-bottom: 0;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
             }
-            .list-wrap {
-                flex: 1; /* 列表占据剩余右侧空间 */
-            }
+            .list-wrap { flex: 1; }
             .footer-info {
                 max-width: 1000px;
-                justify-content: flex-end; /* 提示全部移到右下角 */
+                justify-content: flex-end; 
             }
             .footer-info .left {
                 margin-right: 30px;
@@ -157,7 +152,6 @@
 <audio id="player" preload="auto"></audio>
 
 <script>
-    // 配置信息
     const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main', token: '' };
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
@@ -170,28 +164,46 @@
 
     const getOptimalUrl = (fileObj) => {
         if (fileObj.size < 1024) {
-            return {
-                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                type: 'LFS DIRECT'
-            };
+            return { url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'LFS DIRECT' };
         } else {
-            return {
-                url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                type: 'CDN EDGE' 
-            };
+            return { url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'CDN EDGE' };
         }
     };
+
+    // 🌟 核心一：更新 Apple/Android 原生媒体控制中心信息
+    function updateMediaSession(songTitle, fileType) {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: songTitle,               // 锁屏显示：当前真实的歌名
+                artist: 'Hi-Res Audio (' + fileType + ')', // 锁屏显示：副标题（音频格式）
+                album: 'ZZH 云音乐库'            // 锁屏显示：专辑名
+            });
+        }
+    }
+
+    // 🌟 核心二：绑定 Apple/Android 原生按键事件（比如耳机的双击切歌、锁屏控制）
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
+        navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
+        navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
+        navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
+        // 允许在锁屏界面拖动进度条
+        navigator.mediaSession.setActionHandler('seekto', (details) => {
+            if (details.fastSeek && ('fastSeek' in audio)) {
+                audio.fastSeek(details.seekTime);
+            } else {
+                audio.currentTime = details.seekTime;
+            }
+        });
+    }
 
     async function start() {
         try {
             const fetchOptions = G.token ? { headers: { 'Authorization': `token ${G.token}` } } : {};
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
             
-            if (r.status === 403) {
-                const err = await r.json();
-                throw new Error("HTTP 403: API频率超限，请填入Token或等待1小时");
-            }
-            if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库，请检查配置`);
+            if (r.status === 403) throw new Error("HTTP 403: API频率超限");
+            if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库`);
 
             const d = await r.json();
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
@@ -232,6 +244,10 @@
         speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
         status.innerText = `CONNECTING VIA ${s.routeType}...`;
         document.getElementById('bg-canvas').style.background = `hsl(${Math.random() * 360}, 50%, 15%)`;
+        
+        // 🌟 触发原生锁屏信息的更新
+        updateMediaSession(s.t, s.f.split('.').pop().toUpperCase());
+
         drawList();
         if (auto || isP) {
             const p = audio.play();
