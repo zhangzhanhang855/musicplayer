@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hi-Res 智能双轨版</title>
+    <title>Hi-Res 智能双轨版 Pro</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
@@ -27,53 +27,92 @@
             transition: background 1s ease-out; 
         }
 
+        /* 基础容器：默认手机竖屏样式 (上下堆叠) */
         .container { 
-            display: flex; flex-direction: column; align-items: center; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
             height: 100%; height: 100dvh; 
             padding: 20px; 
-            padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
             box-sizing: border-box; 
+        }
+
+        /* 布局包装器：用于左右分栏切换 */
+        .layout-wrapper {
+            display: flex;
+            flex-direction: column; /* 手机默认上下 */
+            width: 100%;
+            max-width: 420px;
+            flex: 1;
+            overflow: hidden;
+            align-items: center;
         }
         
         .glass-card {
             background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.05); padding: 30px 20px; border-radius: 30px;
-            width: 100%; max-width: 420px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-            flex-shrink: 0; 
+            width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);
+            flex-shrink: 0; margin-bottom: 20px;
         }
 
-        h2 { margin: 5px 0; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
-        #speed-tag { font-size: 0.65rem; background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 6px; font-weight: 900; margin-bottom: 12px; display: inline-block; letter-spacing: 1px; }
-        #status { font-size: 0.75rem; color: #888; margin-bottom: 25px; font-variant-numeric: tabular-nums; }
+        h2 { margin: 5px 0; font-size: 1.3rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #speed-tag { font-size: 0.65rem; background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 6px; font-weight: 900; margin-bottom: 12px; display: inline-block; }
+        #status { font-size: 0.75rem; color: #888; margin-bottom: 25px; min-height: 1rem; }
 
-        .progress-box { width: 100%; position: relative; margin-bottom: 20px; height: 30px; display: flex; align-items: center; }
+        .progress-box { width: 100%; height: 30px; display: flex; align-items: center; margin-bottom: 10px; }
         .bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; cursor: pointer; position: relative; overflow: hidden; }
         #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
         #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
 
         .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; }
-        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.4rem; transition: 0.1s; width: 45px; display: flex; justify-content: center; align-items: center; padding: 0; }
-        .btns button:active { transform: scale(0.85); color: var(--accent); }
+        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.4rem; width: 45px; display: flex; justify-content: center; align-items: center; padding: 0; }
         .btns .main-play { font-size: 3.5rem; width: 70px; }
         
-        .list-wrap { flex: 1; width: 100%; max-width: 420px; margin-top: 20px; overflow: hidden; display: flex; flex-direction: column; }
+        .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
         .search { background: rgba(255,255,255,0.08); border: none; padding: 16px; border-radius: 16px; color: #fff; margin-bottom: 12px; outline: none; font-size: 1rem; flex-shrink: 0; }
         
         #list { 
-            list-style: none; padding: 0 0 10px 0; overflow-y: auto; flex: 1; margin: 0; 
+            list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; 
             -webkit-overflow-scrolling: touch; 
         }
         #list li { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        #list li.active { color: var(--accent); font-weight: bold; background: linear-gradient(90deg, rgba(255,0,85,0.15) 0%, transparent 100%); border-left: 3px solid var(--accent); }
+        #list li.active { color: var(--accent); font-weight: bold; background: linear-gradient(90deg, rgba(255,0,85,0.1) 0%, transparent 100%); border-left: 3px solid var(--accent); }
 
-        /* 新增：底部版权与说明区样式 */
         .footer-info {
             width: 100%; max-width: 420px; display: flex; justify-content: space-between; 
             align-items: flex-end; margin-top: 10px; flex-shrink: 0;
-            font-size: 0.65rem; color: rgba(255,255,255,0.35); line-height: 1.4;
+            font-size: 0.65rem; color: rgba(255,255,255,0.3); line-height: 1.5;
         }
-        .footer-info .left { text-align: left; max-width: 50%; }
-        .footer-info .right { text-align: right; max-width: 50%; }
+
+        /* 🌟 iPad 横屏/大屏适配：开启左右分栏模式 */
+        @media (min-width: 900px) and (orientation: landscape) {
+            .container { padding: 40px; }
+            .layout-wrapper {
+                flex-direction: row; /* 关键：横向排列 */
+                max-width: 1000px;
+                gap: 40px;
+                align-items: stretch;
+            }
+            .glass-card {
+                width: 400px; /* 播放器固定宽度 */
+                margin-bottom: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .list-wrap {
+                flex: 1; /* 列表占据剩余右侧空间 */
+            }
+            .footer-info {
+                max-width: 1000px;
+                justify-content: flex-end; /* 提示全部移到右下角 */
+            }
+            .footer-info .left {
+                margin-right: 30px;
+                text-align: right;
+            }
+        }
     </style>
 </head>
 <body>
@@ -81,54 +120,47 @@
 <div id="bg-canvas"></div>
 
 <div class="container">
-    <div class="glass-card">
-        <div id="speed-tag">SMART ROUTING ENGINE</div>
-        <h2 id="title">WAITING FOR GITHUB</h2>
-        <div id="status">INITIALIZING BYPASS...</div>
-        
-        <div class="progress-box">
-            <div class="bar-bg" id="seek-bar">
-                <div id="buf-bar"></div>
-                <div id="prog-bar"></div>
+    <div class="layout-wrapper">
+        <div class="glass-card">
+            <div id="speed-tag">SMART ROUTING</div>
+            <h2 id="title">WAITING...</h2>
+            <div id="status">INITIALIZING...</div>
+            
+            <div class="progress-box">
+                <div class="bar-bg" id="seek-bar">
+                    <div id="buf-bar"></div>
+                    <div id="prog-bar"></div>
+                </div>
+            </div>
+
+            <div class="btns">
+                <button onclick="setMode()" id="mode-btn">🔁</button>
+                <button onclick="step(-1)">⏮</button>
+                <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
+                <button onclick="step(1)">⏭</button>
+                <button onclick="dl()">📥</button>
             </div>
         </div>
 
-        <div class="btns">
-            <button onclick="setMode()" id="mode-btn" title="播放模式">🔁</button>
-            <button onclick="step(-1)" title="上一首">⏮</button>
-            <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
-            <button onclick="step(1)" title="下一首">⏭</button>
-            <button onclick="dl()" title="下载歌曲">📥</button>
+        <div class="list-wrap">
+            <input type="text" class="search" id="q" placeholder="SEARCH MUSIC..." oninput="doSearch()">
+            <ul id="list"></ul>
         </div>
     </div>
 
-    <div class="list-wrap">
-        <input type="text" class="search" id="q" placeholder="SEARCH..." oninput="doSearch()">
-        <ul id="list"></ul>
-    </div>
-
     <div class="footer-info">
-        <div class="left">💡 如果是LFS DIRECT<br>则为最高音质歌曲(超清母带)</div>
-        <div class="right">本网站由zzh个人制作<br>感谢你的支持！ ❤️</div>
+        <div class="left">💡 如果是LFS DIRECT<br>则为最高音质歌曲（超清母带）</div>
+        <div class="right">本网站由zzh个人制作<br>感谢你的支持！❤️</div>
     </div>
 </div>
 
 <audio id="player" preload="auto"></audio>
 
 <script>
-    // ==========================================
-    // 你的 GitHub 配置 (Token 如果不需要可以留空)
-    // ==========================================
-    const G = { 
-        user: 'zhangzhanhang855', 
-        repo: 'musicplayer', 
-        ver: 'main',
-        token: '' // 填入你的 Token 突破 API 限制
-    };
-    // ==========================================
+    // 配置信息
+    const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main', token: '' };
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
-    
     const audio = document.getElementById('player');
     const status = document.getElementById('status');
     const prog = document.getElementById('prog-bar');
@@ -155,19 +187,16 @@
             const fetchOptions = G.token ? { headers: { 'Authorization': `token ${G.token}` } } : {};
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
             
-            if (r.status === 403) throw new Error('API LIMIT: 刷新太快了，请填入 Token 或等待一小时');
-            if (!r.ok) throw new Error('NETWORK ERROR: 找不到仓库，请检查是否公开');
+            if (r.status === 403) {
+                const err = await r.json();
+                throw new Error("HTTP 403: API频率超限，请填入Token或等待1小时");
+            }
+            if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库，请检查配置`);
 
             const d = await r.json();
-            
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
-                const routeInfo = getOptimalUrl(f);
-                return {
-                    t: f.name.replace(/\.[^/.]+$/, ""),
-                    f: f.name,
-                    u: routeInfo.url,
-                    routeType: routeInfo.type
-                };
+                const route = getOptimalUrl(f);
+                return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, routeType: route.type };
             });
             
             filtered = [...all];
@@ -175,7 +204,7 @@
             if(all.length > 0) loadTrack(0, false);
             status.innerText = "READY. SMART ROUTING ENABLED.";
         } catch (e) { 
-            status.innerText = e.message; 
+            status.innerText = "详细报错 👉 " + e.message; 
             document.getElementById('title').innerText = "加载失败";
         }
     }
@@ -195,21 +224,15 @@
     function loadTrack(idx, auto = true) {
         cur = idx;
         const s = filtered[cur];
-        
         audio.pause();
         audio.src = s.u; 
         audio.load(); 
-
         document.getElementById('title').innerText = s.t;
-        
         speedTag.innerText = s.routeType;
         speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
-        
         status.innerText = `CONNECTING VIA ${s.routeType}...`;
-        
         document.getElementById('bg-canvas').style.background = `hsl(${Math.random() * 360}, 50%, 15%)`;
         drawList();
-
         if (auto || isP) {
             const p = audio.play();
             if (p) p.then(() => { isP = true; ui(); }).catch(() => { isP = false; ui(); });
@@ -262,7 +285,6 @@
     }
 
     function dl() { 
-        if (filtered.length === 0) return;
         const link = document.createElement('a');
         link.href = filtered[cur].u;
         link.download = filtered[cur].f; 
