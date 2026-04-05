@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hi-Res 智能双轨像素版 Pro</title>
+    <title>Hi-Res 智能双轨像素版 Pro - LOCKED</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
@@ -49,8 +49,41 @@
                 linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
         }
 
+        /* 🌟 新增：密码门拦截全屏 UI */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .login-box {
+            background: var(--panel); border: var(--pixel-border) solid var(--ai-color); 
+            padding: 40px 30px; text-align: center; width: 100%; max-width: 350px;
+            box-shadow: 15px 15px 0 rgba(0,0,0,0.8);
+        }
+        .login-box h1 { margin: 0 0 10px 0; font-size: 2rem; color: var(--ai-color); }
+        .login-box p { margin: 0 0 30px 0; color: var(--text-sub); }
+        
+        .pwd-input {
+            background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.2);
+            padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 1.5rem; 
+            width: 100%; box-sizing: border-box; font-family: 'VT323', monospace; text-align: center; letter-spacing: 5px;
+        }
+        .pwd-input:focus { border-color: var(--accent); }
+        
+        .login-btn {
+            background: var(--accent); border: none; color: #000; cursor: pointer; font-size: 1.5rem; 
+            width: 100%; padding: 15px; font-family: 'VT323', monospace; font-weight: bold;
+        }
+        .login-btn:active { background: #00aadd; }
+        
+        #pwd-error { color: var(--ai-color); margin-top: 15px; font-size: 1rem; min-height: 1.2rem; }
+
+        /* 修改：初始状态隐藏主容器 */
         .container { 
-            display: flex; flex-direction: column; align-items: center; 
+            display: none; 
+            flex-direction: column; align-items: center; 
             height: 100%; height: 100dvh; 
             padding: 20px; 
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
@@ -130,7 +163,17 @@
 
 <div id="bg-pattern"></div>
 
-<div class="container">
+<div id="login-screen">
+    <div class="login-box">
+        <h1>SYSTEM LOCKED</h1>
+        <p>AUTHENTICATION REQUIRED</p>
+        <input type="password" id="pwd-input" class="pwd-input" placeholder="********" onkeydown="if(event.key==='Enter') checkPwd()">
+        <button onclick="checkPwd()" class="login-btn">ACCESS</button>
+        <div id="pwd-error"></div>
+    </div>
+</div>
+
+<div class="container" id="main-app">
     <div class="layout-wrapper">
         <div class="glass-card">
             <div id="speed-tag">SMART ROUTING</div>
@@ -201,6 +244,28 @@
     const playBtn = document.getElementById('play-btn');
     const speedTag = document.getElementById('speed-tag');
     const aiText = document.getElementById('ai-text'); 
+
+    // 🌟 新增：密码验证核心逻辑
+    function checkPwd() {
+        const input = document.getElementById('pwd-input').value;
+        const errBox = document.getElementById('pwd-error');
+        
+        // 这里的密码为你指定的 24377891
+        if (input === '24377891') {
+            // 隐藏登录界面，显示主界面
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            document.title = "Hi-Res 智能双轨像素版 Pro"; 
+            
+            // 密码验证成功后才开始加载 GitHub 数据！
+            start(); 
+        } else {
+            // 密码错误处理
+            errBox.innerText = '❌ ACCESS DENIED';
+            document.getElementById('pwd-input').value = ''; 
+            document.getElementById('pwd-input').focus(); 
+        }
+    }
 
     const getOptimalUrl = (fileObj) => {
         if (fileObj.size < 1024) {
@@ -336,7 +401,7 @@
     function doSearch() { filtered = all.filter(s => s.f.toLowerCase().includes(document.getElementById('q').value.toLowerCase())); drawList(); }
     function dl() { const a = document.createElement('a'); a.href = filtered[cur].u; a.download = filtered[cur].f; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
-    start();
+    // 🌟 已移除底部的 start(); 让系统在用户密码验证通过后再执行！
 </script>
 </body>
 </html>
