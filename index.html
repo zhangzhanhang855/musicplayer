@@ -36,7 +36,6 @@
             image-rendering: pixelated; 
         }
         
-        /* 背景层，将由 JS 实时根据音乐低频控制亮度 */
         #bg-pattern { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             filter: brightness(0.2); z-index: -1;
@@ -171,16 +170,13 @@
     // =========================================================================
     // 🔑 配置区域
     // =========================================================================
-    
     const G = { 
         user: 'zhangzhanhang855', 
-        repo: 'musicplayer', // 恢复为音乐仓库
+        repo: 'musicplayer', 
         ver: 'main', 
         github_token: '' 
     };
-    
     const GEMINI_API_KEY = ''; 
-    
     // =========================================================================
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
@@ -201,14 +197,34 @@
     const aiText = document.getElementById('ai-text'); 
     const bgPattern = document.getElementById('bg-pattern');
 
-    // 🌟 初始化节拍引擎 (连接至 audio 标签)
+    // 🌟 1. 媒体控制中心：接管系统的后台和锁屏控制
+    function updateMediaSession(title) {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: title,
+                artist: 'Hi-Res 智能像素播放器',
+                album: '私人曲库',
+                artwork: [
+                    { src: 'https://dummyimage.com/512x512/000000/00d2ff.png&text=8-BIT', sizes: '512x512', type: 'image/png' }
+                ]
+            });
+            
+            // 绑定耳机/锁屏上的物理按键
+            navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
+            navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
+            navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
+            navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
+        }
+    }
+
+    // 节拍引擎
     function setupAudioNodes() {
         if (isAudioSetup) return;
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             audioCtx = new AudioContext();
             analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 128; // 采样精度
+            analyser.fftSize = 256; 
             
             source = audioCtx.createMediaElementSource(audio);
             source.connect(analyser);
@@ -223,25 +239,24 @@
         }
     }
 
-    // 🌟 核心：将低频信号转化为背景亮度
+    // 高灵敏度律动算法
     function renderBeatVisuals() {
         requestAnimationFrame(renderBeatVisuals);
         if (!isAudioSetup) return;
         
-        if (isP) { 
+        // 哪怕退到后台 requestAnimationFrame 停止，也不会影响底层音频的播放
+        if (isP && document.visibilityState === 'visible') { 
             analyser.getByteFrequencyData(dataArray);
-            
-            // 抓取低音频段 (Bass)
             let sum = 0;
-            let lowFreqCount = 20; 
+            let lowFreqCount = 3; 
             for(let i = 0; i < lowFreqCount; i++) { sum += dataArray[i]; }
             let avgVolume = sum / lowFreqCount; 
             
-            // 动态映射公式：强化律动感
-            let targetBrightness = 0.2 + Math.pow(avgVolume / 255, 2.5) * 1.8; 
-            
-            // 阻尼缓动，避免闪烁过快
-            currentBrightness += (targetBrightness - currentBrightness) * 0.25;
+            let targetBrightness = 0.2;
+            if (avgVolume > 50) {
+                targetBrightness = 0.2 + (avgVolume / 255) * 2.3; 
+            }
+            currentBrightness += (targetBrightness - currentBrightness) * 0.4;
         } else {
             currentBrightness += (0.2 - currentBrightness) * 0.1;
         }
@@ -258,7 +273,6 @@
             document.getElementById('main-app').style.display = 'flex';
             document.title = "8-Bit 智能音乐像素版 Pro"; 
             
-            // 点击登录时立刻解锁并建立音频上下文通道！
             setupAudioNodes();
             if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             
@@ -310,7 +324,6 @@
             if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库`);
 
             const d = await r.json();
-            // 恢复为音频格式过滤
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
                 const route = getOptimalUrl(f);
                 return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
@@ -349,7 +362,9 @@
         speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
         status.innerText = `CONNECTING VIA ${s.routeType}...`;
         
-        // 切歌时重置环境亮度，随机生成背景主色调
+        // 🌟 2. 每次切歌时，同步更新锁屏显示的歌曲信息
+        updateMediaSession(s.t);
+        
         currentBrightness = 0.2;
         const h = Math.floor(Math.random() * 360);
         bgPattern.style.background = `hsl(${h}, 50%, 15%)`;
@@ -366,7 +381,6 @@
         }
     }
 
-    // 防崩溃后备路由监听
     audio.addEventListener('error', (e) => {
         const s = filtered[cur];
         if (!usingFallback) {
