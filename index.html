@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hi-Res 智能双轨像素版 Pro - LOCKED</title>
+    <title>8-Bit 智能音乐像素版 Pro - LOCKED</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
@@ -15,7 +15,6 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 
     <style>
-        /* 像素风格全局变量与设置 */
         :root { 
             --accent: #00d2ff; 
             --accent-bg: rgba(0, 210, 255, 0.15); 
@@ -34,10 +33,10 @@
             font-size: 20px; 
             background: var(--bg); color: var(--text-main); 
             overflow: hidden; 
-            image-rendering: pixelated; /* 强制像素级渲染 */
+            image-rendering: pixelated; 
         }
         
-        /* 复古像素背景网格 */
+        /* 背景层，将由 JS 实时根据音乐低频控制亮度 */
         #bg-pattern { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             filter: brightness(0.2); z-index: -1;
@@ -49,7 +48,6 @@
                 linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
         }
 
-        /* 🌟 新增：密码门拦截全屏 UI */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -57,60 +55,26 @@
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
         
-        .login-box {
-            background: var(--panel); border: var(--pixel-border) solid var(--ai-color); 
-            padding: 40px 30px; text-align: center; width: 100%; max-width: 350px;
-            box-shadow: 15px 15px 0 rgba(0,0,0,0.8);
-        }
+        .login-box { background: var(--panel); border: var(--pixel-border) solid var(--ai-color); padding: 40px 30px; text-align: center; width: 100%; max-width: 350px; box-shadow: 15px 15px 0 rgba(0,0,0,0.8); }
         .login-box h1 { margin: 0 0 10px 0; font-size: 2rem; color: var(--ai-color); }
         .login-box p { margin: 0 0 30px 0; color: var(--text-sub); }
         
-        .pwd-input {
-            background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.2);
-            padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 1.5rem; 
-            width: 100%; box-sizing: border-box; font-family: 'VT323', monospace; text-align: center; letter-spacing: 5px;
-        }
+        .pwd-input { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.2); padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 1.5rem; width: 100%; box-sizing: border-box; font-family: 'VT323', monospace; text-align: center; letter-spacing: 5px; }
         .pwd-input:focus { border-color: var(--accent); }
         
-        .login-btn {
-            background: var(--accent); border: none; color: #000; cursor: pointer; font-size: 1.5rem; 
-            width: 100%; padding: 15px; font-family: 'VT323', monospace; font-weight: bold;
-        }
+        .login-btn { background: var(--accent); border: none; color: #000; cursor: pointer; font-size: 1.5rem; width: 100%; padding: 15px; font-family: 'VT323', monospace; font-weight: bold; }
         .login-btn:active { background: #00aadd; }
         
         #pwd-error { color: var(--ai-color); margin-top: 15px; font-size: 1rem; min-height: 1.2rem; }
 
-        /* 修改：初始状态隐藏主容器 */
-        .container { 
-            display: none; 
-            flex-direction: column; align-items: center; 
-            height: 100%; height: 100dvh; 
-            padding: 20px; 
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
-            box-sizing: border-box; 
-        }
-
-        .layout-wrapper {
-            display: flex; flex-direction: column; 
-            width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center;
-        }
+        .container { display: none; flex-direction: column; align-items: center; height: 100%; height: 100dvh; padding: 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
+        .layout-wrapper { display: flex; flex-direction: column; width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center; }
         
-        /* 像素卡片样式：直角、硬边框、块阴影 */
-        .glass-card {
-            background: var(--panel); 
-            border: var(--pixel-border) solid var(--accent); 
-            padding: 20px;
-            width: 100%; text-align: center;
-            box-shadow: 10px 10px 0 rgba(0,0,0,0.5); 
-            flex-shrink: 0; margin-bottom: 20px; box-sizing: border-box;
-            border-radius: 0; 
-        }
-
+        .glass-card { background: var(--panel); border: var(--pixel-border) solid var(--accent); padding: 20px; width: 100%; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); flex-shrink: 0; margin-bottom: 20px; box-sizing: border-box; border-radius: 0; }
         h2 { margin: 5px 0; font-size: 1.5rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
         #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; min-height: 1.1rem; }
 
-        /* 像素进度条：直角、块状 */
         .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
         #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
@@ -123,31 +87,19 @@
         .btns button:hover { color: var(--accent); }
         .btns .main-play { font-size: 3.5rem; width: 70px; }
         
-        /* AI 分析专属面板 */
-        .ai-panel {
-            background: rgba(255,0,85,0.05);
-            border: 2px dashed var(--ai-color);
-            padding: 10px; margin-top: 15px; text-align: left;
-            font-size: 0.8rem; color: #ddd; min-height: 40px;
-            font-family: system-ui, -apple-system, sans-serif; 
-            line-height: 1.4; display: flex; flex-direction: column;
-        }
+        .ai-panel { background: rgba(255,0,85,0.05); border: 2px dashed var(--ai-color); padding: 10px; margin-top: 15px; text-align: left; font-size: 0.8rem; color: #ddd; min-height: 40px; font-family: system-ui, -apple-system, sans-serif; line-height: 1.4; display: flex; flex-direction: column; }
         .ai-title { color: var(--ai-color); font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace; font-size: 1rem; }
         
         .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-        
-        /* 像素搜索框 */
         .search { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.1); padding: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 1.1rem; flex-shrink: 0; font-family: 'VT323', monospace; }
         .search:focus { border-color: rgba(255,255,255,0.3); }
         
-        /* 像素播放列表 */
         #list { list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; -webkit-overflow-scrolling: touch; border: var(--pixel-border) solid rgba(255,255,255,0.1); }
         #list li { padding: 14px 18px; border-bottom: 2px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
         #list li.active { color: var(--accent); background: var(--accent-bg); border-left: 6px solid var(--accent); }
 
         .footer-info { width: 100%; max-width: 420px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; flex-shrink: 0; font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.5; }
 
-        /* iPad 横屏/大屏适配 */
         @media (min-width: 900px) and (orientation: landscape) {
             body, html { font-size: 22px; } 
             .container { padding: 40px; }
@@ -179,7 +131,7 @@
             <div id="speed-tag">SMART ROUTING</div>
             <h2 id="title">WAITING...</h2>
             <div id="status">INITIALIZING...</div>
-            
+
             <div class="progress-box" id="seek-bar">
                 <div class="bar-bg">
                     <div id="buf-bar"></div>
@@ -208,34 +160,37 @@
     </div>
 
     <div class="footer-info">
-        <div class="left">💡 如果是LFS DIRECT<br>则为最高音质歌曲</div>
+        <div class="left">💡 如果是LFS DIRECT<br>则为最高音质源文件</div>
         <div class="right">本网站由zzh个人制作<br>感谢你的支持！❤️</div>
     </div>
 </div>
 
-<audio id="player" preload="auto"></audio>
+<audio id="player" preload="auto" crossorigin="anonymous"></audio>
 
 <script>
     // =========================================================================
-    // 🔑 你的专属配置区域（千万不要填反了！）
+    // 🔑 配置区域
     // =========================================================================
     
-    // 1. GitHub 仓库配置 (用于读取音乐列表)
     const G = { 
         user: 'zhangzhanhang855', 
-        repo: 'musicplayer', 
+        repo: 'musicplayer', // 恢复为音乐仓库
         ver: 'main', 
-        // ⚠️ 填入纯小写 ghp_ 开头的经典版 Token。如果仓库公开，可以留空：''
         github_token: '' 
     };
     
-    // 2. Gemini API 密钥 (用于分析歌名)
-    // ⚠️ 填入 AIzaSy 开头的 Key。务必保留前后的单引号！
     const GEMINI_API_KEY = ''; 
+    
     // =========================================================================
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
-    let aiTimer = null; // AI 请求防抖定时器
+    let aiTimer = null; 
+    let usingFallback = false;
+    
+    // Web Audio API 引擎变量
+    let audioCtx, analyser, source, dataArray;
+    let isAudioSetup = false;
+    let currentBrightness = 0.2; 
     
     const audio = document.getElementById('player');
     const status = document.getElementById('status');
@@ -244,23 +199,71 @@
     const playBtn = document.getElementById('play-btn');
     const speedTag = document.getElementById('speed-tag');
     const aiText = document.getElementById('ai-text'); 
+    const bgPattern = document.getElementById('bg-pattern');
 
-    // 🌟 新增：密码验证核心逻辑
+    // 🌟 初始化节拍引擎 (连接至 audio 标签)
+    function setupAudioNodes() {
+        if (isAudioSetup) return;
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 128; // 采样精度
+            
+            source = audioCtx.createMediaElementSource(audio);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            isAudioSetup = true;
+            
+            renderBeatVisuals();
+        } catch (e) {
+            console.error("音频分析引擎初始化失败，跨域或设备受限:", e);
+        }
+    }
+
+    // 🌟 核心：将低频信号转化为背景亮度
+    function renderBeatVisuals() {
+        requestAnimationFrame(renderBeatVisuals);
+        if (!isAudioSetup) return;
+        
+        if (isP) { 
+            analyser.getByteFrequencyData(dataArray);
+            
+            // 抓取低音频段 (Bass)
+            let sum = 0;
+            let lowFreqCount = 20; 
+            for(let i = 0; i < lowFreqCount; i++) { sum += dataArray[i]; }
+            let avgVolume = sum / lowFreqCount; 
+            
+            // 动态映射公式：强化律动感
+            let targetBrightness = 0.2 + Math.pow(avgVolume / 255, 2.5) * 1.8; 
+            
+            // 阻尼缓动，避免闪烁过快
+            currentBrightness += (targetBrightness - currentBrightness) * 0.25;
+        } else {
+            currentBrightness += (0.2 - currentBrightness) * 0.1;
+        }
+        
+        bgPattern.style.filter = `brightness(${currentBrightness.toFixed(2)})`;
+    }
+
     function checkPwd() {
         const input = document.getElementById('pwd-input').value;
         const errBox = document.getElementById('pwd-error');
         
-        // 这里的密码为你指定的 24377891
         if (input === '24377891') {
-            // 隐藏登录界面，显示主界面
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
-            document.title = "Hi-Res 智能双轨像素版 Pro"; 
+            document.title = "8-Bit 智能音乐像素版 Pro"; 
             
-            // 密码验证成功后才开始加载 GitHub 数据！
+            // 点击登录时立刻解锁并建立音频上下文通道！
+            setupAudioNodes();
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            
             start(); 
         } else {
-            // 密码错误处理
             errBox.innerText = '❌ ACCESS DENIED';
             document.getElementById('pwd-input').value = ''; 
             document.getElementById('pwd-input').focus(); 
@@ -269,70 +272,55 @@
 
     const getOptimalUrl = (fileObj) => {
         if (fileObj.size < 1024) {
-            return { url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'LFS DIRECT' };
+            return { 
+                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'LFS DIRECT' 
+            };
         } else {
-            return { url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'CDN EDGE' };
+            return { 
+                url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'FASTLY EDGE' 
+            };
         }
     };
 
-    // 调用 Gemini API 分析歌名
     async function analyzeSongTitle(title) {
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-            aiText.innerText = "未配置 Gemini API Key，请在源码中填写。";
-            return;
-        }
+        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') { aiText.innerText = "未配置 Gemini API Key。"; return; }
         
         aiText.innerText = "📡 正在连接 Gemini 解析歌名...";
-        
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const prompt = `作为资深音乐爱好者，请简短分析歌曲《${title}》这个名字的可能来源、含义或背后的意境。要求：1. 只分析字面意思和文化背景，不要编造歌手。2. 语言简练，控制在 50 个字以内。`;
 
         try {
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
             if (!response.ok) throw new Error(`HTTP ${response.status}: API 请求失败`);
             const data = await response.json();
-            
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                aiText.innerText = data.candidates[0].content.parts[0].text.replace(/\*/g, ''); 
-            } else {
-                aiText.innerText = "解析失败，API 未返回有效内容。";
-            }
-        } catch (error) {
-            aiText.innerText = `❌ 解析错误: ${error.message}`;
-            console.error(error);
-        }
+            if (data.candidates && data.candidates[0].content.parts[0].text) { aiText.innerText = data.candidates[0].content.parts[0].text.replace(/\*/g, ''); } 
+            else { aiText.innerText = "解析失败。"; }
+        } catch (error) { aiText.innerText = `❌ 解析错误: ${error.message}`; console.error(error); }
     }
 
     async function start() {
         try {
-            // 🌟 修复：改用 Bearer 标准规范验证，防止 401 报错
             const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
             
-            if (r.status === 403) throw new Error("HTTP 403: GitHub API 频率限制，请填写 Token 或等待 1 小时");
-            if (r.status === 401) throw new Error("HTTP 401: GitHub Token 验证失败，请检查是否填错或过期");
-            if (r.status === 404) throw new Error("HTTP 404: 找不到仓库，请检查用户名、仓库名或确认为 Public");
             if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库`);
 
             const d = await r.json();
+            // 恢复为音频格式过滤
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
                 const route = getOptimalUrl(f);
-                return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, routeType: route.type };
+                return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
             });
             
             filtered = [...all];
             drawList();
             if(all.length > 0) loadTrack(0, false);
             status.innerText = "READY. SMART ROUTING ENABLED.";
-        } catch (e) { 
-            status.innerText = "详细报错 👉 " + e.message; 
-            document.getElementById('title').innerText = "加载失败";
-        }
+        } catch (e) { status.innerText = "详细报错 👉 " + e.message; document.getElementById('title').innerText = "加载失败"; }
     }
 
     function drawList() {
@@ -349,26 +337,28 @@
 
     function loadTrack(idx, auto = true) {
         cur = idx;
+        usingFallback = false;
         const s = filtered[cur];
+        
         audio.pause();
         audio.src = s.u; 
         audio.load(); 
+        
         document.getElementById('title').innerText = s.t;
         speedTag.innerText = s.routeType;
         speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
         status.innerText = `CONNECTING VIA ${s.routeType}...`;
         
+        // 切歌时重置环境亮度，随机生成背景主色调
+        currentBrightness = 0.2;
         const h = Math.floor(Math.random() * 360);
-        document.getElementById('bg-pattern').style.background = `hsl(${h}, 50%, 15%)`;
+        bgPattern.style.background = `hsl(${h}, 50%, 15%)`;
         
         drawList();
         
-        // 🌟 防抖机制：切歌时先清除上一个定时器，停留 2 秒后才呼叫 AI
         clearTimeout(aiTimer);
         aiText.innerText = "⏳ 听歌中，2秒后唤醒 AI 解析...";
-        aiTimer = setTimeout(() => {
-            analyzeSongTitle(s.t);
-        }, 2000);
+        aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
 
         if (auto || isP) {
             const p = audio.play();
@@ -376,10 +366,22 @@
         }
     }
 
-    audio.addEventListener('progress', () => {
-        if (audio.buffered.length > 0) { buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; }
+    // 防崩溃后备路由监听
+    audio.addEventListener('error', (e) => {
+        const s = filtered[cur];
+        if (!usingFallback) {
+            usingFallback = true;
+            status.innerText = `❌ 主线路中断，正在切换备用节点...`;
+            speedTag.innerText = 'FALLBACK ROUTE'; speedTag.style.background = '#ffaa00'; 
+            audio.src = s.fallbackUrl; audio.load(); if (isP) audio.play();
+        } else {
+            status.innerText = "❌ 歌曲请求被拦截或超限。";
+            speedTag.innerText = 'PLAY ERROR'; speedTag.style.background = '#ff0000';
+            isP = false; ui();
+        }
     });
 
+    audio.addEventListener('progress', () => { if (audio.buffered.length > 0) { buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; } });
     audio.addEventListener('playing', () => { status.innerText = "STREAMING ACTIVE"; isP = true; ui(); });
     audio.addEventListener('waiting', () => { status.innerText = "BUFFERING..."; });
     audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
@@ -388,20 +390,14 @@
     function ui() { playBtn.innerText = isP ? '⏸' : '▶️'; }
     function step(d) { let n = (cur + d + filtered.length) % filtered.length; if (loop === 'random') n = Math.floor(Math.random() * filtered.length); loadTrack(n); }
     function selectTrack(i) { loadTrack(i); isP = true; ui(); }
+    
     document.getElementById('seek-bar').onclick = (e) => { audio.currentTime = ((e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth) * audio.duration; };
     audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
 
-    function setMode() {
-        const mArr = ['list', 'random', 'single'];
-        const mText = { list: 'LIST', random: 'RND', single: 'ONE' };
-        loop = mArr[(mArr.indexOf(loop) + 1) % 3];
-        document.getElementById('mode-btn').innerText = mText[loop];
-    }
-
+    function setMode() { const mArr = ['list', 'random', 'single']; const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; loop = mArr[(mArr.indexOf(loop) + 1) % 3]; document.getElementById('mode-btn').innerText = mText[loop]; }
     function doSearch() { filtered = all.filter(s => s.f.toLowerCase().includes(document.getElementById('q').value.toLowerCase())); drawList(); }
     function dl() { const a = document.createElement('a'); a.href = filtered[cur].u; a.download = filtered[cur].f; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
 
-    // 🌟 已移除底部的 start(); 让系统在用户密码验证通过后再执行！
 </script>
 </body>
 </html>
