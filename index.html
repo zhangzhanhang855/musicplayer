@@ -7,8 +7,10 @@
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://fastly.jsdelivr.net">
+    <link rel="preconnect" href="https://fastly.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="https://generativelanguage.googleapis.com">
+    <link rel="preconnect" href="https://generativelanguage.googleapis.com" crossorigin>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +36,7 @@
             font-size: 20px; 
             background: var(--bg); color: var(--text-main); 
             overflow: hidden; 
-            image-rendering: pixelated; /* 强制像素级渲染 */
+            image-rendering: pixelated; 
         }
         
         /* 复古像素背景网格 */
@@ -62,7 +64,7 @@
             width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center;
         }
         
-        /* 像素卡片样式：直角、硬边框、块阴影 */
+        /* 像素卡片样式 */
         .glass-card {
             background: var(--panel); 
             border: var(--pixel-border) solid var(--accent); 
@@ -77,7 +79,7 @@
         #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
         #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; min-height: 1.1rem; }
 
-        /* 像素进度条：直角、块状 */
+        /* 像素进度条 */
         .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
         #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
@@ -114,7 +116,7 @@
 
         .footer-info { width: 100%; max-width: 420px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; flex-shrink: 0; font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.5; }
 
-        /* iPad 横屏/大屏适配 */
+        /* iPad 横屏/电脑大屏适配 */
         @media (min-width: 900px) and (orientation: landscape) {
             body, html { font-size: 22px; } 
             .container { padding: 40px; }
@@ -174,25 +176,24 @@
 
 <script>
     // =========================================================================
-    // 🔑 你的专属配置区域（千万不要填反了！）
+    // 🔑 你的专属配置区域
     // =========================================================================
     
-    // 1. GitHub 仓库配置 (用于读取音乐列表)
     const G = { 
         user: 'zhangzhanhang855', 
         repo: 'musicplayer', 
         ver: 'main', 
-        // ⚠️ 填入纯小写 ghp_ 开头的经典版 Token。如果仓库公开，可以留空：''
+        // ⚠️ GitHub Token：必须小写 ghp_ 开头。如果仓库已公开，建议直接留空：''
         github_token: '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' 
     };
     
-    // 2. Gemini API 密钥 (用于分析歌名)
-    // ⚠️ 填入 AIzaSy 开头的 Key。务必保留前后的单引号！
+    // ⚠️ Gemini API Key：必须 AIzaSy 开头。保留前后的单引号！
     const GEMINI_API_KEY = ''; 
     // =========================================================================
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
-    let aiTimer = null; // AI 请求防抖定时器
+    let aiTimer = null; 
+    let usingFallback = false; // 记录当前是否在使用备用线路
     
     const audio = document.getElementById('player');
     const status = document.getElementById('status');
@@ -202,11 +203,20 @@
     const speedTag = document.getElementById('speed-tag');
     const aiText = document.getElementById('ai-text'); 
 
+    // 🌟 升级版双节点路由：自带容灾备用链接
     const getOptimalUrl = (fileObj) => {
         if (fileObj.size < 1024) {
-            return { url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'LFS DIRECT' };
+            return { 
+                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'LFS DIRECT' 
+            };
         } else {
-            return { url: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, type: 'CDN EDGE' };
+            return { 
+                url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                type: 'FASTLY EDGE' 
+            };
         }
     };
 
@@ -219,6 +229,8 @@
         
         aiText.innerText = "📡 正在连接 Gemini 解析歌名...";
         
+        // 默认使用官方直连接口。如果国内直连报错，可以将下面的网址替换为反代网关：
+        // https://gemini-proxy.chat-api.workers.dev/v1beta/models/gemini-1.5-flash:generateContent?key=
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const prompt = `作为资深音乐爱好者，请简短分析歌曲《${title}》这个名字的可能来源、含义或背后的意境。要求：1. 只分析字面意思和文化背景，不要编造歌手。2. 语言简练，控制在 50 个字以内。`;
 
@@ -238,26 +250,25 @@
                 aiText.innerText = "解析失败，API 未返回有效内容。";
             }
         } catch (error) {
-            aiText.innerText = `❌ 解析错误: ${error.message}`;
+            aiText.innerText = `❌ 解析超时或失败，请检查网络代理。`;
             console.error(error);
         }
     }
 
     async function start() {
         try {
-            // 🌟 修复：改用 Bearer 标准规范验证，防止 401 报错
             const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
             
-            if (r.status === 403) throw new Error("HTTP 403: GitHub API 频率限制，请填写 Token 或等待 1 小时");
-            if (r.status === 401) throw new Error("HTTP 401: GitHub Token 验证失败，请检查是否填错或过期");
-            if (r.status === 404) throw new Error("HTTP 404: 找不到仓库，请检查用户名、仓库名或确认为 Public");
+            if (r.status === 403) throw new Error("HTTP 403: GitHub API 限制，请检查Token或换网");
+            if (r.status === 401) throw new Error("HTTP 401: GitHub Token 错误或过期");
+            if (r.status === 404) throw new Error("HTTP 404: 查无此仓库");
             if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库`);
 
             const d = await r.json();
             all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
                 const route = getOptimalUrl(f);
-                return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, routeType: route.type };
+                return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
             });
             
             filtered = [...all];
@@ -284,13 +295,16 @@
 
     function loadTrack(idx, auto = true) {
         cur = idx;
+        usingFallback = false; // 切歌时重置为使用主节点
         const s = filtered[cur];
+        
         audio.pause();
         audio.src = s.u; 
         audio.load(); 
+        
         document.getElementById('title').innerText = s.t;
         speedTag.innerText = s.routeType;
-        speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
+        speedTag.style.background = s.routeType === 'FASTLY EDGE' ? '#00d2ff' : '#ff0055';
         status.innerText = `CONNECTING VIA ${s.routeType}...`;
         
         const h = Math.floor(Math.random() * 360);
@@ -298,12 +312,12 @@
         
         drawList();
         
-        // 🌟 防抖机制：切歌时先清除上一个定时器，停留 2 秒后才呼叫 AI
+        // 防抖机制：切歌时先清除上一个定时器，停留 0.5 秒后才呼叫 AI
         clearTimeout(aiTimer);
-        aiText.innerText = "⏳ 听歌中，2秒后唤醒 AI 解析...";
+        aiText.innerText = "⏳ 听歌中，唤醒 AI 解析...";
         aiTimer = setTimeout(() => {
             analyzeSongTitle(s.t);
-        }, 2000);
+        }, 500);
 
         if (auto || isP) {
             const p = audio.play();
@@ -311,12 +325,34 @@
         }
     }
 
+    // 🌟 新增：音频加载失败时的“自动容灾切换”机制
+    audio.addEventListener('error', (e) => {
+        const s = filtered[cur];
+        if (!usingFallback) {
+            console.warn("主节点加载失败，触发备用节点重试...");
+            usingFallback = true;
+            status.innerText = `❌ 主线路中断，正在切换备用节点...`;
+            speedTag.innerText = 'FALLBACK ROUTE';
+            speedTag.style.background = '#ffaa00'; // 变成警告橙色
+            
+            audio.src = s.fallbackUrl;
+            audio.load();
+            if (isP) audio.play();
+        } else {
+            status.innerText = "❌ 歌曲请求被全部拦截，或文件超出大小限制。";
+            speedTag.innerText = 'PLAY ERROR';
+            speedTag.style.background = '#ff0000';
+            isP = false;
+            ui();
+        }
+    });
+
     audio.addEventListener('progress', () => {
         if (audio.buffered.length > 0) { buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; }
     });
 
     audio.addEventListener('playing', () => { status.innerText = "STREAMING ACTIVE"; isP = true; ui(); });
-    audio.addEventListener('waiting', () => { status.innerText = "BUFFERING..."; });
+    audio.addEventListener('waiting', () => { status.innerText = "BUFFERING AUDIO PACKETS..."; });
     audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
 
     function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
