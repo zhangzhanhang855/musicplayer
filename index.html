@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Hi-Res AI 像素版</title>
+    <title>Hi-Res 智能双轨像素版 Pro</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://api.github.com" crossorigin>
@@ -15,10 +15,11 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 
     <style>
+        /* 像素风格全局变量与设置 */
         :root { 
             --accent: #00d2ff; 
             --accent-bg: rgba(0, 210, 255, 0.15); 
-            --ai-color: #ff0055; /* AI 专属配色 */
+            --ai-color: #ff0055; 
             --bg: #050507; 
             --panel: #101015; 
             --text-main: #fff;
@@ -33,9 +34,10 @@
             font-size: 20px; 
             background: var(--bg); color: var(--text-main); 
             overflow: hidden; 
-            image-rendering: pixelated; 
+            image-rendering: pixelated; /* 强制像素级渲染 */
         }
         
+        /* 复古像素背景网格 */
         #bg-pattern { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             filter: brightness(0.2); z-index: -1;
@@ -60,6 +62,7 @@
             width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center;
         }
         
+        /* 像素卡片样式：直角、硬边框、块阴影 */
         .glass-card {
             background: var(--panel); 
             border: var(--pixel-border) solid var(--accent); 
@@ -67,44 +70,51 @@
             width: 100%; text-align: center;
             box-shadow: 10px 10px 0 rgba(0,0,0,0.5); 
             flex-shrink: 0; margin-bottom: 20px; box-sizing: border-box;
+            border-radius: 0; 
         }
 
         h2 { margin: 5px 0; font-size: 1.5rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
         #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; min-height: 1.1rem; }
 
+        /* 像素进度条：直角、块状 */
         .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
-        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; }
-        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; box-shadow: none !not; }
+        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
+        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
 
         .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; margin-top: 10px; }
         .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.6rem; width: 60px; display: flex; justify-content: center; align-items: center; padding: 0; font-family: 'VT323', monospace; }
         #mode-btn { font-size: 1rem; color: var(--text-sub); border: 2px solid rgba(255,255,255,0.1); width: 50px; height: 35px; }
         .btns button:active { color: var(--accent); border-color: var(--accent); }
+        .btns button:hover { color: var(--accent); }
         .btns .main-play { font-size: 3.5rem; width: 70px; }
         
-        /* 🌟 新增：AI 分析专属面板 */
+        /* AI 分析专属面板 */
         .ai-panel {
             background: rgba(255,0,85,0.05);
             border: 2px dashed var(--ai-color);
             padding: 10px; margin-top: 15px; text-align: left;
             font-size: 0.8rem; color: #ddd; min-height: 40px;
-            font-family: system-ui, -apple-system, sans-serif; /* AI内容用普通字体更易读 */
+            font-family: system-ui, -apple-system, sans-serif; 
             line-height: 1.4; display: flex; flex-direction: column;
         }
         .ai-title { color: var(--ai-color); font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace; font-size: 1rem; }
         
         .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* 像素搜索框 */
         .search { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.1); padding: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 1.1rem; flex-shrink: 0; font-family: 'VT323', monospace; }
         .search:focus { border-color: rgba(255,255,255,0.3); }
         
+        /* 像素播放列表 */
         #list { list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; -webkit-overflow-scrolling: touch; border: var(--pixel-border) solid rgba(255,255,255,0.1); }
         #list li { padding: 14px 18px; border-bottom: 2px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
         #list li.active { color: var(--accent); background: var(--accent-bg); border-left: 6px solid var(--accent); }
 
         .footer-info { width: 100%; max-width: 420px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; flex-shrink: 0; font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.5; }
 
+        /* iPad 横屏/大屏适配 */
         @media (min-width: 900px) and (orientation: landscape) {
             body, html { font-size: 22px; } 
             .container { padding: 40px; }
@@ -163,28 +173,34 @@
 <audio id="player" preload="auto"></audio>
 
 <script>
-    // ==========================================
-    // 配置区域
-    // ==========================================
+    // =========================================================================
+    // 🔑 你的专属配置区域（千万不要填反了！）
+    // =========================================================================
+    
+    // 1. GitHub 仓库配置 (用于读取音乐列表)
     const G = { 
         user: 'zhangzhanhang855', 
         repo: 'musicplayer', 
         ver: 'main', 
-        github_token: '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' // 读取 GitHub 私有仓库的 Token
+        // ⚠️ 填入纯小写 ghp_ 开头的经典版 Token。如果仓库公开，可以留空：''
+        github_token: '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' 
     };
     
-    // ⚠️ 填入你申请的 Gemini API Key (仅限私人使用，切勿公开源码！)
-    const GEMINI_API_KEY = 'AIzaSyD8E0k6ocER8cg1qThcC_HHdUqU-9gv0NU'; 
-    // ==========================================
+    // 2. Gemini API 密钥 (用于分析歌名)
+    // ⚠️ 填入 AIzaSy 开头的 Key。务必保留前后的单引号！
+    const GEMINI_API_KEY = ''; 
+    // =========================================================================
 
     let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
+    let aiTimer = null; // AI 请求防抖定时器
+    
     const audio = document.getElementById('player');
     const status = document.getElementById('status');
     const prog = document.getElementById('prog-bar');
     const buf = document.getElementById('buf-bar');
     const playBtn = document.getElementById('play-btn');
     const speedTag = document.getElementById('speed-tag');
-    const aiText = document.getElementById('ai-text'); // AI 面板文本
+    const aiText = document.getElementById('ai-text'); 
 
     const getOptimalUrl = (fileObj) => {
         if (fileObj.size < 1024) {
@@ -194,14 +210,14 @@
         }
     };
 
-    // 🌟 新增：调用 Gemini API 分析歌名
+    // 调用 Gemini API 分析歌名
     async function analyzeSongTitle(title) {
         if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
             aiText.innerText = "未配置 Gemini API Key，请在源码中填写。";
             return;
         }
         
-        aiText.innerText = "📡 正在连接 Gemini 解析歌名来源...";
+        aiText.innerText = "📡 正在连接 Gemini 解析歌名...";
         
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
         const prompt = `作为资深音乐爱好者，请简短分析歌曲《${title}》这个名字的可能来源、含义或背后的意境。要求：1. 只分析字面意思和文化背景，不要编造歌手。2. 语言简练，控制在 50 个字以内。`;
@@ -213,26 +229,29 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             
-            if (!response.ok) throw new Error("API 请求限制或网络错误");
+            if (!response.ok) throw new Error(`HTTP ${response.status}: API 请求失败`);
             const data = await response.json();
             
-            // 提取生成的文本
             if (data.candidates && data.candidates[0].content.parts[0].text) {
-                aiText.innerText = data.candidates[0].content.parts[0].text.replace(/\*/g, ''); // 移除可能的 markdown 星号
+                aiText.innerText = data.candidates[0].content.parts[0].text.replace(/\*/g, ''); 
             } else {
                 aiText.innerText = "解析失败，API 未返回有效内容。";
             }
         } catch (error) {
-            aiText.innerText = "❌ 歌名解析超时或失败。";
+            aiText.innerText = `❌ 解析错误: ${error.message}`;
             console.error(error);
         }
     }
 
     async function start() {
         try {
-            const fetchOptions = G.github_token ? { headers: { 'Authorization': `token ${G.github_token}` } } : {};
+            // 🌟 修复：改用 Bearer 标准规范验证，防止 401 报错
+            const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
             const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
-            if (r.status === 403) throw new Error("HTTP 403: API频率超限");
+            
+            if (r.status === 403) throw new Error("HTTP 403: GitHub API 频率限制，请填写 Token 或等待 1 小时");
+            if (r.status === 401) throw new Error("HTTP 401: GitHub Token 验证失败，请检查是否填错或过期");
+            if (r.status === 404) throw new Error("HTTP 404: 找不到仓库，请检查用户名、仓库名或确认为 Public");
             if (!r.ok) throw new Error(`HTTP ${r.status}: 无法读取仓库`);
 
             const d = await r.json();
@@ -279,8 +298,12 @@
         
         drawList();
         
-        // 🌟 触发 AI 歌名解析
-        analyzeSongTitle(s.t);
+        // 🌟 防抖机制：切歌时先清除上一个定时器，停留 2 秒后才呼叫 AI
+        clearTimeout(aiTimer);
+        aiText.innerText = "⏳ 听歌中，2秒后唤醒 AI 解析...";
+        aiTimer = setTimeout(() => {
+            analyzeSongTitle(s.t);
+        }, 2000);
 
         if (auto || isP) {
             const p = audio.play();
