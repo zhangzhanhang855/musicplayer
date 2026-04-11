@@ -1,324 +1,341 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>8-Bit 智能音乐像素版 Pro - LOCKED</title>
-    
-    <link rel="dns-prefetch" href="https://api.github.com">
-    <link rel="preconnect" href="https://api.github.com" crossorigin>
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-
-    <style>
-        :root { 
-            --accent: #00d2ff; 
-            --accent-bg: rgba(0, 210, 255, 0.15); 
-            --ai-color: #ff0055; 
-            --bg: #050507; 
-            --panel: #101015; 
-            --text-main: #fff;
-            --text-sub: #aaa;
-            --pixel-border: 4px; 
-        }
+    <head>
+        <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+                <title>8-Bit 智能音乐像素版 Pro - LOCKED</title>
+                
+                <link rel="dns-prefetch" href="https://api.github.com">
+                    <link rel="preconnect" href="https://api.github.com" crossorigin>
+                        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+                            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+                                <link rel="preconnect" href="https://fonts.googleapis.com">
+                                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                                        <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+                                            
+                                            <style>
+                                                :root { 
+                                                    --accent: #00d2ff; 
+                                                    --accent-bg: rgba(0, 210, 255, 0.15); 
+                                                    --ai-color: #ff0055; 
+                                                    --bg: #050507; 
+                                                    --panel: #101015; 
+                                                    --text-main: #fff;
+                                                    --text-sub: #aaa;
+                                                    --pixel-border: 4px; 
+                                                }
+                                                
+                                                body, html { 
+                                                    margin: 0; padding: 0; 
+                                                    height: 100%; height: 100dvh; 
+                                                    font-family: 'VT323', 'Courier New', monospace; 
+                                                    font-size: 20px; 
+                                                    background: var(--bg); color: var(--text-main); 
+                                                    overflow: hidden; 
+                                                    image-rendering: pixelated; 
+                                                }
+                                                
+                                                #bg-pattern { 
+                                                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                                                    filter: brightness(0.15); z-index: -1;
+                                                    background-size: 16px 16px;
+                                                    background-image: 
+                                                    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%), 
+                                                    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+                                                    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+                                                    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+                                                }
+                                                
+                                                #login-screen {
+                                                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                                                    display: flex; flex-direction: column; justify-content: center; align-items: center;
+                                                    background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
+                                                    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+                                                }
+                                                
+                                                .login-box { background: var(--panel); border: var(--pixel-border) solid var(--ai-color); padding: 40px 30px; text-align: center; width: 100%; max-width: 350px; box-shadow: 15px 15px 0 rgba(0,0,0,0.8); }
+                                                .login-box h1 { margin: 0 0 10px 0; font-size: 2rem; color: var(--ai-color); }
+                                                .login-box p { margin: 0 0 30px 0; color: var(--text-sub); }
+                                                
+                                                .pwd-input { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.2); padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 1.5rem; width: 100%; box-sizing: border-box; font-family: 'VT323', monospace; text-align: center; letter-spacing: 5px; }
+                                                .pwd-input:focus { border-color: var(--accent); }
+                                                
+                                                .login-btn { background: var(--accent); border: none; color: #000; cursor: pointer; font-size: 1.5rem; width: 100%; padding: 15px; font-family: 'VT323', monospace; font-weight: bold; }
+                                                .login-btn:active { background: #00aadd; }
+                                                
+                                                #pwd-error { color: var(--ai-color); margin-top: 15px; font-size: 1rem; min-height: 1.2rem; }
+                                                
+                                                .container { display: none; flex-direction: column; align-items: center; height: 100%; height: 100dvh; padding: 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
+                                                .layout-wrapper { display: flex; flex-direction: column; width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center; }
+                                                
+                                                .glass-card { background: var(--panel); border: var(--pixel-border) solid var(--accent); padding: 20px; width: 100%; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); flex-shrink: 0; margin-bottom: 20px; box-sizing: border-box; border-radius: 0; }
+                                                h2 { margin: 5px 0; font-size: 1.5rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                                                #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+                                                #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; min-height: 1.1rem; }
+                                                
+                                                .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
+                                                .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+                                                #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
+                                                #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
+                                                
+                                                .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; margin-top: 10px; }
+                                                .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.6rem; width: 60px; display: flex; justify-content: center; align-items: center; padding: 0; font-family: 'VT323', monospace; }
+                                                #mode-btn { font-size: 1rem; color: var(--text-sub); border: 2px solid rgba(255,255,255,0.1); width: 50px; height: 35px; }
+                                                .btns button:active { color: var(--accent); border-color: var(--accent); }
+                                                .btns button:hover { color: var(--accent); }
+                                                .btns .main-play { font-size: 3.5rem; width: 70px; }
+                                                
+                                                .ai-panel { background: rgba(255,0,85,0.05); border: 2px dashed var(--ai-color); padding: 10px; margin-top: 15px; text-align: left; font-size: 0.8rem; color: #ddd; min-height: 40px; font-family: system-ui, -apple-system, sans-serif; line-height: 1.4; display: flex; flex-direction: column; }
+                                                .ai-title { color: var(--ai-color); font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace; font-size: 1rem; }
+                                                
+                                                .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+                                                .search { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.1); padding: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 1.1rem; flex-shrink: 0; font-family: 'VT323', monospace; }
+                                                .search:focus { border-color: rgba(255,255,255,0.3); }
+                                                
+                                                #list { list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; -webkit-overflow-scrolling: touch; border: var(--pixel-border) solid rgba(255,255,255,0.1); }
+                                                #list li { padding: 14px 18px; border-bottom: 2px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
+                                                #list li.active { color: var(--accent); background: var(--accent-bg); border-left: 6px solid var(--accent); }
+                                                
+                                                .footer-info { width: 100%; max-width: 420px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; flex-shrink: 0; font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.5; }
+                                                
+                                                @media (min-width: 900px) and (orientation: landscape) {
+                                                    body, html { font-size: 22px; } 
+                                                    .container { padding: 40px; }
+                                                    .layout-wrapper { flex-direction: row; max-width: 1050px; gap: 50px; align-items: stretch; }
+                                                    .glass-card { width: 430px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; box-shadow: 15px 15px 0 rgba(0,0,0,0.5); }
+                                                    .list-wrap { flex: 1; }
+                                                    .footer-info { max-width: 1050px; justify-content: flex-end; }
+                                                    .footer-info .left { margin-right: 40px; text-align: right; }
+                                                }
+                                            </style>
+    </head>
+    <body>
         
-        body, html { 
-            margin: 0; padding: 0; 
-            height: 100%; height: 100dvh; 
-            font-family: 'VT323', 'Courier New', monospace; 
-            font-size: 20px; 
-            background: var(--bg); color: var(--text-main); 
-            overflow: hidden; 
-            image-rendering: pixelated; 
-        }
+        <div id="bg-pattern"></div>
         
-        /* 固定背景亮度，关掉动态滤镜以换取更好的后台稳定性 */
-        #bg-pattern { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            filter: brightness(0.15); z-index: -1;
-            background-size: 16px 16px;
-            background-image: 
-                linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%), 
-                linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
-                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
-        }
-
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-        }
+        <div id="login-screen">
+            <div class="login-box">
+                <h1>SYSTEM LOCKED</h1>
+                <p>AUTHENTICATION REQUIRED</p>
+                <input type="password" id="pwd-input" class="pwd-input" placeholder="########" onkeydown="if(event.key==='Enter') checkPwd()">
+                    <button onclick="checkPwd()" class="login-btn">ACCESS</button>
+                    <div id="pwd-error"></div>
+            </div>
+        </div>
         
-        .login-box { background: var(--panel); border: var(--pixel-border) solid var(--ai-color); padding: 40px 30px; text-align: center; width: 100%; max-width: 350px; box-shadow: 15px 15px 0 rgba(0,0,0,0.8); }
-        .login-box h1 { margin: 0 0 10px 0; font-size: 2rem; color: var(--ai-color); }
-        .login-box p { margin: 0 0 30px 0; color: var(--text-sub); }
-        
-        .pwd-input { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.2); padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 1.5rem; width: 100%; box-sizing: border-box; font-family: 'VT323', monospace; text-align: center; letter-spacing: 5px; }
-        .pwd-input:focus { border-color: var(--accent); }
-        
-        .login-btn { background: var(--accent); border: none; color: #000; cursor: pointer; font-size: 1.5rem; width: 100%; padding: 15px; font-family: 'VT323', monospace; font-weight: bold; }
-        .login-btn:active { background: #00aadd; }
-        
-        #pwd-error { color: var(--ai-color); margin-top: 15px; font-size: 1rem; min-height: 1.2rem; }
-
-        .container { display: none; flex-direction: column; align-items: center; height: 100%; height: 100dvh; padding: 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
-        .layout-wrapper { display: flex; flex-direction: column; width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center; }
-        
-        .glass-card { background: var(--panel); border: var(--pixel-border) solid var(--accent); padding: 20px; width: 100%; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); flex-shrink: 0; margin-bottom: 20px; box-sizing: border-box; border-radius: 0; }
-        h2 { margin: 5px 0; font-size: 1.5rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-        #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; min-height: 1.1rem; }
-
-        .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
-        .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
-        #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
-        #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
-
-        .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; margin-top: 10px; }
-        .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.6rem; width: 60px; display: flex; justify-content: center; align-items: center; padding: 0; font-family: 'VT323', monospace; }
-        #mode-btn { font-size: 1rem; color: var(--text-sub); border: 2px solid rgba(255,255,255,0.1); width: 50px; height: 35px; }
-        .btns button:active { color: var(--accent); border-color: var(--accent); }
-        .btns button:hover { color: var(--accent); }
-        .btns .main-play { font-size: 3.5rem; width: 70px; }
-        
-        .ai-panel { background: rgba(255,0,85,0.05); border: 2px dashed var(--ai-color); padding: 10px; margin-top: 15px; text-align: left; font-size: 0.8rem; color: #ddd; min-height: 40px; font-family: system-ui, -apple-system, sans-serif; line-height: 1.4; display: flex; flex-direction: column; }
-        .ai-title { color: var(--ai-color); font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace; font-size: 1rem; }
-        
-        .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-        .search { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.1); padding: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 1.1rem; flex-shrink: 0; font-family: 'VT323', monospace; }
-        .search:focus { border-color: rgba(255,255,255,0.3); }
-        
-        #list { list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; -webkit-overflow-scrolling: touch; border: var(--pixel-border) solid rgba(255,255,255,0.1); }
-        #list li { padding: 14px 18px; border-bottom: 2px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
-        #list li.active { color: var(--accent); background: var(--accent-bg); border-left: 6px solid var(--accent); }
-
-        .footer-info { width: 100%; max-width: 420px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; flex-shrink: 0; font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.5; }
-
-        @media (min-width: 900px) and (orientation: landscape) {
-            body, html { font-size: 22px; } 
-            .container { padding: 40px; }
-            .layout-wrapper { flex-direction: row; max-width: 1050px; gap: 50px; align-items: stretch; }
-            .glass-card { width: 430px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; box-shadow: 15px 15px 0 rgba(0,0,0,0.5); }
-            .list-wrap { flex: 1; }
-            .footer-info { max-width: 1050px; justify-content: flex-end; }
-            .footer-info .left { margin-right: 40px; text-align: right; }
-        }
-    </style>
-</head>
-<body>
-
-<div id="bg-pattern"></div>
-
-<div id="login-screen">
-    <div class="login-box">
-        <h1>SYSTEM LOCKED</h1>
-        <p>AUTHENTICATION REQUIRED</p>
-        <input type="password" id="pwd-input" class="pwd-input" placeholder="********" onkeydown="if(event.key==='Enter') checkPwd()">
-        <button onclick="checkPwd()" class="login-btn">ACCESS</button>
-        <div id="pwd-error"></div>
-    </div>
-</div>
-
-<div class="container" id="main-app">
-    <div class="layout-wrapper">
-        <div class="glass-card">
-            <div id="speed-tag">SMART ROUTING</div>
-            <h2 id="title">WAITING...</h2>
-            <div id="status">INITIALIZING...</div>
-
-            <div class="progress-box" id="seek-bar">
-                <div class="bar-bg">
-                    <div id="buf-bar"></div>
-                    <div id="prog-bar"></div>
+        <div class="container" id="main-app">
+            <div class="layout-wrapper">
+                <div class="glass-card">
+                    <div id="speed-tag">SMART ROUTING</div>
+                    <h2 id="title">WAITING...</h2>
+                    <div id="status">INITIALIZING...</div>
+                    
+                    <div class="progress-box" id="seek-bar">
+                        <div class="bar-bg">
+                            <div id="buf-bar"></div>
+                            <div id="prog-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="btns">
+                        <button onclick="setMode()" id="mode-btn" title="播放模式">LIST</button>
+                        <button onclick="step(-1)" title="上一首">⏮</button>
+                        <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
+                        <button onclick="step(1)" title="下一首">⏭</button>
+                        <button onclick="dl()" title="下载歌曲">📥</button>
+                    </div>
+                    
+                    <div class="ai-panel">
+                        <div class="ai-title">🤖 GEMINI INSIGHT</div>
+                        <div id="ai-text">等待分析歌名...</div>
+                    </div>
+                </div>
+                
+                <div class="list-wrap">
+                    <input type="text" class="search" id="q" placeholder="SEARCH MUSIC..." oninput="doSearch()">
+                        <ul id="list"></ul>
                 </div>
             </div>
-
-            <div class="btns">
-                <button onclick="setMode()" id="mode-btn" title="播放模式">LIST</button>
-                <button onclick="step(-1)" title="上一首">⏮</button>
-                <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
-                <button onclick="step(1)" title="下一首">⏭</button>
-                <button onclick="dl()" title="下载歌曲">📥</button>
-            </div>
-
-            <div class="ai-panel">
-                <div class="ai-title">🤖 GEMINI INSIGHT</div>
-                <div id="ai-text">等待分析歌名...</div>
+            
+            <div class="footer-info">
+                <div class="left">💡 如果是LFS DIRECT<br>则为最高音质源文件</div>
+                <div class="right">本网站由zzh个人制作<br>感谢你的支持！❤️</div>
             </div>
         </div>
-
-        <div class="list-wrap">
-            <input type="text" class="search" id="q" placeholder="SEARCH MUSIC..." oninput="doSearch()">
-            <ul id="list"></ul>
-        </div>
-    </div>
-
-    <div class="footer-info">
-        <div class="left">💡 如果是LFS DIRECT<br>则为最高音质源文件</div>
-        <div class="right">本网站由zzh个人制作<br>感谢你的支持！❤️</div>
-    </div>
-</div>
-
-<audio id="player" preload="auto"></audio>
-
-<script>
-    // =========================================================================
-    // 🔑 配置区域
-    // =========================================================================
-    const G = { 
-        user: 'zhangzhanhang855', 
-        repo: 'musicplayer', 
-        ver: 'main', 
-        github_token: '' 
-    };
-    const GEMINI_API_KEY = 'AIzaSyD6N3zCcGpLjfD1UNoFVCZa2KLfF3gI6JI'; 
-    // =========================================================================
-
-    let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
-    let aiTimer = null; 
-    let usingFallback = false;
-    
-    const audio = document.getElementById('player');
-    const status = document.getElementById('status');
-    const prog = document.getElementById('prog-bar');
-    const buf = document.getElementById('buf-bar');
-    const playBtn = document.getElementById('play-btn');
-    const speedTag = document.getElementById('speed-tag');
-    const aiText = document.getElementById('ai-text'); 
-    const bgPattern = document.getElementById('bg-pattern');
-
-    // 🌟 媒体控制中心：接管锁屏和耳机按键 (保持后台运行的关键)
-    function updateMediaSession(title) {
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: title,
-                artist: 'Hi-Res 智能像素播放器',
-                album: '私人曲库',
-                artwork: [{ src: 'https://dummyimage.com/512x512/000000/00d2ff.png&text=8-BIT', sizes: '512x512', type: 'image/png' }]
-            });
-            navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
-            navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
-            navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
-            navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
-        }
-    }
-
-    function checkPwd() {
-        const input = document.getElementById('pwd-input').value;
-        const errBox = document.getElementById('pwd-error');
-        if (input === '24377891') {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'flex';
-            document.title = "8-Bit 智能音乐像素版 Pro"; 
-            start(); 
-        } else {
-            errBox.innerText = '❌ ACCESS DENIED';
-            document.getElementById('pwd-input').value = ''; 
-            document.getElementById('pwd-input').focus(); 
-        }
-    }
-
-    const getOptimalUrl = (fileObj) => {
-        if (fileObj.size < 1024) {
-            return { 
-                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
-                fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                type: 'LFS DIRECT' 
+        
+        <audio id="player" preload="auto"></audio>
+        
+        <script>
+            // =========================================================================
+            // 🔑 配置区域
+            // =========================================================================
+            const G = { 
+                user: 'zhangzhanhang855', 
+                repo: 'musicplayer', 
+                ver: 'main', 
+                // ⚠️ 如果你的仓库是 Private（私有），这里必须填入以 ghp_ 开头的 GitHub Token！
+                github_token: '' 
             };
-        } else {
-            return { 
-                url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
-                fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                type: 'FASTLY EDGE' 
+            const GEMINI_API_KEY = 'AIzaSyD6N3zCcGpLjfD1UNoFVCZa2KLfF3gI6JI'; 
+            // =========================================================================
+            
+            let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
+            let aiTimer = null; 
+            let usingFallback = false;
+            
+            const audio = document.getElementById('player');
+            const status = document.getElementById('status');
+            const prog = document.getElementById('prog-bar');
+            const buf = document.getElementById('buf-bar');
+            const playBtn = document.getElementById('play-btn');
+            const speedTag = document.getElementById('speed-tag');
+            const aiText = document.getElementById('ai-text'); 
+            const bgPattern = document.getElementById('bg-pattern');
+            
+            // 🌟 媒体控制中心：接管锁屏和耳机按键
+            function updateMediaSession(title) {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: title,
+                        artist: 'Hi-Res 智能像素播放器',
+                        album: '私人曲库',
+                        artwork: [{ src: 'https://dummyimage.com/512x512/000000/00d2ff.png&text=8-BIT', sizes: '512x512', type: 'image/png' }]
+                    });
+                    navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
+                    navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
+                    navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
+                    navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
+                }
+            }
+            
+            function checkPwd() {
+                const input = document.getElementById('pwd-input').value;
+                const errBox = document.getElementById('pwd-error');
+                if (input === '24377891') {
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'flex';
+                    document.title = "8-Bit 智能音乐像素版 Pro"; 
+                    start(); 
+                } else {
+                    errBox.innerText = '❌ ACCESS DENIED';
+                    document.getElementById('pwd-input').value = ''; 
+                    document.getElementById('pwd-input').focus(); 
+                }
+            }
+            
+            const getOptimalUrl = (fileObj) => {
+                if (fileObj.size < 1024) {
+                    return { 
+                        url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                        fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                        type: 'LFS DIRECT' 
+                    };
+                } else {
+                    return { 
+                        url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                        fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                        type: 'FASTLY EDGE' 
+                    };
+                }
             };
-        }
-    };
-
-    async function analyzeSongTitle(title) {
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === '') { aiText.innerText = "未配置 Gemini API Key。"; return; }
-        aiText.innerText = "📡 正在连接 Gemini 解析歌名...";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-        const prompt = `简短分析歌曲《${title}》含义，50字以内。`;
-        try {
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-            const data = await response.json();
-            if (data.candidates) { aiText.innerText = data.candidates[0].content.parts[0].text; }
-        } catch (e) { aiText.innerText = "解析失败。"; }
-    }
-
-    async function start() {
-        try {
-            const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
-            const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
-            if (!r.ok) throw new Error("无法读取仓库");
-            const d = await r.json();
-            all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
-                const route = getOptimalUrl(f);
-                return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
+            
+            async function analyzeSongTitle(title) {
+                if (!GEMINI_API_KEY || GEMINI_API_KEY === '') { aiText.innerText = "未配置 Gemini API Key。"; return; }
+                aiText.innerText = "📡 正在连接 Gemini 解析歌名...";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const prompt = `简短分析歌曲《${title}》含义，50字以内。`;
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+                    const data = await response.json();
+                    if (data.candidates) { aiText.innerText = data.candidates[0].content.parts[0].text; }
+                } catch (e) { aiText.innerText = "解析失败。"; }
+            }
+            
+            async function start() {
+                try {
+                    const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
+                    const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
+                    
+                    // ⚠️ 增加针对 GitHub 报错的详细追踪
+                    if (!r.ok) {
+                        let errStr = '';
+                        try {
+                            const errData = await r.json();
+                            errStr = errData.message;
+                        } catch(e) {
+                            errStr = "网络拦截或跨域错误";
+                        }
+                        throw new Error(`HTTP ${r.status}: ${errStr}`);
+                    }
+                    
+                    const d = await r.json();
+                    all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
+                        const route = getOptimalUrl(f);
+                        return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
+                    });
+                    filtered = [...all]; drawList();
+                    if(all.length > 0) loadTrack(0, false);
+                    status.innerText = "READY. SMART ROUTING ENABLED.";
+                } catch (e) { 
+                    // 将详细错误信息打印在播放面板上
+                    status.innerText = "仓库读取报错 👉 " + e.message; 
+                    status.style.color = "var(--ai-color)";
+                }
+            }
+            
+            function drawList() {
+                let html = '';
+                for(let i=0; i<filtered.length; i++) {
+                    let s = filtered[i];
+                    html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
+            <span>${s.t}</span>
+            <span style="opacity:0.4;font-size:0.8rem;">${s.f.split('.').pop().toUpperCase()}</span>
+        </li>`;
+                }
+                document.getElementById('list').innerHTML = html;
+            }
+            
+            function loadTrack(idx, auto = true) {
+                cur = idx; usingFallback = false; const s = filtered[cur];
+                audio.pause(); audio.src = s.u; audio.load(); 
+                document.getElementById('title').innerText = s.t;
+                speedTag.innerText = s.routeType;
+                speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
+                status.innerText = `CONNECTING VIA ${s.routeType}...`;
+                status.style.color = "var(--text-sub)"; // 重置状态文字颜色
+                
+                updateMediaSession(s.t); 
+                
+                const h = Math.floor(Math.random() * 360);
+                bgPattern.style.background = `hsl(${h}, 50%, 15%)`;
+                drawList();
+                
+                clearTimeout(aiTimer);
+                aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
+                if (auto || isP) audio.play().then(() => { isP = true; ui(); });
+            }
+            
+            audio.addEventListener('error', () => {
+                const s = filtered[cur];
+                if (!usingFallback) {
+                    usingFallback = true; audio.src = s.fallbackUrl; audio.load(); audio.play();
+                } else { status.innerText = "❌ 歌曲加载失败。"; status.style.color = "var(--ai-color)"; }
             });
-            filtered = [...all]; drawList();
-            if(all.length > 0) loadTrack(0, false);
-            status.innerText = "READY. SMART ROUTING ENABLED.";
-        } catch (e) { status.innerText = "报错 👉 " + e.message; }
-    }
-
-    function drawList() {
-        let html = '';
-        for(let i=0; i<filtered.length; i++) {
-            let s = filtered[i];
-            html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
-                <span>${s.t}</span>
-                <span style="opacity:0.4;font-size:0.8rem;">${s.f.split('.').pop().toUpperCase()}</span>
-            </li>`;
-        }
-        document.getElementById('list').innerHTML = html;
-    }
-
-    function loadTrack(idx, auto = true) {
-        cur = idx; usingFallback = false; const s = filtered[cur];
-        audio.pause(); audio.src = s.u; audio.load(); 
-        document.getElementById('title').innerText = s.t;
-        speedTag.innerText = s.routeType;
-        speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
-        status.innerText = `CONNECTING VIA ${s.routeType}...`;
-        
-        updateMediaSession(s.t); // 同步更新锁屏信息
-        
-        const h = Math.floor(Math.random() * 360);
-        bgPattern.style.background = `hsl(${h}, 50%, 15%)`;
-        drawList();
-        
-        clearTimeout(aiTimer);
-        aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
-        if (auto || isP) audio.play().then(() => { isP = true; ui(); });
-    }
-
-    audio.addEventListener('error', () => {
-        const s = filtered[cur];
-        if (!usingFallback) {
-            usingFallback = true; audio.src = s.fallbackUrl; audio.load(); audio.play();
-        } else { status.innerText = "❌ 加载失败。"; }
-    });
-
-    audio.addEventListener('progress', () => { if (audio.buffered.length > 0) { buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; } });
-    audio.addEventListener('playing', () => { status.innerText = "STREAMING ACTIVE"; isP = true; ui(); });
-    audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
-
-    function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
-    function ui() { playBtn.innerText = isP ? '⏸' : '▶️'; }
-    function step(d) { let n = (cur + d + filtered.length) % filtered.length; if (loop === 'random') n = Math.floor(Math.random() * filtered.length); loadTrack(n); }
-    function selectTrack(i) { loadTrack(i); isP = true; ui(); }
-    document.getElementById('seek-bar').onclick = (e) => { audio.currentTime = ((e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth) * audio.duration; };
-    audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
-    function setMode() { const mArr = ['list', 'random', 'single']; const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; loop = mArr[(mArr.indexOf(loop) + 1) % 3]; document.getElementById('mode-btn').innerText = mText[loop]; }
-    function doSearch() { filtered = all.filter(s => s.f.toLowerCase().includes(document.getElementById('q').value.toLowerCase())); drawList(); }
-    function dl() { const a = document.createElement('a'); a.href = filtered[cur].u; a.download = filtered[cur].f; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-</script>
-</body>
+            
+            audio.addEventListener('progress', () => { if (audio.buffered.length > 0) { buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; } });
+            audio.addEventListener('playing', () => { status.innerText = "STREAMING ACTIVE"; isP = true; ui(); });
+            audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
+            
+            function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
+            function ui() { playBtn.innerText = isP ? '⏸' : '▶️'; }
+            function step(d) { let n = (cur + d + filtered.length) % filtered.length; if (loop === 'random') n = Math.floor(Math.random() * filtered.length); loadTrack(n); }
+            function selectTrack(i) { loadTrack(i); isP = true; ui(); }
+            document.getElementById('seek-bar').onclick = (e) => { audio.currentTime = ((e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth) * audio.duration; };
+            audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
+            function setMode() { const mArr = ['list', 'random', 'single']; const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; loop = mArr[(mArr.indexOf(loop) + 1) % 3]; document.getElementById('mode-btn').innerText = mText[loop]; }
+            function doSearch() { filtered = all.filter(s => s.f.toLowerCase().includes(document.getElementById('q').value.toLowerCase())); drawList(); }
+            function dl() { const a = document.createElement('a'); a.href = filtered[cur].u; a.download = filtered[cur].f; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        </script>
+    </body>
 </html>
+
