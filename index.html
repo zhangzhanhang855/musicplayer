@@ -117,10 +117,10 @@
         
         <div id="login-screen">
             <div class="login-box">
-                <h1>SYSTEM LOCKED</h1>
-                <p>AUTHENTICATION REQUIRED</p>
-                <input type="password" id="pwd-input" class="pwd-input" placeholder="********" onkeydown="if(event.key==='Enter') checkPwd()">
-                    <button onclick="checkPwd()" class="login-btn">ACCESS</button>
+                <h1>JR Premium Account Required</h1>
+                <p>Please Enter Your Activation Code</p>
+                <input type="password" id="pwd-input" class="pwd-input" placeholder="Enter Your Code" onkeydown="if(event.key==='Enter') checkPwd()">
+                    <button onclick="checkPwd()" class="login-btn">Activate</button>
                     <div id="pwd-error"></div>
             </div>
         </div>
@@ -218,7 +218,7 @@
                     document.title = "8-Bit 智能音乐像素版 Pro"; 
                     start(); 
                 } else {
-                    errBox.innerText = '❌ ACCESS DENIED';
+                    errBox.innerText = '❌ Your Code Isn't Correct, Please Try Again.';
                     document.getElementById('pwd-input').value = ''; 
                     document.getElementById('pwd-input').focus(); 
                 }
