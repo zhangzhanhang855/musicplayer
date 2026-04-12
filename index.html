@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
                 <title>8-Bit 智能音乐像素版 Pro - LOCKED</title>
-
+                
                 <link rel="dns-prefetch" href="https://api.github.com">
                     <link rel="preconnect" href="https://api.github.com" crossorigin>
                         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
@@ -117,10 +117,10 @@
         
         <div id="login-screen">
             <div class="login-box">
-                <h1></h1>Need a JR Premium Account</h1>
-                <p>Please Enter Your Premium Code</p>
-                <input type="password" id="pwd-input" class="pwd-input" placeholder="Enter Your Code......" onkeydown="if(event.key==='Enter') checkPwd()">
-                    <button onclick="checkPwd()" class="login-btn">Activate Premium</button>
+                <h1>SYSTEM LOCKED</h1>
+                <p>AUTHENTICATION REQUIRED</p>
+                <input type="password" id="pwd-input" class="pwd-input" placeholder="********" onkeydown="if(event.key==='Enter') checkPwd()">
+                    <button onclick="checkPwd()" class="login-btn">ACCESS</button>
                     <div id="pwd-error"></div>
             </div>
         </div>
@@ -212,13 +212,13 @@
             function checkPwd() {
                 const input = document.getElementById('pwd-input').value;
                 const errBox = document.getElementById('pwd-error');
-                if (input === 'zhangzh-is-the-best') {
+                if (input === '24377891') {
                     document.getElementById('login-screen').style.display = 'none';
                     document.getElementById('main-app').style.display = 'flex';
                     document.title = "8-Bit 智能音乐像素版 Pro"; 
                     start(); 
                 } else {
-                    errBox.innerText = '❌ Activate Failed';
+                    errBox.innerText = '❌ ACCESS DENIED';
                     document.getElementById('pwd-input').value = ''; 
                     document.getElementById('pwd-input').focus(); 
                 }
