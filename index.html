@@ -13,10 +13,10 @@
     
     <style>
         :root { 
-            --accent: #007AFF; 
+            --accent: #007AFF; /* 經典藍色 */
             --accent-light: #E5F1FF;
-            --ai-color: #5856D6; 
-            --bg: #F5F5F7; 
+            --ai-color: #5856D6; /* AI 紫色 */
+            --bg: #F5F5F7; /* 蘋果風格淺灰背景 */
             --panel: #FFFFFF;
             --text-main: #1D1D1F;
             --text-sub: #86868B;
@@ -26,21 +26,22 @@
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
         
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        * { -webkit-tap-highlight-color: transparent; }
 
         body, html { 
             margin: 0; padding: 0; 
             height: 100%; height: 100dvh; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
             background: var(--bg); color: var(--text-main); 
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
         }
         
+        /* 登入畫面 */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: var(--bg); z-index: 9999; padding: 20px;
+            background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
         }
         
         .login-box { 
@@ -51,16 +52,19 @@
             border-radius: var(--border-radius-lg);
             box-shadow: 0 20px 40px rgba(0,0,0,0.06);
         }
+        .login-box h1 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
+        .login-box p { margin: 0 0 32px 0; color: var(--text-sub); font-size: 0.95rem; }
         
         .pwd-input { 
             background: #F2F2F7; 
             border: 1px solid transparent; 
             padding: 16px; 
             color: var(--text-main); 
-            margin: 24px 0; 
+            margin-bottom: 24px; 
             outline: none; 
             font-size: 1.1rem; 
             width: 100%; 
+            box-sizing: border-box; 
             border-radius: var(--border-radius-md);
             text-align: center;
             transition: var(--transition);
@@ -69,14 +73,22 @@
         
         .login-btn { 
             background: var(--text-main); 
-            border: none; color: #FFF; 
-            cursor: pointer; font-size: 1rem; 
-            width: 100%; padding: 16px; 
+            border: none; 
+            color: #FFF; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            width: 100%; 
+            padding: 16px; 
             border-radius: var(--border-radius-md);
             font-weight: 600; 
             transition: var(--transition);
         }
+        .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .login-btn:active { transform: translateY(0); }
         
+        #pwd-error { color: #FF3B30; margin-top: 16px; font-size: 0.85rem; min-height: 1.2rem; }
+        
+        /* 主程式容器 */
         .container { 
             display: none; 
             flex-direction: column; 
@@ -84,16 +96,20 @@
             height: 100%; height: 100dvh; 
             padding: 24px; 
             padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
+            box-sizing: border-box; 
         }
         
         .layout-wrapper { 
             display: flex; 
             flex-direction: column; 
-            width: 100%; max-width: 480px; 
-            flex: 1; overflow: hidden; 
+            width: 100%; 
+            max-width: 480px; 
+            flex: 1; 
+            overflow: hidden; 
             align-items: center; 
         }
         
+        /* 播放卡片 */
         .glass-card { 
             background: var(--panel); 
             padding: 32px; 
@@ -102,9 +118,11 @@
             box-shadow: var(--shadow);
             border-radius: var(--border-radius-lg);
             margin-bottom: 24px; 
+            box-sizing: border-box;
             border: 1px solid rgba(0,0,0,0.02);
         }
         
+        h2 { margin: 0 0 4px 0; font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
         #speed-tag { 
             font-size: 0.7rem; 
             background: var(--accent-light); 
@@ -114,36 +132,103 @@
             font-weight: 700; 
             margin-bottom: 12px; 
             display: inline-block; 
+            letter-spacing: 0.5px;
         }
+        #status { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 24px; }
         
+        /* 進度條 */
         .progress-box { width: 100%; height: 6px; background: #E5E5EA; border-radius: 10px; position: relative; margin-bottom: 32px; cursor: pointer; }
-        #buf-bar { position: absolute; height: 100%; background: rgba(0,0,0,0.05); border-radius: 10px; width: 0%; }
-        #prog-bar { position: absolute; height: 100%; background: var(--accent); border-radius: 10px; width: 0%; }
+        #buf-bar { position: absolute; height: 100%; background: rgba(0,0,0,0.05); border-radius: 10px; width: 0%; transition: width 0.3s; }
+        #prog-bar { position: absolute; height: 100%; background: var(--accent); border-radius: 10px; width: 0%; transition: width 0.1s linear; }
+        #prog-bar::after {
+            content: ''; position: absolute; right: -6px; top: -5px; width: 16px; height: 16px; 
+            background: #FFF; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
         
+        /* 控制按鈕 */
         .btns { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 300px; margin: 0 auto; }
-        .btns button { background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 1.4rem; transition: var(--transition); }
+        .btns button { 
+            background: none; border: none; color: var(--text-main); 
+            cursor: pointer; font-size: 1.4rem; 
+            display: flex; justify-content: center; align-items: center; 
+            transition: var(--transition);
+            opacity: 0.8;
+        }
+        #mode-btn { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); border: 1.5px solid #E5E5EA; border-radius: 8px; padding: 4px 8px; }
+        .btns button:hover { opacity: 1; transform: scale(1.1); }
         .btns .main-play { 
-            font-size: 2.2rem; width: 64px; height: 64px; 
-            background: var(--text-main); color: #FFF; border-radius: 50%; 
+            font-size: 2.2rem; 
+            width: 64px; height: 64px; 
+            background: var(--text-main); 
+            color: #FFF; 
+            border-radius: 50%; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
+        .btns .main-play:hover { transform: scale(1.05); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
         
+        /* AI 面板 */
         .ai-panel { 
-            background: #F8F8FC; padding: 16px; margin-top: 24px; text-align: left; 
-            border-radius: var(--border-radius-md); border: 1px solid rgba(88, 86, 214, 0.1);
+            background: #F8F8FC; 
+            padding: 16px; 
+            margin-top: 24px; 
+            text-align: left; 
+            border-radius: var(--border-radius-md);
+            border: 1px solid rgba(88, 86, 214, 0.1);
         }
-        .ai-title { color: var(--ai-color); font-weight: 700; margin-bottom: 8px; font-size: 0.8rem; }
+        .ai-title { color: var(--ai-color); font-weight: 700; margin-bottom: 8px; font-size: 0.8rem; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+        #ai-text { font-size: 0.85rem; color: #48484A; line-height: 1.5; font-weight: 400; }
+        
+        /* 列表部分 */
+        .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .search { 
+            background: var(--panel); 
+            border: 1px solid rgba(0,0,0,0.05); 
+            padding: 14px 20px; 
+            color: var(--text-main); 
+            margin-bottom: 16px; 
+            outline: none; 
+            font-size: 0.95rem; 
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .search:focus { border-color: var(--accent); }
         
         #list { 
             list-style: none; padding: 0; overflow-y: auto; flex: 1; margin: 0; 
-            width: 100%; background: var(--panel); border-radius: var(--border-radius-lg); box-shadow: var(--shadow);
+            -webkit-overflow-scrolling: touch; 
+            background: var(--panel);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
         }
-        #list li { padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.03); cursor: pointer; display: flex; justify-content: space-between; }
+        #list li { 
+            padding: 16px 20px; 
+            border-bottom: 1px solid rgba(0,0,0,0.03); 
+            cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center; 
+            font-size: 0.95rem; 
+            transition: var(--transition);
+        }
+        #list li:last-child { border-bottom: none; }
+        #list li:hover { background: #FAFAFB; }
         #list li.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
-
-        @media (min-width: 900px) {
-            .layout-wrapper { flex-direction: row; max-width: 1000px; gap: 32px; }
-            .glass-card { width: 400px; }
+        
+        .footer-info { 
+            width: 100%; max-width: 480px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-top: 16px; font-size: 0.75rem; color: var(--text-sub); 
         }
+        
+        /* 桌面版響應式 */
+        @media (min-width: 900px) {
+            .layout-wrapper { flex-direction: row; max-width: 1000px; gap: 32px; align-items: stretch; }
+            .glass-card { width: 400px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+            .footer-info { max-width: 1000px; }
+        }
+
+        /* 自定義捲軸 */
+        #list::-webkit-scrollbar { width: 4px; }
+        #list::-webkit-scrollbar-thumb { background: #E5E5EA; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -161,9 +246,9 @@
     <div class="container" id="main-app">
         <div class="layout-wrapper">
             <div class="glass-card">
-                <div id="speed-tag">智能路由中</div>
-                <h2 id="title">載入中...</h2>
-                <div id="status">準備就緒</div>
+                <div id="speed-tag">SMART ROUTING</div>
+                <h2 id="title">等待載入...</h2>
+                <div id="status">初始化中...</div>
                 
                 <div class="progress-box" id="seek-bar">
                     <div id="buf-bar"></div>
@@ -179,133 +264,207 @@
                 </div>
                 
                 <div class="ai-panel">
-                    <div class="ai-title">✦ GEMINI AI 智能分析</div>
-                    <div id="ai-text">等待歌曲播放以進行分析...</div>
+                    <div class="ai-title">✦ GEMINI INSIGHT</div>
+                    <div id="ai-text">準備分析曲目內容...</div>
                 </div>
             </div>
             
-            <div id="list"></div>
+            <div class="list-wrap">
+                <input type="text" class="search" id="q" placeholder="搜尋曲庫內容..." oninput="doSearch()">
+                <ul id="list"></ul>
+            </div>
+        </div>
+        
+        <div class="footer-info">
+            <div class="left">💡 最高音質源文件存取中</div>
+            <div class="right">ZZH Studio 製作 • 2024</div>
         </div>
     </div>
     
-    <audio id="player"></audio>
+    <audio id="player" preload="auto"></audio>
     
     <script>
         // =========================================================================
-        // 🔑 請在此處填寫您的 API KEY
+        // 🔑 配置區域
         // =========================================================================
-        const apiKey = "AIzaSyDFp3FaJYc6VBc4Q_zY2W7Z132U-Q7pL9Y"; 
-        const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
+        const G = { 
+            user: 'zhangzhanhang855', 
+            repo: 'musicplayer', 
+            ver: 'main', 
+            github_token: '' 
+        };
+        const GEMINI_API_KEY = ''; 
         // =========================================================================
-
+        
         let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
+        let aiTimer = null; 
+        let usingFallback = false;
+        
         const audio = document.getElementById('player');
-        const aiText = document.getElementById('ai-text');
-
-        // 指數退避重試函數
-        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.json();
-            } catch (error) {
-                if (retries <= 0) throw error;
-                await new Promise(resolve => setTimeout(resolve, backoff));
-                return fetchWithRetry(url, options, retries - 1, backoff * 2);
-            }
-        }
-
-        async function analyzeSongTitle(title) {
-            if (!apiKey) {
-                aiText.innerText = "⚠️ 請在代碼中配置 API Key。";
-                return;
-            }
-
-            aiText.innerText = "📡 AI 正在感應曲目意境...";
-            
-            // 使用建議的 2.5-flash-preview 模型，或者你可以改回 1.5-flash
-            const model = "gemini-2.5-flash-preview-09-2025";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            
-            const payload = {
-                contents: [{
-                    parts: [{ text: `你是一位資深音樂評論家。請用一句話（30字以內）分析歌曲《${title}》的情感意境或音樂風格。直接給出結果，不要有前言。` }]
-                }]
-            };
-
-            try {
-                const result = await fetchWithRetry(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+        const status = document.getElementById('status');
+        const prog = document.getElementById('prog-bar');
+        const buf = document.getElementById('buf-bar');
+        const playBtn = document.getElementById('play-btn');
+        const speedTag = document.getElementById('speed-tag');
+        const aiText = document.getElementById('ai-text'); 
+        
+        function updateMediaSession(title) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title,
+                    artist: 'Premium Music Player',
+                    album: 'Private Library',
+                    artwork: [{ src: 'https://dummyimage.com/512x512/FFFFFF/007AFF.png&text=PREMIUM', sizes: '512x512', type: 'image/png' }]
                 });
-                
-                const responseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (responseText) {
-                    aiText.innerText = responseText.trim();
-                } else {
-                    aiText.innerText = "AI 無法識別此曲目。";
-                }
-            } catch (error) {
-                console.error("Gemini Error:", error);
-                aiText.innerText = `❌ AI 分析失敗: ${error.message}。請檢查 Key 是否有效或網絡環境。`;
+                navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
+                navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
+                navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
+                navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
             }
         }
-
-        // --- 播放器邏輯 ---
+        
         function checkPwd() {
-            if (document.getElementById('pwd-input').value === 'gmsf4rdth89Ky5632') {
+            const input = document.getElementById('pwd-input').value;
+            const errBox = document.getElementById('pwd-error');
+            // 使用原本的啟用碼
+            if (input === 'gmsf4rdth89Ky5632') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
-                start();
+                document.title = "Premium 智能音樂播放器"; 
+                start(); 
             } else {
-                document.getElementById('pwd-error').innerText = '啟用碼無效';
+                errBox.innerText = '啟用碼錯誤，請重試';
+                document.getElementById('pwd-input').value = ''; 
+                document.getElementById('pwd-input').focus(); 
             }
         }
-
-        async function start() {
-            try {
-                const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
-                const d = await r.json();
-                all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                    t: f.name.replace(/\.[^/.]+$/, ""),
-                    u: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`
-                }));
-                filtered = [...all];
-                drawList();
-                if(all.length > 0) loadTrack(0, false);
-            } catch (e) { document.getElementById('status').innerText = "載入失敗"; }
-        }
-
-        function drawList() {
-            document.getElementById('list').innerHTML = filtered.map((s, i) => 
-                `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">${s.t}</li>`).join('');
-        }
-
-        function loadTrack(idx, auto = true) {
-            cur = idx;
-            const s = filtered[cur];
-            audio.src = s.u;
-            document.getElementById('title').innerText = s.t;
-            drawList();
-            
-            // 延遲兩秒分析，避免切歌太快頻繁調用 API
-            clearTimeout(window.aiTimer);
-            window.aiTimer = setTimeout(() => analyzeSongTitle(s.t), 1500);
-            
-            if (auto) { audio.play(); isP = true; updateUI(); }
-        }
-
-        function selectTrack(i) { loadTrack(i); }
-        function playToggle() { if (audio.paused) audio.play(); else audio.pause(); isP = !audio.paused; updateUI(); }
-        function updateUI() { document.getElementById('play-btn').innerText = isP ? '||' : '▶'; }
-        function step(d) { loadTrack((cur + d + filtered.length) % filtered.length); }
         
-        audio.ontimeupdate = () => {
-            document.getElementById('prog-bar').style.width = (audio.currentTime / audio.duration * 100) + '%';
+        const getOptimalUrl = (fileObj) => {
+            if (fileObj.size < 1024) {
+                return { 
+                    url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                    fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                    type: 'DIRECT' 
+                };
+            } else {
+                return { 
+                    url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                    fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                    type: 'FASTLY CDN' 
+                };
+            }
         };
         
-        audio.onended = () => step(1);
+        async function analyzeSongTitle(title) {
+            if (!GEMINI_API_KEY) { aiText.innerText = "智能分析需要 API Key。"; return; }
+            aiText.innerText = "正在分析曲目意境...";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const prompt = `簡短分析歌曲《${title}》的風格與可能的情感意境，50字以內。`;
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+                const data = await response.json();
+                if (data.candidates) { aiText.innerText = data.candidates[0].content.parts[0].text; }
+            } catch (e) { aiText.innerText = "暫時無法分析，請稍後。"; }
+        }
+        
+        async function start() {
+            try {
+                const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
+                const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
+                if (!r.ok) throw new Error("庫存讀取失敗");
+                const d = await r.json();
+                all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
+                    const route = getOptimalUrl(f);
+                    return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
+                });
+                filtered = [...all]; drawList();
+                if(all.length > 0) loadTrack(0, false);
+                status.innerText = "服務就緒，已優化路由。";
+            } catch (e) { status.innerText = "錯誤: " + e.message; }
+        }
+        
+        function drawList() {
+            let html = '';
+            for(let i=0; i<filtered.length; i++) {
+                let s = filtered[i];
+                html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
+                <span>${s.t}</span>
+                <span style="opacity:0.4; font-size:0.7rem; font-weight:700;">${s.f.split('.').pop().toUpperCase()}</span>
+            </li>`;
+            }
+            document.getElementById('list').innerHTML = html;
+        }
+        
+        function loadTrack(idx, auto = true) {
+            cur = idx; usingFallback = false; const s = filtered[cur];
+            audio.pause(); audio.src = s.u; audio.load(); 
+            document.getElementById('title').innerText = s.t;
+            speedTag.innerText = s.routeType;
+            status.innerText = `串流模式: ${s.routeType}`;
+            
+            updateMediaSession(s.t); 
+            drawList();
+            
+            clearTimeout(aiTimer);
+            aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
+            if (auto || isP) audio.play().then(() => { isP = true; ui(); });
+        }
+        
+        audio.addEventListener('error', () => {
+            const s = filtered[cur];
+            if (!usingFallback) {
+                usingFallback = true; audio.src = s.fallbackUrl; audio.load(); audio.play();
+            } else { status.innerText = "載入失敗，請檢查網絡連結。"; }
+        });
+        
+        audio.addEventListener('progress', () => { 
+            if (audio.buffered.length > 0) { 
+                buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; 
+            } 
+        });
+        audio.addEventListener('playing', () => { status.innerText = "串流播放中"; isP = true; ui(); });
+        audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
+        
+        function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
+        function ui() { playBtn.innerHTML = isP ? '<span>||</span>' : '▶'; }
+        function step(d) { 
+            let n = (cur + d + filtered.length) % filtered.length; 
+            if (loop === 'random') n = Math.floor(Math.random() * filtered.length); 
+            loadTrack(n); 
+        }
+        function selectTrack(i) { loadTrack(i); isP = true; ui(); }
+        
+        document.getElementById('seek-bar').onclick = (e) => { 
+            const rect = e.currentTarget.getBoundingClientRect();
+            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
+        };
+        
+        audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
+        
+        function setMode() { 
+            const mArr = ['list', 'random', 'single']; 
+            const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; 
+            loop = mArr[(mArr.indexOf(loop) + 1) % 3]; 
+            document.getElementById('mode-btn').innerText = mText[loop]; 
+        }
+        
+        function doSearch() { 
+            const val = document.getElementById('q').value.toLowerCase();
+            filtered = all.filter(s => s.f.toLowerCase().includes(val)); 
+            drawList(); 
+        }
+        
+        function dl() { 
+            const a = document.createElement('a'); 
+            a.href = filtered[cur].u; 
+            a.download = filtered[cur].f; 
+            a.target = '_blank'; 
+            document.body.appendChild(a); 
+            a.click(); 
+            document.body.removeChild(a); 
+        }
     </script>
 </body>
 </html>
+
+```
