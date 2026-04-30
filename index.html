@@ -1,325 +1,467 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-    <head>
-        <meta name="google-site-verification" content="GOVVR9ot3XTEZ1y6SWHOjSHOk7aGwifYe7PZSOXlSdY" />
-        <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-                <title>8-Bit 智能音乐像素版 Pro - LOCKED</title>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Premium 智能音樂播放器</title>
+    
+    <link rel="dns-prefetch" href="https://api.github.com">
+    <link rel="preconnect" href="https://api.github.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    
+    <style>
+        :root { 
+            --accent: #007AFF; /* 經典藍色 */
+            --accent-light: #E5F1FF;
+            --ai-color: #5856D6; /* AI 紫色 */
+            --bg: #F5F5F7; /* 蘋果風格淺灰背景 */
+            --panel: #FFFFFF;
+            --text-main: #1D1D1F;
+            --text-sub: #86868B;
+            --border-radius-lg: 24px;
+            --border-radius-md: 16px;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        * { -webkit-tap-highlight-color: transparent; }
+
+        body, html { 
+            margin: 0; padding: 0; 
+            height: 100%; height: 100dvh; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            background: var(--bg); color: var(--text-main); 
+            overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 登入畫面 */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
+        }
+        
+        .login-box { 
+            background: var(--panel); 
+            padding: 48px 32px; 
+            text-align: center; 
+            width: 100%; max-width: 380px; 
+            border-radius: var(--border-radius-lg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+        }
+        .login-box h1 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
+        .login-box p { margin: 0 0 32px 0; color: var(--text-sub); font-size: 0.95rem; }
+        
+        .pwd-input { 
+            background: #F2F2F7; 
+            border: 1px solid transparent; 
+            padding: 16px; 
+            color: var(--text-main); 
+            margin-bottom: 24px; 
+            outline: none; 
+            font-size: 1.1rem; 
+            width: 100%; 
+            box-sizing: border-box; 
+            border-radius: var(--border-radius-md);
+            text-align: center;
+            transition: var(--transition);
+        }
+        .pwd-input:focus { border-color: var(--accent); background: #FFF; box-shadow: 0 0 0 4px var(--accent-light); }
+        
+        .login-btn { 
+            background: var(--text-main); 
+            border: none; 
+            color: #FFF; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            width: 100%; 
+            padding: 16px; 
+            border-radius: var(--border-radius-md);
+            font-weight: 600; 
+            transition: var(--transition);
+        }
+        .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .login-btn:active { transform: translateY(0); }
+        
+        #pwd-error { color: #FF3B30; margin-top: 16px; font-size: 0.85rem; min-height: 1.2rem; }
+        
+        /* 主程式容器 */
+        .container { 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            height: 100%; height: 100dvh; 
+            padding: 24px; 
+            padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
+            box-sizing: border-box; 
+        }
+        
+        .layout-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            width: 100%; 
+            max-width: 480px; 
+            flex: 1; 
+            overflow: hidden; 
+            align-items: center; 
+        }
+        
+        /* 播放卡片 */
+        .glass-card { 
+            background: var(--panel); 
+            padding: 32px; 
+            width: 100%; 
+            text-align: center; 
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 24px; 
+            box-sizing: border-box;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        
+        h2 { margin: 0 0 4px 0; font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
+        #speed-tag { 
+            font-size: 0.7rem; 
+            background: var(--accent-light); 
+            color: var(--accent); 
+            padding: 4px 12px; 
+            border-radius: 20px;
+            font-weight: 700; 
+            margin-bottom: 12px; 
+            display: inline-block; 
+            letter-spacing: 0.5px;
+        }
+        #status { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 24px; }
+        
+        /* 進度條 */
+        .progress-box { width: 100%; height: 6px; background: #E5E5EA; border-radius: 10px; position: relative; margin-bottom: 32px; cursor: pointer; }
+        #buf-bar { position: absolute; height: 100%; background: rgba(0,0,0,0.05); border-radius: 10px; width: 0%; transition: width 0.3s; }
+        #prog-bar { position: absolute; height: 100%; background: var(--accent); border-radius: 10px; width: 0%; transition: width 0.1s linear; }
+        #prog-bar::after {
+            content: ''; position: absolute; right: -6px; top: -5px; width: 16px; height: 16px; 
+            background: #FFF; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        
+        /* 控制按鈕 */
+        .btns { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 300px; margin: 0 auto; }
+        .btns button { 
+            background: none; border: none; color: var(--text-main); 
+            cursor: pointer; font-size: 1.4rem; 
+            display: flex; justify-content: center; align-items: center; 
+            transition: var(--transition);
+            opacity: 0.8;
+        }
+        #mode-btn { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); border: 1.5px solid #E5E5EA; border-radius: 8px; padding: 4px 8px; }
+        .btns button:hover { opacity: 1; transform: scale(1.1); }
+        .btns .main-play { 
+            font-size: 2.2rem; 
+            width: 64px; height: 64px; 
+            background: var(--text-main); 
+            color: #FFF; 
+            border-radius: 50%; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btns .main-play:hover { transform: scale(1.05); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
+        
+        /* AI 面板 */
+        .ai-panel { 
+            background: #F8F8FC; 
+            padding: 16px; 
+            margin-top: 24px; 
+            text-align: left; 
+            border-radius: var(--border-radius-md);
+            border: 1px solid rgba(88, 86, 214, 0.1);
+        }
+        .ai-title { color: var(--ai-color); font-weight: 700; margin-bottom: 8px; font-size: 0.8rem; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+        #ai-text { font-size: 0.85rem; color: #48484A; line-height: 1.5; font-weight: 400; }
+        
+        /* 列表部分 */
+        .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .search { 
+            background: var(--panel); 
+            border: 1px solid rgba(0,0,0,0.05); 
+            padding: 14px 20px; 
+            color: var(--text-main); 
+            margin-bottom: 16px; 
+            outline: none; 
+            font-size: 0.95rem; 
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        .search:focus { border-color: var(--accent); }
+        
+        #list { 
+            list-style: none; padding: 0; overflow-y: auto; flex: 1; margin: 0; 
+            -webkit-overflow-scrolling: touch; 
+            background: var(--panel);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow);
+        }
+        #list li { 
+            padding: 16px 20px; 
+            border-bottom: 1px solid rgba(0,0,0,0.03); 
+            cursor: pointer; 
+            display: flex; justify-content: space-between; align-items: center; 
+            font-size: 0.95rem; 
+            transition: var(--transition);
+        }
+        #list li:last-child { border-bottom: none; }
+        #list li:hover { background: #FAFAFB; }
+        #list li.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
+        
+        .footer-info { 
+            width: 100%; max-width: 480px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-top: 16px; font-size: 0.75rem; color: var(--text-sub); 
+        }
+        
+        /* 桌面版響應式 */
+        @media (min-width: 900px) {
+            .layout-wrapper { flex-direction: row; max-width: 1000px; gap: 32px; align-items: stretch; }
+            .glass-card { width: 400px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+            .footer-info { max-width: 1000px; }
+        }
+
+        /* 自定義捲軸 */
+        #list::-webkit-scrollbar { width: 4px; }
+        #list::-webkit-scrollbar-thumb { background: #E5E5EA; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>JRmusic</h1>
+            <p>請輸入您的啟用碼以存取曲庫</p>
+            <input type="password" id="pwd-input" class="pwd-input" placeholder="啟用碼" onkeydown="if(event.key==='Enter') checkPwd()">
+            <button onclick="checkPwd()" class="login-btn">登入</button>
+            <div id="pwd-error"></div>
+        </div>
+    </div>
+    
+    <div class="container" id="main-app">
+        <div class="layout-wrapper">
+            <div class="glass-card">
+                <div id="speed-tag">SMART ROUTING</div>
+                <h2 id="title">等待載入...</h2>
+                <div id="status">初始化中...</div>
                 
-                <link rel="dns-prefetch" href="https://api.github.com">
-                    <link rel="preconnect" href="https://api.github.com" crossorigin>
-                        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-                            <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-                                
-                                <link rel="preconnect" href="https://fonts.googleapis.com">
-                                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                                        <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-                                            
-                                            <style>
-                                                :root { 
-                                                    --accent: #00d2ff; 
-                                                    --accent-bg: rgba(0, 210, 255, 0.15); 
-                                                    --ai-color: #ff0055; 
-                                                    --bg: #050507; 
-                                                    --panel: #101015; 
-                                                    --text-main: #fff;
-                                                    --text-sub: #aaa;
-                                                    --pixel-border: 4px; 
-                                                }
-                                                
-                                                body, html { 
-                                                    margin: 0; padding: 0; 
-                                                    height: 100%; height: 100dvh; 
-                                                    font-family: 'VT323', 'Courier New', monospace; 
-                                                    font-size: 20px; 
-                                                    background: var(--bg); color: var(--text-main); 
-                                                    overflow: hidden; 
-                                                    image-rendering: pixelated; 
-                                                }
-                                                
-                                                /* 固定背景亮度，关掉动态滤镜以换取更好的后台稳定性 */
-                                                #bg-pattern { 
-                                                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                                                    filter: brightness(0.15); z-index: -1;
-                                                    background-size: 16px 16px;
-                                                    background-image: 
-                                                    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%), 
-                                                    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
-                                                    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
-                                                    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
-                                                }
-                                                
-                                                #login-screen {
-                                                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                                                    display: flex; flex-direction: column; justify-content: center; align-items: center;
-                                                    background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
-                                                    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-                                                }
-                                                
-                                                .login-box { background: var(--panel); border: var(--pixel-border) solid var(--ai-color); padding: 40px 30px; text-align: center; width: 100%; max-width: 350px; box-shadow: 15px 15px 0 rgba(0,0,0,0.8); }
-                                                .login-box h1 { margin: 0 0 10px 0; font-size: 2rem; color: var(--ai-color); }
-                                                .login-box p { margin: 0 0 30px 0; color: var(--text-sub); }
-                                                
-                                                .pwd-input { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.2); padding: 15px; color: #fff; margin-bottom: 20px; outline: none; font-size: 1.5rem; width: 100%; box-sizing: border-box; font-family: 'VT323', monospace; text-align: center; letter-spacing: 5px; }
-                                                .pwd-input:focus { border-color: var(--accent); }
-                                                
-                                                .login-btn { background: var(--accent); border: none; color: #000; cursor: pointer; font-size: 1.5rem; width: 100%; padding: 15px; font-family: 'VT323', monospace; font-weight: bold; }
-                                                .login-btn:active { background: #00aadd; }
-                                                
-                                                #pwd-error { color: var(--ai-color); margin-top: 15px; font-size: 1rem; min-height: 1.2rem; }
-                                                
-                                                .container { display: none; flex-direction: column; align-items: center; height: 100%; height: 100dvh; padding: 20px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-sizing: border-box; }
-                                                .layout-wrapper { display: flex; flex-direction: column; width: 100%; max-width: 420px; flex: 1; overflow: hidden; align-items: center; }
-                                                
-                                                .glass-card { background: var(--panel); border: var(--pixel-border) solid var(--accent); padding: 20px; width: 100%; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); flex-shrink: 0; margin-bottom: 20px; box-sizing: border-box; border-radius: 0; }
-                                                h2 { margin: 5px 0; font-size: 1.5rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-                                                #speed-tag { font-size: 0.8rem; background: var(--accent); color: #000; padding: 4px 10px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-                                                #status { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 15px; min-height: 1.1rem; }
-                                                
-                                                .progress-box { width: 100%; height: 20px; display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
-                                                .bar-bg { width: 100%; height: 10px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; }
-                                                #buf-bar { position: absolute; height: 100%; background: rgba(255,255,255,0.25); width: 0%; transition: width 0.2s linear; }
-                                                #prog-bar { position: absolute; height: 100%; background: var(--accent); width: 0%; transition: width 0.1s linear; }
-                                                
-                                                .btns { display: flex; justify-content: space-evenly; align-items: center; width: 100%; margin-top: 10px; }
-                                                .btns button { background: none; border: none; color: #fff; cursor: pointer; font-size: 1.6rem; width: 60px; display: flex; justify-content: center; align-items: center; padding: 0; font-family: 'VT323', monospace; }
-                                                #mode-btn { font-size: 1rem; color: var(--text-sub); border: 2px solid rgba(255,255,255,0.1); width: 50px; height: 35px; }
-                                                .btns button:active { color: var(--accent); border-color: var(--accent); }
-                                                .btns button:hover { color: var(--accent); }
-                                                .btns .main-play { font-size: 3.5rem; width: 70px; }
-                                                
-                                                .ai-panel { background: rgba(255,0,85,0.05); border: 2px dashed var(--ai-color); padding: 10px; margin-top: 15px; text-align: left; font-size: 0.8rem; color: #ddd; min-height: 40px; font-family: system-ui, -apple-system, sans-serif; line-height: 1.4; display: flex; flex-direction: column; }
-                                                .ai-title { color: var(--ai-color); font-weight: bold; margin-bottom: 5px; font-family: 'VT323', monospace; font-size: 1rem; }
-                                                
-                                                .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-                                                .search { background: rgba(255,255,255,0.05); border: var(--pixel-border) solid rgba(255,255,255,0.1); padding: 12px; color: #fff; margin-bottom: 15px; outline: none; font-size: 1.1rem; flex-shrink: 0; font-family: 'VT323', monospace; }
-                                                .search:focus { border-color: rgba(255,255,255,0.3); }
-                                                
-                                                #list { list-style: none; padding: 0 0 20px 0; overflow-y: auto; flex: 1; margin: 0; -webkit-overflow-scrolling: touch; border: var(--pixel-border) solid rgba(255,255,255,0.1); }
-                                                #list li { padding: 14px 18px; border-bottom: 2px solid rgba(255,255,255,0.03); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; }
-                                                #list li.active { color: var(--accent); background: var(--accent-bg); border-left: 6px solid var(--accent); }
-                                                
-                                                .footer-info { width: 100%; max-width: 420px; display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10px; flex-shrink: 0; font-size: 0.8rem; color: rgba(255,255,255,0.3); line-height: 1.5; }
-                                                
-                                                @media (min-width: 900px) and (orientation: landscape) {
-                                                    body, html { font-size: 22px; } 
-                                                    .container { padding: 40px; }
-                                                    .layout-wrapper { flex-direction: row; max-width: 1050px; gap: 50px; align-items: stretch; }
-                                                    .glass-card { width: 430px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; box-shadow: 15px 15px 0 rgba(0,0,0,0.5); }
-                                                    .list-wrap { flex: 1; }
-                                                    .footer-info { max-width: 1050px; justify-content: flex-end; }
-                                                    .footer-info .left { margin-right: 40px; text-align: right; }
-                                                }
-                                            </style>
-    </head>
-    <body>
-        
-        <div id="bg-pattern"></div>
-        
-        <div id="login-screen">
-            <div class="login-box">
-                <h1>If You Don't Have a code</h1>
-                <p>Please Visit jr-payments-premium.vercel.app</p>
-                <input type="password" id="pwd-input" class="pwd-input" placeholder="Enter Your Code" onkeydown="if(event.key==='Enter') checkPwd()">
-                    <button onclick="checkPwd()" class="login-btn">Activate</button>
-                    <div id="pwd-error"></div>
+                <div class="progress-box" id="seek-bar">
+                    <div id="buf-bar"></div>
+                    <div id="prog-bar"></div>
+                </div>
+                
+                <div class="btns">
+                    <button onclick="setMode()" id="mode-btn">LIST</button>
+                    <button onclick="step(-1)">◁◁</button>
+                    <button onclick="playToggle()" class="main-play" id="play-btn">▶</button>
+                    <button onclick="step(1)">▷▷</button>
+                    <button onclick="dl()">↓</button>
+                </div>
+                
+                <div class="ai-panel">
+                    <div class="ai-title">✦ GEMINI INSIGHT</div>
+                    <div id="ai-text">準備分析曲目內容...</div>
+                </div>
+            </div>
+            
+            <div class="list-wrap">
+                <input type="text" class="search" id="q" placeholder="搜尋曲庫內容..." oninput="doSearch()">
+                <ul id="list"></ul>
             </div>
         </div>
         
-        <div class="container" id="main-app">
-            <div class="layout-wrapper">
-                <div class="glass-card">
-                    <div id="speed-tag">SMART ROUTING</div>
-                    <h2 id="title">WAITING...</h2>
-                    <div id="status">INITIALIZING...</div>
-                    
-                    <div class="progress-box" id="seek-bar">
-                        <div class="bar-bg">
-                            <div id="buf-bar"></div>
-                            <div id="prog-bar"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="btns">
-                        <button onclick="setMode()" id="mode-btn" title="播放模式">LIST</button>
-                        <button onclick="step(-1)" title="上一首">⏮</button>
-                        <button onclick="playToggle()" class="main-play" id="play-btn">▶️</button>
-                        <button onclick="step(1)" title="下一首">⏭</button>
-                        <button onclick="dl()" title="下载歌曲">📥</button>
-                    </div>
-                    
-                    <div class="ai-panel">
-                        <div class="ai-title">🤖 GEMINI INSIGHT</div>
-                        <div id="ai-text">等待分析歌名...</div>
-                    </div>
-                </div>
-                
-                <div class="list-wrap">
-                    <input type="text" class="search" id="q" placeholder="SEARCH MUSIC..." oninput="doSearch()">
-                        <ul id="list"></ul>
-                </div>
-            </div>
-            
-            <div class="footer-info">
-                <div class="left">💡 如果是LFS DIRECT<br>则为最高音质源文件</div>
-                <div class="right">本网站由zzh个人制作<br>感谢你的支持！❤️</div>
-            </div>
+        <div class="footer-info">
+            <div class="left">💡 最高音質源文件存取中</div>
+            <div class="right">JR Studio 製作 • 2026</div>
         </div>
+    </div>
+    
+    <audio id="player" preload="auto"></audio>
+    
+    <script>
+        // =========================================================================
+        // 🔑 配置區域
+        // =========================================================================
+        const G = { 
+            user: 'zhangzhanhang855', 
+            repo: 'musicplayer', 
+            ver: 'main', 
+            github_token: '' 
+        };
+        const GEMINI_API_KEY = ''; 
+        // =========================================================================
         
-        <audio id="player" preload="auto"></audio>
+        let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
+        let aiTimer = null; 
+        let usingFallback = false;
         
-        <script>
-            // =========================================================================
-            // 🔑 配置区域
-            // =========================================================================
-            const G = { 
-                user: 'zhangzhanhang855', 
-                repo: 'musicplayer', 
-                ver: 'main', 
-                github_token: '' 
-            };
-            const GEMINI_API_KEY = ''; 
-            // =========================================================================
-            
-            let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
-            let aiTimer = null; 
-            let usingFallback = false;
-            
-            const audio = document.getElementById('player');
-            const status = document.getElementById('status');
-            const prog = document.getElementById('prog-bar');
-            const buf = document.getElementById('buf-bar');
-            const playBtn = document.getElementById('play-btn');
-            const speedTag = document.getElementById('speed-tag');
-            const aiText = document.getElementById('ai-text'); 
-            const bgPattern = document.getElementById('bg-pattern');
-            
-            // 🌟 媒体控制中心：接管锁屏和耳机按键 (保持后台运行的关键)
-            function updateMediaSession(title) {
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                        title: title,
-                        artist: 'Hi-Res 智能像素播放器',
-                        album: '私人曲库',
-                        artwork: [{ src: 'https://dummyimage.com/512x512/000000/00d2ff.png&text=8-BIT', sizes: '512x512', type: 'image/png' }]
-                    });
-                    navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
-                    navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
-                    navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
-                    navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
-                }
+        const audio = document.getElementById('player');
+        const status = document.getElementById('status');
+        const prog = document.getElementById('prog-bar');
+        const buf = document.getElementById('buf-bar');
+        const playBtn = document.getElementById('play-btn');
+        const speedTag = document.getElementById('speed-tag');
+        const aiText = document.getElementById('ai-text'); 
+        
+        function updateMediaSession(title) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title,
+                    artist: 'Premium Music Player',
+                    album: 'Private Library',
+                    artwork: [{ src: 'https://dummyimage.com/512x512/FFFFFF/007AFF.png&text=PREMIUM', sizes: '512x512', type: 'image/png' }]
+                });
+                navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
+                navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
+                navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
+                navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
             }
-            
-            function checkPwd() {
-                const input = document.getElementById('pwd-input').value;
-                const errBox = document.getElementById('pwd-error');
-                if (input === 'gmsf4rdth89Ky5632') {
-                    document.getElementById('login-screen').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'flex';
-                    document.title = "8-Bit 智能音乐像素版 Pro"; 
-                    start(); 
-                } else {
-                    errBox.innerText = '❌ Activate Failed';
-                    document.getElementById('pwd-input').value = ''; 
-                    document.getElementById('pwd-input').focus(); 
-                }
+        }
+        
+        function checkPwd() {
+            const input = document.getElementById('pwd-input').value;
+            const errBox = document.getElementById('pwd-error');
+            // 使用原本的啟用碼
+            if (input === 'gmsf4rdth89Ky5632') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                document.title = "Premium 智能音樂播放器"; 
+                start(); 
+            } else {
+                errBox.innerText = '啟用碼錯誤，請重試';
+                document.getElementById('pwd-input').value = ''; 
+                document.getElementById('pwd-input').focus(); 
             }
-            
-            const getOptimalUrl = (fileObj) => {
-                if (fileObj.size < 1024) {
-                    return { 
-                        url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
-                        fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                        type: 'LFS DIRECT' 
-                    };
-                } else {
-                    return { 
-                        url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
-                        fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                        type: 'FASTLY EDGE' 
-                    };
-                }
-            };
-            
-            async function analyzeSongTitle(title) {
-                if (!GEMINI_API_KEY || GEMINI_API_KEY === '') { aiText.innerText = "未配置 Gemini API Key。"; return; }
-                aiText.innerText = "📡 正在连接 Gemini 解析歌名...";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-                const prompt = `简短分析歌曲《${title}》含义，50字以内。`;
-                try {
-                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-                    const data = await response.json();
-                    if (data.candidates) { aiText.innerText = data.candidates[0].content.parts[0].text; }
-                } catch (e) { aiText.innerText = "解析失败。"; }
+        }
+        
+        const getOptimalUrl = (fileObj) => {
+            if (fileObj.size < 1024) {
+                return { 
+                    url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                    fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                    type: 'DIRECT' 
+                };
+            } else {
+                return { 
+                    url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
+                    fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
+                    type: 'FASTLY CDN' 
+                };
             }
-            
-            async function start() {
-                try {
-                    const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
-                    const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
-                    if (!r.ok) throw new Error("无法读取仓库");
-                    const d = await r.json();
-                    all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
-                        const route = getOptimalUrl(f);
-                        return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
-                    });
-                    filtered = [...all]; drawList();
-                    if(all.length > 0) loadTrack(0, false);
-                    status.innerText = "READY. SMART ROUTING ENABLED.";
-                } catch (e) { status.innerText = "报错 👉 " + e.message; }
-            }
-            
-            function drawList() {
-                let html = '';
-                for(let i=0; i<filtered.length; i++) {
-                    let s = filtered[i];
-                    html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
+        };
+        
+        async function analyzeSongTitle(title) {
+            if (!GEMINI_API_KEY) { aiText.innerText = "智能分析需要 API Key。"; return; }
+            aiText.innerText = "正在分析曲目意境...";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const prompt = `簡短分析歌曲《${title}》的風格與可能的情感意境，50字以內。`;
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+                const data = await response.json();
+                if (data.candidates) { aiText.innerText = data.candidates[0].content.parts[0].text; }
+            } catch (e) { aiText.innerText = "暫時無法分析，請稍後。"; }
+        }
+        
+        async function start() {
+            try {
+                const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
+                const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
+                if (!r.ok) throw new Error("庫存讀取失敗");
+                const d = await r.json();
+                all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
+                    const route = getOptimalUrl(f);
+                    return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
+                });
+                filtered = [...all]; drawList();
+                if(all.length > 0) loadTrack(0, false);
+                status.innerText = "服務就緒，已優化路由。";
+            } catch (e) { status.innerText = "錯誤: " + e.message; }
+        }
+        
+        function drawList() {
+            let html = '';
+            for(let i=0; i<filtered.length; i++) {
+                let s = filtered[i];
+                html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
                 <span>${s.t}</span>
-                <span style="opacity:0.4;font-size:0.8rem;">${s.f.split('.').pop().toUpperCase()}</span>
+                <span style="opacity:0.4; font-size:0.7rem; font-weight:700;">${s.f.split('.').pop().toUpperCase()}</span>
             </li>`;
-                }
-                document.getElementById('list').innerHTML = html;
             }
+            document.getElementById('list').innerHTML = html;
+        }
+        
+        function loadTrack(idx, auto = true) {
+            cur = idx; usingFallback = false; const s = filtered[cur];
+            audio.pause(); audio.src = s.u; audio.load(); 
+            document.getElementById('title').innerText = s.t;
+            speedTag.innerText = s.routeType;
+            status.innerText = `串流模式: ${s.routeType}`;
             
-            function loadTrack(idx, auto = true) {
-                cur = idx; usingFallback = false; const s = filtered[cur];
-                audio.pause(); audio.src = s.u; audio.load(); 
-                document.getElementById('title').innerText = s.t;
-                speedTag.innerText = s.routeType;
-                speedTag.style.background = s.routeType === 'CDN EDGE' ? '#00d2ff' : '#ff0055';
-                status.innerText = `CONNECTING VIA ${s.routeType}...`;
-                
-                updateMediaSession(s.t); // 同步更新锁屏信息
-                
-                const h = Math.floor(Math.random() * 360);
-                bgPattern.style.background = `hsl(${h}, 50%, 15%)`;
-                drawList();
-                
-                clearTimeout(aiTimer);
-                aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
-                if (auto || isP) audio.play().then(() => { isP = true; ui(); });
-            }
+            updateMediaSession(s.t); 
+            drawList();
             
-            audio.addEventListener('error', () => {
-                const s = filtered[cur];
-                if (!usingFallback) {
-                    usingFallback = true; audio.src = s.fallbackUrl; audio.load(); audio.play();
-                } else { status.innerText = "❌ 加载失败。"; }
-            });
-            
-            audio.addEventListener('progress', () => { if (audio.buffered.length > 0) { buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; } });
-            audio.addEventListener('playing', () => { status.innerText = "STREAMING ACTIVE"; isP = true; ui(); });
-            audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
-            
-            function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
-            function ui() { playBtn.innerText = isP ? '⏸' : '▶️'; }
-            function step(d) { let n = (cur + d + filtered.length) % filtered.length; if (loop === 'random') n = Math.floor(Math.random() * filtered.length); loadTrack(n); }
-            function selectTrack(i) { loadTrack(i); isP = true; ui(); }
-            document.getElementById('seek-bar').onclick = (e) => { audio.currentTime = ((e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth) * audio.duration; };
-            audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
-            function setMode() { const mArr = ['list', 'random', 'single']; const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; loop = mArr[(mArr.indexOf(loop) + 1) % 3]; document.getElementById('mode-btn').innerText = mText[loop]; }
-            function doSearch() { filtered = all.filter(s => s.f.toLowerCase().includes(document.getElementById('q').value.toLowerCase())); drawList(); }
-            function dl() { const a = document.createElement('a'); a.href = filtered[cur].u; a.download = filtered[cur].f; a.target = '_blank'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        </script>
-    </body>
+            clearTimeout(aiTimer);
+            aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
+            if (auto || isP) audio.play().then(() => { isP = true; ui(); });
+        }
+        
+        audio.addEventListener('error', () => {
+            const s = filtered[cur];
+            if (!usingFallback) {
+                usingFallback = true; audio.src = s.fallbackUrl; audio.load(); audio.play();
+            } else { status.innerText = "載入失敗，請檢查網絡連結。"; }
+        });
+        
+        audio.addEventListener('progress', () => { 
+            if (audio.buffered.length > 0) { 
+                buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; 
+            } 
+        });
+        audio.addEventListener('playing', () => { status.innerText = "串流播放中"; isP = true; ui(); });
+        audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
+        
+        function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
+        function ui() { playBtn.innerHTML = isP ? '<span>||</span>' : '▶'; }
+        function step(d) { 
+            let n = (cur + d + filtered.length) % filtered.length; 
+            if (loop === 'random') n = Math.floor(Math.random() * filtered.length); 
+            loadTrack(n); 
+        }
+        function selectTrack(i) { loadTrack(i); isP = true; ui(); }
+        
+        document.getElementById('seek-bar').onclick = (e) => { 
+            const rect = e.currentTarget.getBoundingClientRect();
+            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
+        };
+        
+        audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
+        
+        function setMode() { 
+            const mArr = ['list', 'random', 'single']; 
+            const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; 
+            loop = mArr[(mArr.indexOf(loop) + 1) % 3]; 
+            document.getElementById('mode-btn').innerText = mText[loop]; 
+        }
+        
+        function doSearch() { 
+            const val = document.getElementById('q').value.toLowerCase();
+            filtered = all.filter(s => s.f.toLowerCase().includes(val)); 
+            drawList(); 
+        }
+        
+        function dl() { 
+            const a = document.createElement('a'); 
+            a.href = filtered[cur].u; 
+            a.download = filtered[cur].f; 
+            a.target = '_blank'; 
+            document.body.appendChild(a); 
+            a.click(); 
+            document.body.removeChild(a); 
+        }
+    </script>
+</body>
 </html>
