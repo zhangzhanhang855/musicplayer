@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Premium Music Space | Gemini Pro Final</title>
+    <title>Premium Music Space | Pro</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,18 +16,16 @@
             --accent: #1d1d1f; 
             --accent-soft: #fbfbfb;
             --ai-color: #5856D6;
-            --bg: #f5f5f7; 
+            --bg: #f2f2f2; 
             --panel: #ffffff;
             --text-main: #1d1d1f;
             --text-sub: #86868b;
             --br-lg: 32px;
             --br-md: 20px;
-            /* 強化的 3D 陰影層次 */
-            --shadow-3d: 0 40px 80px rgba(0, 0, 0, 0.12), 0 10px 25px rgba(0, 0, 0, 0.04);
-            --shadow-inset: inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px #fff;
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
             --font-serif: "Noto Serif TC", serif;
             --font-sans: "Inter", system-ui, sans-serif;
-            --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
@@ -37,8 +35,8 @@
             height: 100%; height: 100dvh; 
             font-family: var(--font-serif);
             background-color: var(--bg); 
-            background-image: radial-gradient(#e2e2e2 0.8px, transparent 0.8px);
-            background-size: 30px 32px;
+            background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
             color: var(--text-main); 
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
@@ -51,126 +49,123 @@
             background: var(--bg); z-index: 10000;
         }
         .login-box { 
-            text-align: center; width: 100%; max-width: 380px; padding: 50px;
-            background: var(--panel); border-radius: var(--br-lg); 
-            box-shadow: var(--shadow-3d); border: 1px solid rgba(255,255,255,0.8);
+            text-align: center; width: 100%; max-width: 360px; padding: 40px;
+            background: var(--panel); border-radius: var(--br-lg); box-shadow: var(--shadow);
         }
         .login-box h1 { font-weight: 500; font-size: 1.5rem; letter-spacing: 0.3em; margin-bottom: 30px; }
         .pwd-input { 
-            width: 100%; background: var(--accent-soft); border: 1px solid #e0e0e0;
+            width: 100%; background: var(--accent-soft); border: 1px solid #eee;
             padding: 18px; border-radius: var(--br-md); font-size: 1rem;
-            text-align: center; font-family: var(--font-sans); margin-bottom: 24px;
+            text-align: center; font-family: var(--font-sans); margin-bottom: 20px;
         }
         .login-btn { 
             width: 100%; background: var(--accent); color: #fff; border: none;
             padding: 18px; border-radius: var(--br-md); font-weight: 600; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        /* 主佈局 - 比例重調 */
+        /* 主佈局 */
         .container { 
-            display: none; height: 100%; max-width: 1050px; margin: 0 auto;
+            display: none; height: 100%; max-width: 1100px; margin: 0 auto;
             padding: 40px 20px; flex-direction: column; gap: 30px;
         }
-        .main-content { display: flex; flex: 1; width: 100%; gap: 35px; overflow: hidden; perspective: 1500px; }
 
-        /* 播放器模組：深度 3D 質感 */
+        .main-content {
+            display: flex; flex: 1; width: 100%; gap: 30px; overflow: hidden;
+        }
+
+        /* 左側播放器 */
         .player-card {
             flex: 1.1; display: flex; flex-direction: column;
             background: var(--panel); border-radius: var(--br-lg);
-            padding: 40px; box-shadow: var(--shadow-3d); 
-            border: 1px solid rgba(255,255,255,1);
-            position: relative;
-            transform: rotateX(3deg) rotateY(-1deg);
-            transition: transform 0.5s var(--ease);
+            padding: 40px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.7);
+            overflow-y: auto; scrollbar-width: none;
         }
-        .player-card:hover { transform: rotateX(0deg) rotateY(0deg); }
+        .player-card::-webkit-scrollbar { display: none; }
 
-        /* 專輯封面 - 浮空感 */
+        /* 虛擬封面：填補空白 */
         .cover-art {
-            width: 100%; aspect-ratio: 1/1; max-width: 240px; margin: 0 auto 30px;
-            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            width: 100%; aspect-ratio: 1/1; max-width: 280px; margin: 0 auto 30px;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f7 100%);
             border-radius: var(--br-md);
-            box-shadow: 12px 12px 25px #d9d9d9, -10px -10px 25px #ffffff, 0 15px 35px rgba(0,0,0,0.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
-            border: 1px solid #fff;
+            transition: all 1s ease;
+        }
+        .cover-art::after {
+            content: 'PREMIUM'; font-family: var(--font-sans); font-size: 0.6rem; 
+            letter-spacing: 0.5em; opacity: 0.2; transform: rotate(-90deg);
         }
 
         .meta { text-align: center; margin-bottom: 30px; }
-        .meta h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 10px 0; color: #121212; letter-spacing: -0.02em; }
-        .meta p { font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.35em; text-transform: uppercase; font-weight: 700; }
+        .meta h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 8px 0; }
+        .meta p { font-size: 0.75rem; color: var(--text-sub); letter-spacing: 0.2em; text-transform: uppercase; margin: 0; }
 
-        /* 內凹進度條 */
-        .prog-wrap { width: 100%; margin-bottom: 40px; cursor: pointer; }
-        .prog-bg { 
-            height: 8px; background: #e8e9ed; border-radius: 20px; position: relative;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.08); 
-        }
-        #prog-bar { 
-            height: 100%; background: linear-gradient(90deg, #1d1d1f, #555); 
-            border-radius: 20px; width: 0%; position: relative;
-        }
+        .prog-wrap { width: 100%; margin-bottom: 35px; cursor: pointer; }
+        .prog-bg { height: 3px; background: #eee; border-radius: 2px; position: relative; }
+        #prog-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; position: relative; }
         #prog-bar::after {
-            content: ''; position: absolute; right: -8px; top: -6px; width: 20px; height: 20px;
-            background: #fff; border: 4px solid var(--accent); border-radius: 50%;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+            content: ''; position: absolute; right: -5px; top: -4px; width: 11px; height: 11px;
+            background: #fff; border: 2px solid var(--accent); border-radius: 50%;
         }
 
-        /* 物理回彈按鈕 */
-        .controls { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 30px; }
-        .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 0.8rem; font-weight: 800; opacity: 0.5; transition: 0.3s; }
+        .controls { display: flex; align-items: center; justify-content: center; gap: 35px; margin-bottom: 40px; }
+        .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 600; }
         .controls .play-btn {
-            width: 70px; height: 70px; background: var(--accent); color: #fff;
+            width: 65px; height: 65px; background: var(--accent); color: #fff;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; opacity: 1;
-            box-shadow: 0 12px 25px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            font-size: 1.3rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s;
         }
-        .controls .play-btn:active { transform: scale(0.9) translateY(4px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .controls .play-btn:hover { transform: scale(1.05); }
 
-        /* AI 框：質感優化 */
         .ai-box {
-            background: #fafafb; border: 1px solid #f0f0f2; padding: 20px; border-radius: var(--br-md);
-            box-shadow: var(--shadow-inset); position: relative;
+            background: #fcfcfd; border: 1px solid #f1f1f4; padding: 20px; border-radius: var(--br-md);
+            position: relative;
         }
-        .ai-label { font-size: 0.6rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 8px; text-transform: uppercase; }
-        #ai-text { font-size: 0.85rem; line-height: 1.8; color: #4a4a4f; min-height: 3.2rem; }
+        .ai-box::before { content: ''; position: absolute; left: 0; top: 20px; bottom: 20px; width: 3px; background: var(--ai-color); border-radius: 0 4px 4px 0; }
+        .ai-label { font-size: 0.65rem; font-weight: 700; color: var(--ai-color); letter-spacing: 0.15em; margin-bottom: 8px; font-family: var(--font-sans); }
+        #ai-text { font-size: 0.85rem; line-height: 1.7; color: #444; min-height: 3em; }
 
-        /* 右側列表：徹底滑動修復 */
-        .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
-        .search-bar { display: flex; gap: 12px; flex-shrink: 0; }
+        /* 右側列表 */
+        .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        
+        .search-bar { display: flex; gap: 10px; }
         .search-bar input {
-            flex: 1; background: var(--panel); border: 1px solid #e2e2e5; padding: 18px 25px; border-radius: var(--br-md); 
-            font-family: var(--font-serif); font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+            flex: 1; background: var(--panel); border: 1px solid #e5e5e5;
+            padding: 16px 20px; border-radius: var(--br-md); font-family: var(--font-serif);
+            font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
         }
-        .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 20px; border-radius: var(--br-md); cursor: pointer; }
+        .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 20px; border-radius: var(--br-md); cursor: pointer; font-size: 1.1rem; }
 
         .list-container {
-            flex: 1; background: var(--panel); border-radius: var(--br-lg); overflow: hidden; 
-            display: flex; flex-direction: column; border: 1px solid #e5e5ea; box-shadow: var(--shadow-3d);
+            flex: 1; background: var(--panel); border-radius: var(--br-lg);
+            overflow: hidden; display: flex; flex-direction: column;
+            border: 1px solid #e5e5e5; box-shadow: var(--shadow);
         }
         #list {
             list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1;
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch;
         }
         #list li {
-            padding: 20px 30px; border-bottom: 1px solid #f5f5f7; cursor: pointer; 
-            display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
+            padding: 20px 25px; border-bottom: 1px solid #f5f5f5;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            transition: 0.2s;
         }
-        #list li:hover { background: #fafafc; padding-left: 35px; }
-        #list li.active { background: #f8f8fb; border-left: 8px solid var(--accent); font-weight: 700; }
+        #list li:hover { background: #fafafa; }
+        #list li.active { background: #fcfcfc; border-left: 5px solid var(--accent); font-weight: 600; }
+        .li-info { display: flex; flex-direction: column; gap: 2px; }
         .li-title { font-size: 0.95rem; }
-        .li-meta { font-size: 0.6rem; color: #a1a1a6; font-weight: 700; letter-spacing: 1px; }
+        .li-meta { font-size: 0.6rem; color: #bbb; font-family: var(--font-sans); letter-spacing: 1px; }
 
         #list::-webkit-scrollbar { width: 4px; }
-        #list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
+        #list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
 
         @media (max-width: 900px) {
-            .container { padding: 20px; overflow-y: auto; }
-            .main-content { flex-direction: column; overflow: visible; perspective: none; }
-            .side-content { flex: none; height: 500px; }
-            .player-card { flex: none; transform: none; margin-bottom: 30px; }
+            .container { padding: 20px; }
+            .main-content { flex-direction: column; overflow: visible; }
+            .side-content { flex: none; height: auto; }
+            .player-card { flex: none; margin-bottom: 20px; }
+            #list { max-height: 350px; }
         }
     </style>
 </head>
@@ -178,23 +173,31 @@
     
     <div id="login-screen">
         <div class="login-box">
-            <h1>PREMIUM</h1>
-            <p>INTELLECTUAL SOUNDSCAPE</p>
+            <h1>啟程</h1>
+            <p>ACCESSING PRIVATE SPACE</p>
             <input type="password" id="pwd-input" class="pwd-input" placeholder="••••••" onkeydown="if(event.key==='Enter') checkPwd()">
             <button onclick="checkPwd()" class="login-btn">進入空間</button>
-            <div id="pwd-error" style="color:#ff3b30; font-size:0.75rem; margin-top:20px; font-weight: 600;"></div>
+            <div id="pwd-error" style="color:#ff453a; font-size:0.7rem; margin-top:15px; font-family: var(--font-sans);"></div>
         </div>
     </div>
     
     <div class="container" id="main-app">
         <div class="main-content">
+            <!-- 播放主體 -->
             <div class="player-card">
                 <div class="cover-art" id="cover"></div>
+                
                 <div class="meta">
                     <p id="status">Ready to Stream</p>
-                    <h2 id="title">靜候啟程</h2>
+                    <h2 id="title">待命</h2>
                 </div>
-                <div class="prog-wrap" id="seek-bar"><div class="prog-bg"><div id="prog-bar"></div></div></div>
+                
+                <div class="prog-wrap" id="seek-bar">
+                    <div class="prog-bg">
+                        <div id="prog-bar"></div>
+                    </div>
+                </div>
+                
                 <div class="controls">
                     <button onclick="setLoop()" id="mode-btn" style="width:50px">LIST</button>
                     <button onclick="step(-1)">PREV</button>
@@ -202,18 +205,23 @@
                     <button onclick="step(1)">NEXT</button>
                     <button onclick="dl()" style="width:50px">DL</button>
                 </div>
+
                 <div class="ai-box">
-                    <div class="ai-label">✦ Gemini Pro Intelligence</div>
-                    <div id="ai-text">準備進行深度曲目解析，感知旋律中的意象...</div>
+                    <div class="ai-label">✦ GEMINI AI INSIGHT</div>
+                    <div id="ai-text">靜候曲目載入，準備感應旋律意境...</div>
                 </div>
             </div>
             
+            <!-- 搜尋與列表 -->
             <div class="side-content">
                 <div class="search-bar">
-                    <input type="text" id="q" placeholder="搜尋您的私藏音樂庫..." oninput="doSearch()">
+                    <input type="text" id="q" placeholder="搜尋您的私藏曲庫..." oninput="doSearch()">
                     <button class="add-btn" onclick="addMusic()">＋</button>
                 </div>
-                <div class="list-container"><ul id="list"></ul></div>
+                
+                <div class="list-container">
+                    <ul id="list"></ul>
+                </div>
             </div>
         </div>
     </div>
@@ -222,11 +230,11 @@
     
     <script>
         // =========================================================================
-        // 🔑 核心配置區域
+        // 核心配置
         // =========================================================================
-        const apiKey = "AIzaSyB_XsYIvO01YrhSRhTCo3ZboEByIxtch5M"; 
+        const apiKey = ""; 
         const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
-        const FADE_TIME = 800;
+        const FADE_TIME = 800; 
         // =========================================================================
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
@@ -235,7 +243,7 @@
         const aiBox = document.getElementById('ai-text');
         const cover = document.getElementById('cover');
 
-        // 音量淡入淡出
+        // 漸變音量
         function fadeVolume(target, duration, callback) {
             if (fadeInterval) clearInterval(fadeInterval);
             const step = 0.05;
@@ -251,71 +259,55 @@
             }, intervalTime);
         }
 
+        // 隨機封面顏色：增加視覺飽滿度
         function updateCover() {
             const h = Math.floor(Math.random() * 360);
-            cover.style.background = `linear-gradient(145deg, hsl(${h}, 15%, 95%) 0%, hsl(${h}, 10%, 80%) 100%)`;
+            cover.style.background = `linear-gradient(135deg, hsl(${h}, 20%, 90%) 0%, hsl(${h}, 10%, 98%) 100%)`;
         }
 
-        // Gemini AI 終極修正邏輯
+        const getUrl = (f) => {
+            const isLFS = f.size < 1024;
+            return isLFS ? {
+                url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(f.name)}`,
+                type: 'LFS'
+            } : {
+                url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`,
+                type: 'CDN'
+            };
+        };
+
         async function analyzeInsight(name) {
-            // 格式檢測：如果您貼了 OpenAI 的 Key
-            if (apiKey.startsWith('sk-')) {
-                aiBox.innerHTML = "<span style='color:red'>⚠️ Key 格式錯誤：您使用了 OpenAI Key，請前往 Google AI Studio 獲取 AIza 開頭的 Key。</span>";
-                return;
-            }
-
-            if (!apiKey || apiKey.includes("填入")) {
-                aiBox.innerText = "⚠️ 尚未配置 API Key。";
-                return;
-            }
-
-            aiBox.innerText = "正在調用 Pro 節點感應旋律...";
-            
-            // 使用穩定版 v1 端點與 gemini-1.5-flash
-            const endpoint = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            
+            if (!apiKey) return;
+            aiBox.innerText = "正在感應旋律中的微光...";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             try {
-                const response = await fetch(endpoint, {
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。直接輸出內容，不要前綴。` }] }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。不要給出前綴，直接輸出。` }] }] })
                 });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    // 精確顯示錯誤原因
-                    throw new Error(data.error?.message || `HTTP ${response.status}`);
-                }
-
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在空間中緩緩流淌。";
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
                 
-                // 打字機效果
                 aiBox.innerText = "";
                 let i = 0;
                 const type = () => {
                     if (i < text.length) {
                         aiBox.innerText += text.charAt(i); i++;
-                        setTimeout(type, 50);
+                        setTimeout(type, 60);
                     }
                 };
                 type();
-            } catch (e) { 
-                console.error("Gemini Error:", e);
-                aiBox.innerText = "❌ 解析失敗：" + e.message;
-            }
+            } catch (e) { aiBox.innerText = "旋律深邃，意境自成一體。"; }
         }
 
-        // --- 核心播放邏輯 ---
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 init();
             } else {
-                document.getElementById('pwd-error').innerText = '身分驗證失敗';
+                document.getElementById('pwd-error').innerText = '身份驗證不正確';
             }
         }
 
@@ -324,10 +316,8 @@
                 const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
                 const data = await res.json();
                 allSongs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
-                    const isLFS = f.size < 1024;
-                    const u = isLFS ? `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(f.name)}` 
-                                  : `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`;
-                    return { t: f.name.replace(/\.[^/.]+$/, ""), u, type: isLFS ? 'LFS' : 'CDN' };
+                    const route = getUrl(f);
+                    return { t: f.name.replace(/\.[^/.]+$/, ""), u: route.url, type: route.type };
                 });
                 filtered = [...allSongs];
                 renderList();
@@ -338,15 +328,22 @@
         function renderList() {
             document.getElementById('list').innerHTML = filtered.map((s, i) => `
                 <li class="${curIdx === i ? 'active' : ''}" onclick="selectTrack(${i})">
-                    <div class="li-info"><span class="li-title">${s.t}</span><span class="li-meta">${s.type} STREAM</span></div>
-                    <span style="opacity:0.2; font-size:0.75rem; font-weight:700;">${i+1 < 10 ? '0'+(i+1) : i+1}</span>
-                </li>`).join('');
+                    <div class="li-info">
+                        <span class="li-title">${s.t}</span>
+                        <span class="li-meta">${s.type} MASTERING</span>
+                    </div>
+                    <span style="opacity:0.15; font-size:0.7rem;">${i+1 < 10 ? '0'+(i+1) : i+1}</span>
+                </li>
+            `).join('');
         }
 
         function loadTrack(idx, auto = true) {
             if(!filtered[idx]) return;
-            if (isPlaying) fadeVolume(0, 400, () => executeLoad(idx, auto));
-            else executeLoad(idx, auto);
+            if (isPlaying) {
+                fadeVolume(0, 400, () => executeLoad(idx, auto));
+            } else {
+                executeLoad(idx, auto);
+            }
         }
 
         function executeLoad(idx, auto) {
@@ -355,17 +352,27 @@
             audio.src = song.u;
             audio.volume = 0;
             document.getElementById('title').innerText = song.t;
-            document.getElementById('status').innerText = song.type + " SOURCE";
-            updateCover(); renderList();
+            document.getElementById('status').innerText = song.type + " STREAMING";
+            updateCover();
+            renderList();
             clearTimeout(window.aiTimer);
             window.aiTimer = setTimeout(() => analyzeInsight(song.t), 1500);
-            if (auto) { audio.play(); isPlaying = true; fadeVolume(1, FADE_TIME); syncUI(); }
+            if (auto) {
+                audio.play();
+                isPlaying = true;
+                fadeVolume(1, FADE_TIME);
+                syncUI();
+            }
         }
 
         function selectTrack(i) { loadTrack(i); }
         function playToggle() {
-            if (audio.paused) { audio.volume = 0; audio.play(); fadeVolume(1, FADE_TIME); isPlaying = true; }
-            else { fadeVolume(0, FADE_TIME, () => audio.pause()); isPlaying = false; }
+            if (audio.paused) {
+                audio.volume = 0; audio.play();
+                fadeVolume(1, FADE_TIME); isPlaying = true;
+            } else {
+                fadeVolume(0, FADE_TIME, () => audio.pause()); isPlaying = false;
+            }
             syncUI();
         }
         function syncUI() { document.getElementById('play-btn').innerText = isPlaying ? '||' : '▶'; }
@@ -375,7 +382,9 @@
             filtered = allSongs.filter(s => s.t.toLowerCase().includes(key));
             renderList();
         }
-        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=ADD_MUSIC`; }
+        function addMusic() {
+            window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=ADD_MUSIC`;
+        }
         function setLoop() {
             const modes = ['list', 'random', 'single'];
             loopMode = modes[(modes.indexOf(loopMode) + 1) % 3];
@@ -383,7 +392,9 @@
         }
         function dl() { window.open(filtered[curIdx].u); }
 
-        audio.ontimeupdate = () => { document.getElementById('prog-bar').style.width = (audio.currentTime / audio.duration * 100) + '%'; };
+        audio.ontimeupdate = () => {
+            document.getElementById('prog-bar').style.width = (audio.currentTime / audio.duration * 100) + '%';
+        };
         audio.onended = () => { if(loopMode === 'single') audio.play(); else step(1); };
         document.getElementById('seek-bar').onclick = (e) => { 
             const rect = e.currentTarget.getBoundingClientRect();
