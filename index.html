@@ -374,7 +374,7 @@
             }
             syncUI();
         }
-        function syncUI() { document.getElementById('play-btn').innerText = isPlaying ? '||' : '▶'; }
+        function syncUI() { document.getElementById('play-btn').innerText = isPlaying ? '| |' : '▶'; }
         function step(d) { loadTrack((curIdx + d + filtered.length) % filtered.length); }
         function doSearch() {
             const key = document.getElementById('q').value.toLowerCase();
