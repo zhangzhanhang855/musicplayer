@@ -1,28 +1,31 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Premium Music Space | Masterpiece</title>
+    <title>Premium Music Space | Pro</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
         :root { 
             --accent: #1d1d1f; 
-            --accent-soft: #f5f5f7;
-            --ai-glow: rgba(88, 86, 214, 0.15);
-            --bg: #ffffff; 
+            --accent-soft: #fbfbfb;
+            --ai-color: #5856D6;
+            --bg: #f2f2f2; 
+            --panel: #ffffff;
             --text-main: #1d1d1f;
             --text-sub: #86868b;
             --br-lg: 32px;
-            --br-md: 16px;
-            --shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
-            --font-serif: "Noto Serif TC", "Source Han Serif CN", "Songti SC", serif;
-            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+            --br-md: 20px;
+            --shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+            --font-serif: "Noto Serif TC", serif;
+            --font-sans: "Inter", system-ui, sans-serif;
+            --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
@@ -31,7 +34,10 @@
             margin: 0; padding: 0; 
             height: 100%; height: 100dvh; 
             font-family: var(--font-serif);
-            background: var(--bg); color: var(--text-main); 
+            background-color: var(--bg); 
+            background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            color: var(--text-main); 
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
         }
@@ -39,178 +45,178 @@
         /* 驗證畫面 */
         #login-screen {
             position: fixed; inset: 0;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: var(--bg); z-index: 10000; padding: 24px;
+            display: flex; justify-content: center; align-items: center;
+            background: var(--bg); z-index: 10000;
         }
         .login-box { 
-            text-align: center; width: 100%; max-width: 360px;
-            animation: fadeIn 1.2s var(--ease);
+            text-align: center; width: 100%; max-width: 360px; padding: 40px;
+            background: var(--panel); border-radius: var(--br-lg); box-shadow: var(--shadow);
         }
-        .login-box h1 { font-weight: 500; font-size: 1.8rem; letter-spacing: 0.2em; margin-bottom: 8px; }
-        .login-box p { font-size: 0.8rem; color: var(--text-sub); letter-spacing: 0.1em; margin-bottom: 40px; }
+        .login-box h1 { font-weight: 500; font-size: 1.5rem; letter-spacing: 0.3em; margin-bottom: 30px; }
         .pwd-input { 
-            width: 100%; background: var(--accent-soft); border: 1px solid transparent;
-            padding: 20px; border-radius: var(--br-md); font-size: 1rem;
-            text-align: center; font-family: var(--font-serif); transition: all 0.3s;
-            margin-bottom: 24px;
+            width: 100%; background: var(--accent-soft); border: 1px solid #eee;
+            padding: 18px; border-radius: var(--br-md); font-size: 1rem;
+            text-align: center; font-family: var(--font-sans); margin-bottom: 20px;
         }
-        .pwd-input:focus { background: #fff; border-color: #eee; box-shadow: 0 10px 30px rgba(0,0,0,0.03); }
         .login-btn { 
             width: 100%; background: var(--accent); color: #fff; border: none;
-            padding: 20px; border-radius: var(--br-md); font-weight: 600;
-            cursor: pointer; transition: transform 0.3s, opacity 0.3s; letter-spacing: 2px;
+            padding: 18px; border-radius: var(--br-md); font-weight: 600; cursor: pointer;
         }
-        .login-btn:active { transform: scale(0.98); opacity: 0.9; }
 
         /* 主佈局 */
         .container { 
-            display: none; height: 100%; height: 100dvh;
-            padding: 24px; max-width: 1440px; margin: 0 auto;
-            flex-direction: column;
+            display: none; height: 100%; max-width: 1100px; margin: 0 auto;
+            padding: 40px 20px; flex-direction: column; gap: 30px;
         }
 
-        .main-layout {
-            display: flex; flex: 1; width: 100%; gap: 40px; overflow: hidden;
+        .main-content {
+            display: flex; flex: 1; width: 100%; gap: 30px; overflow: hidden;
         }
 
-        /* 左側播放面板 */
-        .player-panel {
-            flex: 1.2; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            background: #fff; border-radius: var(--br-lg);
-            padding: 40px; border: 1px solid #f0f0f0; box-shadow: var(--shadow);
+        /* 左側播放器 */
+        .player-card {
+            flex: 1.1; display: flex; flex-direction: column;
+            background: var(--panel); border-radius: var(--br-lg);
+            padding: 40px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.7);
+            overflow-y: auto; scrollbar-width: none;
+        }
+        .player-card::-webkit-scrollbar { display: none; }
+
+        /* 虛擬封面：填補空白 */
+        .cover-art {
+            width: 100%; aspect-ratio: 1/1; max-width: 280px; margin: 0 auto 30px;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f7 100%);
+            border-radius: var(--br-md);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            transition: all 1s ease;
+        }
+        .cover-art::after {
+            content: 'PREMIUM'; font-family: var(--font-sans); font-size: 0.6rem; 
+            letter-spacing: 0.5em; opacity: 0.2; transform: rotate(-90deg);
+        }
+
+        .meta { text-align: center; margin-bottom: 30px; }
+        .meta h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 8px 0; }
+        .meta p { font-size: 0.75rem; color: var(--text-sub); letter-spacing: 0.2em; text-transform: uppercase; margin: 0; }
+
+        .prog-wrap { width: 100%; margin-bottom: 35px; cursor: pointer; }
+        .prog-bg { height: 3px; background: #eee; border-radius: 2px; position: relative; }
+        #prog-bar { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; position: relative; }
+        #prog-bar::after {
+            content: ''; position: absolute; right: -5px; top: -4px; width: 11px; height: 11px;
+            background: #fff; border: 2px solid var(--accent); border-radius: 50%;
+        }
+
+        .controls { display: flex; align-items: center; justify-content: center; gap: 35px; margin-bottom: 40px; }
+        .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 0.9rem; font-weight: 600; }
+        .controls .play-btn {
+            width: 65px; height: 65px; background: var(--accent); color: #fff;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s;
+        }
+        .controls .play-btn:hover { transform: scale(1.05); }
+
+        .ai-box {
+            background: #fcfcfd; border: 1px solid #f1f1f4; padding: 20px; border-radius: var(--br-md);
             position: relative;
         }
+        .ai-box::before { content: ''; position: absolute; left: 0; top: 20px; bottom: 20px; width: 3px; background: var(--ai-color); border-radius: 0 4px 4px 0; }
+        .ai-label { font-size: 0.65rem; font-weight: 700; color: var(--ai-color); letter-spacing: 0.15em; margin-bottom: 8px; font-family: var(--font-sans); }
+        #ai-text { font-size: 0.85rem; line-height: 1.7; color: #444; min-height: 3em; }
 
-        .track-meta { text-align: center; margin-bottom: 48px; width: 100%; }
-        .track-meta h2 { font-size: 2rem; font-weight: 500; margin: 0 0 12px 0; letter-spacing: -0.02em; }
-        .track-meta #status { font-size: 0.75rem; color: var(--text-sub); letter-spacing: 0.3em; text-transform: uppercase; }
-
-        .progress-wrapper { width: 100%; max-width: 400px; margin-bottom: 56px; cursor: pointer; }
-        .progress-container { height: 3px; background: #f0f0f0; border-radius: 4px; position: relative; }
-        #prog-bar { height: 100%; background: var(--accent); border-radius: 4px; width: 0%; position: relative; }
-        #prog-bar::after {
-            content: ''; position: absolute; right: -6px; top: -5px; width: 13px; height: 13px;
-            background: #fff; border: 2px solid var(--accent); border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        /* 右側列表 */
+        .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        
+        .search-bar { display: flex; gap: 10px; }
+        .search-bar input {
+            flex: 1; background: var(--panel); border: 1px solid #e5e5e5;
+            padding: 16px 20px; border-radius: var(--br-md); font-family: var(--font-serif);
+            font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
         }
-
-        .controls { display: flex; align-items: center; gap: 48px; }
-        .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); transition: all 0.3s var(--ease); padding: 0; }
-        .controls .btn-step { opacity: 0.3; font-size: 1.2rem; }
-        .controls .btn-step:hover { opacity: 1; }
-        .controls .btn-play { 
-            width: 80px; height: 80px; background: var(--accent); color: #fff;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-
-        .ai-insight {
-            width: 100%; max-width: 440px; margin-top: 64px;
-            background: #fafafa; border-radius: var(--br-md); padding: 24px;
-            border: 1px solid #f0f0f0; position: relative; overflow: hidden;
-        }
-        .ai-insight::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #5856D6;
-        }
-        .ai-title { font-size: 0.7rem; font-weight: 700; color: #5856D6; letter-spacing: 0.2em; margin-bottom: 8px; text-transform: uppercase; }
-        #ai-text { font-size: 0.9rem; line-height: 1.8; color: #444; min-height: 2.5rem; }
-
-        /* 右側列表與搜尋 */
-        .side-panel {
-            flex: 0.8; display: flex; flex-direction: column; height: 100%;
-        }
-
-        .search-area { display: flex; gap: 12px; margin-bottom: 24px; }
-        .search-input {
-            flex: 1; background: #fafafa; border: 1px solid #f0f0f0;
-            padding: 18px 24px; border-radius: var(--br-md); font-family: var(--font-serif);
-            font-size: 0.9rem; transition: all 0.3s;
-        }
-        .btn-icon { 
-            background: var(--accent); color: #fff; border: none; padding: 0 24px;
-            border-radius: var(--br-md); cursor: pointer; transition: all 0.3s;
-        }
+        .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 20px; border-radius: var(--br-md); cursor: pointer; font-size: 1.1rem; }
 
         .list-container {
-            flex: 1; background: #fff; border: 1px solid #f0f0f0;
-            border-radius: var(--br-lg); overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            flex: 1; background: var(--panel); border-radius: var(--br-lg);
+            overflow: hidden; display: flex; flex-direction: column;
+            border: 1px solid #e5e5e5; box-shadow: var(--shadow);
         }
         #list {
-            list-style: none; padding: 0; margin: 0;
-            overflow-y: auto; flex: 1;
+            list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1;
             -webkit-overflow-scrolling: touch;
         }
         #list li {
-            padding: 24px 32px; border-bottom: 1px solid #f9f9f9;
+            padding: 20px 25px; border-bottom: 1px solid #f5f5f5;
             cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            transition: all 0.2s var(--ease);
+            transition: 0.2s;
         }
         #list li:hover { background: #fafafa; }
-        #list li.active { background: #fcfcfc; border-left: 6px solid var(--accent); }
-        .li-info { display: flex; flex-direction: column; gap: 4px; }
-        .li-title { font-size: 1rem; font-weight: 500; }
-        .li-type { font-size: 0.6rem; color: #ccc; letter-spacing: 1px; font-weight: bold; }
+        #list li.active { background: #fcfcfc; border-left: 5px solid var(--accent); font-weight: 600; }
+        .li-info { display: flex; flex-direction: column; gap: 2px; }
+        .li-title { font-size: 0.95rem; }
+        .li-meta { font-size: 0.6rem; color: #bbb; font-family: var(--font-sans); letter-spacing: 1px; }
 
         #list::-webkit-scrollbar { width: 4px; }
-        #list::-webkit-scrollbar-thumb { background: #eee; border-radius: 10px; }
+        #list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
 
-        @media (max-width: 1024px) {
-            .main-layout { flex-direction: column; }
-            .player-panel { flex: none; padding: 40px 24px; }
-            .side-panel { flex: 1; }
-            #list { max-height: 400px; }
-            .container { overflow-y: auto; }
+        @media (max-width: 900px) {
+            .container { padding: 20px; }
+            .main-content { flex-direction: column; overflow: visible; }
+            .side-content { flex: none; height: auto; }
+            .player-card { flex: none; margin-bottom: 20px; }
+            #list { max-height: 350px; }
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
     
     <div id="login-screen">
         <div class="login-box">
-            <h1>PREMIUM</h1>
-            <p>INTELLECTUAL SOUNDSCAPE</p>
-            <input type="password" id="pwd-input" class="pwd-input" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter') checkPwd()">
-            <button onclick="checkPwd()" class="login-btn">ENTER SPACE</button>
-            <div id="pwd-error" style="color:#ff453a; font-size:0.7rem; margin-top:16px; min-height:1em;"></div>
+            <h1>啟程</h1>
+            <p>ACCESSING PRIVATE SPACE</p>
+            <input type="password" id="pwd-input" class="pwd-input" placeholder="••••••" onkeydown="if(event.key==='Enter') checkPwd()">
+            <button onclick="checkPwd()" class="login-btn">進入空間</button>
+            <div id="pwd-error" style="color:#ff453a; font-size:0.7rem; margin-top:15px; font-family: var(--font-sans);"></div>
         </div>
     </div>
     
     <div class="container" id="main-app">
-        <div class="main-layout">
-            <div class="player-panel">
-                <div class="track-meta">
-                    <div id="status">Ready to Stream</div>
-                    <h2 id="title">靜候載入</h2>
+        <div class="main-content">
+            <!-- 播放主體 -->
+            <div class="player-card">
+                <div class="cover-art" id="cover"></div>
+                
+                <div class="meta">
+                    <p id="status">Ready to Stream</p>
+                    <h2 id="title">待命</h2>
                 </div>
                 
-                <div class="progress-wrapper" id="seek-bar">
-                    <div class="progress-container">
+                <div class="prog-wrap" id="seek-bar">
+                    <div class="prog-bg">
                         <div id="prog-bar"></div>
                     </div>
                 </div>
                 
                 <div class="controls">
-                    <button onclick="setLoop()" id="mode-btn" style="font-size: 0.7rem; font-weight: bold; width: 40px;">LIST</button>
-                    <button onclick="step(-1)" class="btn-step">PREV</button>
-                    <button onclick="playToggle()" class="btn-play" id="play-btn">▶</button>
-                    <button onclick="step(1)" class="btn-step">NEXT</button>
-                    <button onclick="dl()" style="font-size: 0.7rem; font-weight: bold; width: 40px;">DL</button>
+                    <button onclick="setLoop()" id="mode-btn" style="width:50px">LIST</button>
+                    <button onclick="step(-1)">PREV</button>
+                    <button onclick="playToggle()" class="play-btn" id="play-btn">▶</button>
+                    <button onclick="step(1)">NEXT</button>
+                    <button onclick="dl()" style="width:50px">DL</button>
                 </div>
 
-                <div class="ai-insight">
-                    <div class="ai-title">✦ Gemini AI Insight</div>
-                    <div id="ai-text">準備進行深度曲目解析...</div>
+                <div class="ai-box">
+                    <div class="ai-label">✦ GEMINI AI INSIGHT</div>
+                    <div id="ai-text">靜候曲目載入，準備感應旋律意境...</div>
                 </div>
             </div>
             
-            <div class="side-panel">
-                <div class="search-area">
-                    <input type="text" id="q" class="search-input" placeholder="SEARCH PRIVATE REPO..." oninput="doSearch()">
-                    <button class="btn-icon" onclick="addMusic()">＋</button>
+            <!-- 搜尋與列表 -->
+            <div class="side-content">
+                <div class="search-bar">
+                    <input type="text" id="q" placeholder="搜尋您的私藏曲庫..." oninput="doSearch()">
+                    <button class="add-btn" onclick="addMusic()">＋</button>
                 </div>
                 
                 <div class="list-container">
@@ -227,37 +233,36 @@
         // 核心配置
         // =========================================================================
         const apiKey = ""; 
-        const G = { 
-            user: 'zhangzhanhang855', 
-            repo: 'musicplayer', 
-            ver: 'main' 
-        };
-        const FADE_TIME = 800; // 淡入淡出時長 (ms)
+        const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
+        const FADE_TIME = 800; 
         // =========================================================================
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
         let fadeInterval = null;
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
+        const cover = document.getElementById('cover');
 
-        // 音量漸變控制
+        // 漸變音量
         function fadeVolume(target, duration, callback) {
             if (fadeInterval) clearInterval(fadeInterval);
             const step = 0.05;
             const intervalTime = duration / (1 / step);
-            
             fadeInterval = setInterval(() => {
-                if (target > audio.volume) {
-                    audio.volume = Math.min(audio.volume + step, target);
-                } else {
-                    audio.volume = Math.max(audio.volume - step, target);
-                }
-                
-                if (audio.volume === target) {
+                if (target > audio.volume) audio.volume = Math.min(audio.volume + step, target);
+                else audio.volume = Math.max(audio.volume - step, target);
+                if (Math.abs(audio.volume - target) < 0.01) {
+                    audio.volume = target;
                     clearInterval(fadeInterval);
                     if (callback) callback();
                 }
             }, intervalTime);
+        }
+
+        // 隨機封面顏色：增加視覺飽滿度
+        function updateCover() {
+            const h = Math.floor(Math.random() * 360);
+            cover.style.background = `linear-gradient(135deg, hsl(${h}, 20%, 90%) 0%, hsl(${h}, 10%, 98%) 100%)`;
         }
 
         const getUrl = (f) => {
@@ -273,13 +278,13 @@
 
         async function analyzeInsight(name) {
             if (!apiKey) return;
-            aiBox.innerText = "感應中...";
+            aiBox.innerText = "正在感應旋律中的微光...";
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             try {
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。直接給出結果。` }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。不要給出前綴，直接輸出。` }] }] })
                 });
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
@@ -288,23 +293,21 @@
                 let i = 0;
                 const type = () => {
                     if (i < text.length) {
-                        aiBox.innerText += text.charAt(i);
-                        i++;
-                        setTimeout(type, 50);
+                        aiBox.innerText += text.charAt(i); i++;
+                        setTimeout(type, 60);
                     }
                 };
                 type();
-            } catch (e) { aiBox.innerText = "意境深邃，暫時無法言表。"; }
+            } catch (e) { aiBox.innerText = "旋律深邃，意境自成一體。"; }
         }
 
         function checkPwd() {
-            const val = document.getElementById('pwd-input').value;
-            if (val === 'gmsf4rdth89Ky5632') {
+            if (document.getElementById('pwd-input').value === 'gmsf4rdth89Ky5632') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 init();
             } else {
-                document.getElementById('pwd-error').innerText = 'Access Denied: Invalid Code';
+                document.getElementById('pwd-error').innerText = '身份驗證不正確';
             }
         }
 
@@ -323,22 +326,19 @@
         }
 
         function renderList() {
-            const list = document.getElementById('list');
-            list.innerHTML = filtered.map((s, i) => `
+            document.getElementById('list').innerHTML = filtered.map((s, i) => `
                 <li class="${curIdx === i ? 'active' : ''}" onclick="selectTrack(${i})">
                     <div class="li-info">
                         <span class="li-title">${s.t}</span>
-                        <span class="li-type">${s.type} STREAM</span>
+                        <span class="li-meta">${s.type} MASTERING</span>
                     </div>
-                    <span style="opacity:0.2">0${i+1}</span>
+                    <span style="opacity:0.15; font-size:0.7rem;">${i+1 < 10 ? '0'+(i+1) : i+1}</span>
                 </li>
             `).join('');
         }
 
         function loadTrack(idx, auto = true) {
             if(!filtered[idx]) return;
-            
-            // 如果正在播放，先淡出再換歌
             if (isPlaying) {
                 fadeVolume(0, 400, () => executeLoad(idx, auto));
             } else {
@@ -350,14 +350,13 @@
             curIdx = idx;
             const song = filtered[curIdx];
             audio.src = song.u;
-            audio.volume = 0; // 初始音量設為 0
+            audio.volume = 0;
             document.getElementById('title').innerText = song.t;
             document.getElementById('status').innerText = song.type + " STREAMING";
+            updateCover();
             renderList();
-            
             clearTimeout(window.aiTimer);
             window.aiTimer = setTimeout(() => analyzeInsight(song.t), 1500);
-            
             if (auto) {
                 audio.play();
                 isPlaying = true;
@@ -367,22 +366,15 @@
         }
 
         function selectTrack(i) { loadTrack(i); }
-
         function playToggle() {
             if (audio.paused) {
-                audio.volume = 0;
-                audio.play();
-                fadeVolume(1, FADE_TIME);
-                isPlaying = true;
+                audio.volume = 0; audio.play();
+                fadeVolume(1, FADE_TIME); isPlaying = true;
             } else {
-                fadeVolume(0, FADE_TIME, () => {
-                    audio.pause();
-                });
-                isPlaying = false;
+                fadeVolume(0, FADE_TIME, () => audio.pause()); isPlaying = false;
             }
             syncUI();
         }
-
         function syncUI() { document.getElementById('play-btn').innerText = isPlaying ? '||' : '▶'; }
         function step(d) { loadTrack((curIdx + d + filtered.length) % filtered.length); }
         function doSearch() {
@@ -404,21 +396,10 @@
             document.getElementById('prog-bar').style.width = (audio.currentTime / audio.duration * 100) + '%';
         };
         audio.onended = () => { if(loopMode === 'single') audio.play(); else step(1); };
-        
         document.getElementById('seek-bar').onclick = (e) => { 
             const rect = e.currentTarget.getBoundingClientRect();
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
         };
-        
-        if ('mediaSession' in navigator) {
-            audio.onplay = () => {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: filtered[curIdx].t,
-                    artist: "Premium Music Space",
-                    album: "ZZH Private Repo"
-                });
-            };
-        }
     </script>
 </body>
 </html>
