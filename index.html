@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Premium Music Space | Pro Edition</title>
+    <title>Premium Music Space | Gemini Pro Final</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,9 @@
             --text-sub: #86868b;
             --br-lg: 32px;
             --br-md: 20px;
-            --shadow-3d: 0 30px 60px rgba(0, 0, 0, 0.12), 0 10px 20px rgba(0, 0, 0, 0.05);
+            /* 強化的 3D 陰影層次 */
+            --shadow-3d: 0 40px 80px rgba(0, 0, 0, 0.12), 0 10px 25px rgba(0, 0, 0, 0.04);
+            --shadow-inset: inset 2px 2px 5px rgba(0,0,0,0.04), inset -2px -2px 5px #fff;
             --font-serif: "Noto Serif TC", serif;
             --font-sans: "Inter", system-ui, sans-serif;
             --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -35,8 +37,8 @@
             height: 100%; height: 100dvh; 
             font-family: var(--font-serif);
             background-color: var(--bg); 
-            background-image: radial-gradient(#e0e0e0 0.8px, transparent 0.8px);
-            background-size: 32px 32px;
+            background-image: radial-gradient(#e2e2e2 0.8px, transparent 0.8px);
+            background-size: 30px 32px;
             color: var(--text-main); 
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
@@ -58,82 +60,91 @@
             width: 100%; background: var(--accent-soft); border: 1px solid #e0e0e0;
             padding: 18px; border-radius: var(--br-md); font-size: 1rem;
             text-align: center; font-family: var(--font-sans); margin-bottom: 24px;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
         .login-btn { 
             width: 100%; background: var(--accent); color: #fff; border: none;
             padding: 18px; border-radius: var(--br-md); font-weight: 600; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .login-btn:active { transform: scale(0.97); }
 
-        /* 主佈局 */
+        /* 主佈局 - 比例重調 */
         .container { 
-            display: none; height: 100%; max-width: 1100px; margin: 0 auto;
+            display: none; height: 100%; max-width: 1050px; margin: 0 auto;
             padding: 40px 20px; flex-direction: column; gap: 30px;
         }
-        .main-content { display: flex; flex: 1; width: 100%; gap: 40px; overflow: hidden; perspective: 1200px; }
+        .main-content { display: flex; flex: 1; width: 100%; gap: 35px; overflow: hidden; perspective: 1500px; }
 
-        /* 左側播放器：3D 物理模組 */
+        /* 播放器模組：深度 3D 質感 */
         .player-card {
             flex: 1.1; display: flex; flex-direction: column;
             background: var(--panel); border-radius: var(--br-lg);
-            padding: 45px; box-shadow: var(--shadow-3d); 
+            padding: 40px; box-shadow: var(--shadow-3d); 
             border: 1px solid rgba(255,255,255,1);
-            position: relative; transform: rotateX(2deg);
+            position: relative;
+            transform: rotateX(3deg) rotateY(-1deg);
+            transition: transform 0.5s var(--ease);
         }
+        .player-card:hover { transform: rotateX(0deg) rotateY(0deg); }
 
+        /* 專輯封面 - 浮空感 */
         .cover-art {
-            width: 100%; aspect-ratio: 1/1; max-width: 260px; margin: 0 auto 35px;
+            width: 100%; aspect-ratio: 1/1; max-width: 240px; margin: 0 auto 30px;
             background: linear-gradient(145deg, #ffffff, #e6e6e6);
             border-radius: var(--br-md);
-            box-shadow: 10px 10px 20px #d9d9d9, -10px -10px 20px #ffffff, 0 20px 40px rgba(0,0,0,0.05);
+            box-shadow: 12px 12px 25px #d9d9d9, -10px -10px 25px #ffffff, 0 15px 35px rgba(0,0,0,0.05);
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
-            transition: all 1s var(--ease);
-        }
-        .cover-art::after {
-            content: 'HI-RES'; font-family: var(--font-sans); font-size: 0.5rem; 
-            letter-spacing: 0.5em; opacity: 0.15; transform: rotate(-90deg);
+            border: 1px solid #fff;
         }
 
-        .meta { text-align: center; margin-bottom: 35px; }
-        .meta h2 { font-size: 1.7rem; font-weight: 600; margin: 0 0 10px 0; color: #121212; }
-        .meta p { font-size: 0.7rem; color: var(--text-sub); letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; }
+        .meta { text-align: center; margin-bottom: 30px; }
+        .meta h2 { font-size: 1.6rem; font-weight: 600; margin: 0 0 10px 0; color: #121212; letter-spacing: -0.02em; }
+        .meta p { font-size: 0.65rem; color: var(--text-sub); letter-spacing: 0.35em; text-transform: uppercase; font-weight: 700; }
 
-        /* 進度條 - 內凹設計 */
+        /* 內凹進度條 */
         .prog-wrap { width: 100%; margin-bottom: 40px; cursor: pointer; }
-        .prog-bg { height: 6px; background: #eaebef; border-radius: 10px; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); }
-        #prog-bar { height: 100%; background: linear-gradient(90deg, #1d1d1f, #434343); border-radius: 10px; width: 0%; position: relative; }
-        #prog-bar::after { content: ''; position: absolute; right: -6px; top: -5px; width: 16px; height: 16px; background: #fff; border: 3px solid var(--accent); border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .prog-bg { 
+            height: 8px; background: #e8e9ed; border-radius: 20px; position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.08); 
+        }
+        #prog-bar { 
+            height: 100%; background: linear-gradient(90deg, #1d1d1f, #555); 
+            border-radius: 20px; width: 0%; position: relative;
+        }
+        #prog-bar::after {
+            content: ''; position: absolute; right: -8px; top: -6px; width: 20px; height: 20px;
+            background: #fff; border: 4px solid var(--accent); border-radius: 50%;
+            box-shadow: 0 5px 12px rgba(0,0,0,0.15);
+        }
 
-        /* 物理按鈕 */
-        .controls { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 40px; }
-        .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 0.85rem; font-weight: 700; opacity: 0.5; transition: 0.3s; }
+        /* 物理回彈按鈕 */
+        .controls { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 30px; }
+        .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 0.8rem; font-weight: 800; opacity: 0.5; transition: 0.3s; }
         .controls .play-btn {
-            width: 75px; height: 75px; background: var(--accent); color: #fff; border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 1;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
+            width: 70px; height: 70px; background: var(--accent); color: #fff;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; opacity: 1;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.2s;
         }
-        .controls .play-btn:active { transform: scale(0.92) translateY(2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .controls .play-btn:active { transform: scale(0.9) translateY(4px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-        /* AI 面板 */
+        /* AI 框：質感優化 */
         .ai-box {
-            background: #fafafb; border: 1px solid #f0f0f2; padding: 22px; border-radius: var(--br-md);
-            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.03); position: relative;
+            background: #fafafb; border: 1px solid #f0f0f2; padding: 20px; border-radius: var(--br-md);
+            box-shadow: var(--shadow-inset); position: relative;
         }
-        .ai-label { font-size: 0.65rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 10px; font-family: var(--font-sans); }
-        #ai-text { font-size: 0.88rem; line-height: 1.8; color: #4a4a4f; min-height: 3.5rem; }
+        .ai-label { font-size: 0.6rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 8px; text-transform: uppercase; }
+        #ai-text { font-size: 0.85rem; line-height: 1.8; color: #4a4a4f; min-height: 3.2rem; }
 
-        /* 右側列表 - 滑動修復 */
-        .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
-        .search-bar { display: flex; gap: 12px; }
+        /* 右側列表：徹底滑動修復 */
+        .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; height: 100%; }
+        .search-bar { display: flex; gap: 12px; flex-shrink: 0; }
         .search-bar input {
             flex: 1; background: var(--panel); border: 1px solid #e2e2e5; padding: 18px 25px; border-radius: var(--br-md); 
-            font-family: var(--font-serif); font-size: 0.95rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            font-family: var(--font-serif); font-size: 0.9rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
         }
-        .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 22px; border-radius: var(--br-md); cursor: pointer; font-size: 1.2rem; }
+        .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 20px; border-radius: var(--br-md); cursor: pointer; }
 
         .list-container {
             flex: 1; background: var(--panel); border-radius: var(--br-lg); overflow: hidden; 
@@ -144,22 +155,22 @@
             scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
         #list li {
-            padding: 22px 30px; border-bottom: 1px solid #f2f2f5; cursor: pointer; 
+            padding: 20px 30px; border-bottom: 1px solid #f5f5f7; cursor: pointer; 
             display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
         }
         #list li:hover { background: #fafafc; padding-left: 35px; }
-        #list li.active { background: #f8f8fb; border-left: 6px solid var(--accent); font-weight: 700; }
-        .li-meta { font-size: 0.65rem; color: #a1a1a6; font-weight: 600; }
+        #list li.active { background: #f8f8fb; border-left: 8px solid var(--accent); font-weight: 700; }
+        .li-title { font-size: 0.95rem; }
+        .li-meta { font-size: 0.6rem; color: #a1a1a6; font-weight: 700; letter-spacing: 1px; }
 
-        #list::-webkit-scrollbar { width: 5px; }
+        #list::-webkit-scrollbar { width: 4px; }
         #list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
 
         @media (max-width: 900px) {
-            .container { padding: 20px; }
+            .container { padding: 20px; overflow-y: auto; }
             .main-content { flex-direction: column; overflow: visible; perspective: none; }
-            .side-content { flex: none; height: auto; }
+            .side-content { flex: none; height: 500px; }
             .player-card { flex: none; transform: none; margin-bottom: 30px; }
-            #list { max-height: 400px; }
         }
     </style>
 </head>
@@ -211,11 +222,11 @@
     
     <script>
         // =========================================================================
-        // 🔑 配置區域 (修正模型名稱)
+        // 🔑 核心配置區域
         // =========================================================================
-        const apiKey = "AIzaSyB_XsYIvO01YrhSRhTCo3ZboEByIxtch5M"; // 已填入您的 Key
+        const apiKey = "AIzaSyB_XsYIvO01YrhSRhTCo3ZboEByIxtch5M"; 
         const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
-        const FADE_TIME = 800; // 0.8秒平滑淡入淡出
+        const FADE_TIME = 800;
         // =========================================================================
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
@@ -224,14 +235,14 @@
         const aiBox = document.getElementById('ai-text');
         const cover = document.getElementById('cover');
 
-        // 音量漸變邏輯
+        // 音量淡入淡出
         function fadeVolume(target, duration, callback) {
             if (fadeInterval) clearInterval(fadeInterval);
-            const stepSize = 0.05;
-            const intervalTime = duration / (1 / stepSize);
+            const step = 0.05;
+            const intervalTime = duration / (1 / step);
             fadeInterval = setInterval(() => {
-                if (target > audio.volume) audio.volume = Math.min(audio.volume + stepSize, target);
-                else audio.volume = Math.max(audio.volume - stepSize, target);
+                if (target > audio.volume) audio.volume = Math.min(audio.volume + step, target);
+                else audio.volume = Math.max(audio.volume - step, target);
                 if (Math.abs(audio.volume - target) < 0.01) {
                     audio.volume = target;
                     clearInterval(fadeInterval);
@@ -242,50 +253,46 @@
 
         function updateCover() {
             const h = Math.floor(Math.random() * 360);
-            cover.style.background = `linear-gradient(145deg, hsl(${h}, 15%, 95%) 0%, hsl(${h}, 10%, 85%) 100%)`;
+            cover.style.background = `linear-gradient(145deg, hsl(${h}, 15%, 95%) 0%, hsl(${h}, 10%, 80%) 100%)`;
         }
 
-        // Gemini AI 解析邏輯 (修正模型識別碼)
+        // Gemini AI 終極修正邏輯
         async function analyzeInsight(name) {
-            if (!apiKey || apiKey === "") {
+            // 格式檢測：如果您貼了 OpenAI 的 Key
+            if (apiKey.startsWith('sk-')) {
+                aiBox.innerHTML = "<span style='color:red'>⚠️ Key 格式錯誤：您使用了 OpenAI Key，請前往 Google AI Studio 獲取 AIza 開頭的 Key。</span>";
+                return;
+            }
+
+            if (!apiKey || apiKey.includes("填入")) {
                 aiBox.innerText = "⚠️ 尚未配置 API Key。";
                 return;
             }
 
-            aiBox.innerText = "正在感應旋律中的微光...";
+            aiBox.innerText = "正在調用 Pro 節點感應旋律...";
             
-            // 修正為穩定的 Pro 等級模型 ID
-            const modelId = "gemini-1.5-flash"; 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+            // 使用穩定版 v1 端點與 gemini-1.5-flash
+            const endpoint = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
             
-            const payload = {
-                contents: [{
-                    parts: [{
-                        text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。直接輸出內容，不要前綴。`
-                    }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 100
-                }
-            };
-
             try {
-                const response = await fetch(url, {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。直接輸出內容，不要前綴。` }] }]
+                    })
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                    // 精確顯示錯誤原因
+                    throw new Error(data.error?.message || `HTTP ${response.status}`);
                 }
 
-                const data = await response.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在空間中緩緩流淌。";
                 
-                // 打字機動效呈現
+                // 打字機效果
                 aiBox.innerText = "";
                 let i = 0;
                 const type = () => {
@@ -296,20 +303,19 @@
                 };
                 type();
             } catch (e) { 
-                console.error("Gemini AI Error:", e);
-                // 顯示具體錯誤以利調試
+                console.error("Gemini Error:", e);
                 aiBox.innerText = "❌ 解析失敗：" + e.message;
             }
         }
 
-        // --- 核心播放邏輯 (GitHub 倉庫版) ---
+        // --- 核心播放邏輯 ---
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 init();
             } else {
-                document.getElementById('pwd-error').innerText = '身分驗證失敗，請重試';
+                document.getElementById('pwd-error').innerText = '身分驗證失敗';
             }
         }
 
@@ -326,16 +332,13 @@
                 filtered = [...allSongs];
                 renderList();
                 if(allSongs.length > 0) loadTrack(0, false);
-            } catch (e) { document.getElementById('status').innerText = "GitHub 連線失敗"; }
+            } catch (e) { document.getElementById('status').innerText = "CONNECT ERROR"; }
         }
 
         function renderList() {
             document.getElementById('list').innerHTML = filtered.map((s, i) => `
                 <li class="${curIdx === i ? 'active' : ''}" onclick="selectTrack(${i})">
-                    <div class="li-info">
-                        <span class="li-title">${s.t}</span>
-                        <span class="li-meta">${s.type} STREAMING</span>
-                    </div>
+                    <div class="li-info"><span class="li-title">${s.t}</span><span class="li-meta">${s.type} STREAM</span></div>
                     <span style="opacity:0.2; font-size:0.75rem; font-weight:700;">${i+1 < 10 ? '0'+(i+1) : i+1}</span>
                 </li>`).join('');
         }
