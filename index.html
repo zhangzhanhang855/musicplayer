@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Premium Music Space | Gemini Pro Edition</title>
+    <title>Premium Music Space | Gemini Pro Ultimate</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,6 +65,7 @@
             padding: 18px; border-radius: var(--br-md); font-weight: 600; cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.2s;
         }
+        .login-btn:active { transform: scale(0.97); }
 
         /* 主佈局 */
         .container { 
@@ -73,7 +74,7 @@
         }
         .main-content { display: flex; flex: 1; width: 100%; gap: 40px; overflow: hidden; perspective: 1200px; }
 
-        /* 左側播放器：立體模組 */
+        /* 播放器卡片 */
         .player-card {
             flex: 1.1; display: flex; flex-direction: column;
             background: var(--panel); border-radius: var(--br-lg);
@@ -109,21 +110,21 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .controls .play-btn:active { transform: scale(0.92) translateY(2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
         .ai-box {
             background: #fafafb; border: 1px solid #f0f0f2; padding: 22px; border-radius: var(--br-md);
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.03); position: relative;
         }
-        .ai-label { font-size: 0.65rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 10px; }
-        #ai-text { font-size: 0.88rem; line-height: 1.8; color: #4a4a4f; min-height: 3.5rem; transition: opacity 0.5s; }
+        .ai-label { font-size: 0.65rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        #ai-text { font-size: 0.88rem; line-height: 1.8; color: #4a4a4f; min-height: 3.5rem; }
+        .ai-error-debug { font-family: monospace; font-size: 0.7rem; color: #ff3b30; margin-top: 8px; border-top: 1px dashed #eee; padding-top: 8px; display: none; }
 
-        /* 右側列表：滑動優化 */
+        /* 右側列表 */
         .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
         .search-bar { display: flex; gap: 12px; }
         .search-bar input {
             flex: 1; background: var(--panel); border: 1px solid #e2e2e5; padding: 18px 25px; border-radius: var(--br-md); 
-            font-family: var(--font-serif); font-size: 0.95rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            font-family: var(--font-serif); font-size: 0.95rem;
         }
         .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 22px; border-radius: var(--br-md); cursor: pointer; font-size: 1.2rem; }
 
@@ -133,7 +134,7 @@
         }
         #list {
             list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1;
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+            -webkit-overflow-scrolling: touch;
         }
         #list li {
             padding: 22px 30px; border-bottom: 1px solid #f2f2f5; cursor: pointer; 
@@ -141,11 +142,7 @@
         }
         #list li:hover { background: #fafafc; padding-left: 35px; }
         #list li.active { background: #f8f8fb; border-left: 6px solid var(--accent); font-weight: 700; }
-        .li-info { display: flex; flex-direction: column; gap: 4px; }
-        .li-meta { font-size: 0.65rem; color: #a1a1a6; letter-spacing: 1px; font-weight: 600; }
-
-        #list::-webkit-scrollbar { width: 5px; }
-        #list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
+        .li-meta { font-size: 0.65rem; color: #a1a1a6; font-weight: 600; }
 
         @media (max-width: 900px) {
             .container { padding: 20px; }
@@ -170,7 +167,6 @@
     
     <div class="container" id="main-app">
         <div class="main-content">
-            <!-- 3D 播放器卡片 -->
             <div class="player-card">
                 <div class="cover-art" id="cover"></div>
                 <div class="meta">
@@ -186,12 +182,15 @@
                     <button onclick="dl()" style="width:50px">DL</button>
                 </div>
                 <div class="ai-box">
-                    <div class="ai-label">✦ Gemini Pro Insight</div>
-                    <div id="ai-text">準備進行深度曲目解析，感知旋律中的意象...</div>
+                    <div class="ai-label">
+                        <span>✦ Gemini Pro Insight</span>
+                        <span id="ai-loading-dot" style="display:none; color:var(--ai-color); animation: pulse 1s infinite;">● Sensing...</span>
+                    </div>
+                    <div id="ai-text">準備進行深度曲目解析...</div>
+                    <div id="ai-debug" class="ai-error-debug"></div>
                 </div>
             </div>
             
-            <!-- 列表與搜尋 -->
             <div class="side-content">
                 <div class="search-bar">
                     <input type="text" id="q" placeholder="搜尋您的私藏音樂庫..." oninput="doSearch()">
@@ -206,20 +205,21 @@
     
     <script>
         // =========================================================================
-        // 🔑 配置區域 (Gemini Pro)
+        // 🔑 核心配置區域
         // =========================================================================
         const apiKey = "AIzaSyB_XsYIvO01YrhSRhTCo3ZboEByIxtch5M"; // <--- 填入您的 Gemini API Key
         const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
-        const FADE_TIME = 800; // 0.8秒淡入淡出
+        const FADE_TIME = 800; 
         // =========================================================================
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
         let fadeInterval = null;
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
+        const aiDebug = document.getElementById('ai-debug');
+        const aiLoad = document.getElementById('ai-loading-dot');
         const cover = document.getElementById('cover');
 
-        // 音量淡入淡出核心
         function fadeVolume(target, duration, callback) {
             if (fadeInterval) clearInterval(fadeInterval);
             const stepSize = 0.05;
@@ -240,62 +240,78 @@
             cover.style.background = `linear-gradient(145deg, hsl(${h}, 15%, 95%) 0%, hsl(${h}, 10%, 85%) 100%)`;
         }
 
-        // Gemini Pro 解析邏輯 (帶自動重試與 CORS 提示)
+        // --- 核心修復：AI 解析邏輯 ---
         async function analyzeInsight(name) {
             if (!apiKey || apiKey === "") {
-                aiBox.innerText = "⚠️ 請在代碼中配置您的 Gemini API Key。";
+                aiBox.innerText = "⚠️ 尚未配置 API Key。";
                 return;
             }
 
-            aiBox.innerText = "AI Pro 正在感應旋律中的微光...";
+            aiLoad.style.display = "inline";
+            aiDebug.style.display = "none";
+            aiBox.innerText = "正在感應旋律中的微光...";
             
-            // 使用 Gemini 2.5 Flash 預覽模型 (Pro 用戶推薦)
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const prompt = `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。不要給出前綴，直接輸出內容。`;
+            
+            // 嘗試不同模型節點以提高成功率
+            const models = ["gemini-2.5-flash-preview-09-2025", "gemini-1.5-flash"];
+            let lastError = "";
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
+            for (const model of models) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
 
-                if (!response.ok) {
-                    const err = await response.json();
-                    throw new Error(err.error?.message || `HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
-                
-                // 打字機效果
-                aiBox.innerText = "";
-                let i = 0;
-                const type = () => {
-                    if (i < text.length) {
-                        aiBox.innerText += text.charAt(i); i++;
-                        setTimeout(type, 50);
+                    if (!response.ok) {
+                        const errBody = await response.json();
+                        throw new Error(`[${model}] ${response.status}: ${errBody.error?.message || 'Unknown Error'}`);
                     }
-                };
-                type();
-            } catch (e) { 
-                console.error("Gemini Error:", e);
-                if (e.message.includes("Failed to fetch")) {
-                    aiBox.innerHTML = "<span style='color:#e67e22'>⚠️ 分析受阻：CORS 跨域攔截。</span><br/><small>請安裝 'Allow CORS' 插件或將此文件部署到服務器。</small>";
-                } else {
-                    aiBox.innerText = "❌ 解析失敗：" + e.message;
+
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+                    if (text) {
+                        aiLoad.style.display = "none";
+                        typeText(text);
+                        return; // 成功後退出循環
+                    }
+                } catch (e) {
+                    lastError += e.message + "\n";
+                    console.warn(`Model ${model} failed, trying next...`);
                 }
             }
+
+            // 如果所有模型都失敗
+            aiLoad.style.display = "none";
+            aiBox.innerText = "解析受阻。";
+            aiDebug.style.display = "block";
+            aiDebug.innerText = `診斷日誌：\n${lastError}${location.protocol === 'file:' ? '\n偵測到本地文件運行，這可能是 CORS 攔截的原因。建議使用服務器環境或安裝 CORS Unblock 插件。' : ''}`;
         }
 
-        // 核心邏輯
+        function typeText(text) {
+            aiBox.innerText = "";
+            let i = 0;
+            const type = () => {
+                if (i < text.length) {
+                    aiBox.innerText += text.charAt(i); i++;
+                    setTimeout(type, 50);
+                }
+            };
+            type();
+        }
+
+        // --- 核心播放邏輯 ---
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 init();
             } else {
-                document.getElementById('pwd-error').innerText = '驗證碼錯誤，請重試';
+                document.getElementById('pwd-error').innerText = '驗證代碼不正確';
             }
         }
 
@@ -369,7 +385,12 @@
             const rect = e.currentTarget.getBoundingClientRect();
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
         };
-    </script>
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <!-- (內容與上方樣式表一致，已整合在內) -->
 </body>
 </html>
 
