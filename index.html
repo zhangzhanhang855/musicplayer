@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -13,82 +12,76 @@
     
     <style>
         :root { 
-            --accent: #007AFF; /* 經典藍色 */
-            --accent-light: #E5F1FF;
-            --ai-color: #5856D6; /* AI 紫色 */
-            --bg: #F5F5F7; /* 蘋果風格淺灰背景 */
-            --panel: #FFFFFF;
-            --text-main: #1D1D1F;
-            --text-sub: #86868B;
-            --border-radius-lg: 24px;
-            --border-radius-md: 16px;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --accent: #1d1d1f; /* 使用純深色作為強調色 */
+            --accent-light: #f5f5f7;
+            --ai-color: #5856D6; 
+            --bg: #ffffff; 
+            --panel: #ffffff;
+            --text-main: #1d1d1f;
+            --text-sub: #6e6e73;
+            --border-radius-lg: 20px;
+            --border-radius-md: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            /* 字體設置為宋體優先 */
+            --font-family: "Songti SC", "STSong", "SimSun", "NSimSun", "Source Han Serif CN", serif;
         }
         
-        * { -webkit-tap-highlight-color: transparent; }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
         body, html { 
             margin: 0; padding: 0; 
             height: 100%; height: 100dvh; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            font-family: var(--font-family);
             background: var(--bg); color: var(--text-main); 
             overflow: hidden; 
             -webkit-font-smoothing: antialiased;
         }
         
-        /* 登入畫面 */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: var(--bg); z-index: 9999; padding: 20px; box-sizing: border-box;
+            background: var(--bg); z-index: 9999; padding: 20px;
         }
         
         .login-box { 
             background: var(--panel); 
-            padding: 48px 32px; 
+            padding: 60px 40px; 
             text-align: center; 
-            width: 100%; max-width: 380px; 
+            width: 100%; max-width: 400px; 
             border-radius: var(--border-radius-lg);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            border: 1px solid #eeeeee;
         }
-        .login-box h1 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 600; color: var(--text-main); }
-        .login-box p { margin: 0 0 32px 0; color: var(--text-sub); font-size: 0.95rem; }
+
+        .login-box h1 {
+            font-weight: 400;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
         
         .pwd-input { 
-            background: #F2F2F7; 
-            border: 1px solid transparent; 
+            background: #fafafa; 
+            border: 1px solid #eeeeee; 
             padding: 16px; 
             color: var(--text-main); 
-            margin-bottom: 24px; 
+            margin: 30px 0; 
             outline: none; 
             font-size: 1.1rem; 
             width: 100%; 
-            box-sizing: border-box; 
             border-radius: var(--border-radius-md);
             text-align: center;
-            transition: var(--transition);
+            font-family: var(--font-family);
         }
-        .pwd-input:focus { border-color: var(--accent); background: #FFF; box-shadow: 0 0 0 4px var(--accent-light); }
         
         .login-btn { 
             background: var(--text-main); 
-            border: none; 
-            color: #FFF; 
-            cursor: pointer; 
-            font-size: 1rem; 
-            width: 100%; 
-            padding: 16px; 
+            border: none; color: #FFF; 
+            cursor: pointer; font-size: 1rem; 
+            width: 100%; padding: 16px; 
             border-radius: var(--border-radius-md);
-            font-weight: 600; 
-            transition: var(--transition);
+            letter-spacing: 2px;
+            font-family: var(--font-family);
         }
-        .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .login-btn:active { transform: translateY(0); }
         
-        #pwd-error { color: #FF3B30; margin-top: 16px; font-size: 0.85rem; min-height: 1.2rem; }
-        
-        /* 主程式容器 */
         .container { 
             display: none; 
             flex-direction: column; 
@@ -96,149 +89,96 @@
             height: 100%; height: 100dvh; 
             padding: 24px; 
             padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
-            box-sizing: border-box; 
         }
         
         .layout-wrapper { 
             display: flex; 
             flex-direction: column; 
-            width: 100%; 
-            max-width: 480px; 
-            flex: 1; 
-            overflow: hidden; 
+            width: 100%; max-width: 480px; 
+            flex: 1; overflow: hidden; 
             align-items: center; 
         }
         
-        /* 播放卡片 */
         .glass-card { 
             background: var(--panel); 
-            padding: 32px; 
+            padding: 40px 32px; 
             width: 100%; 
             text-align: center; 
             box-shadow: var(--shadow);
             border-radius: var(--border-radius-lg);
             margin-bottom: 24px; 
-            box-sizing: border-box;
-            border: 1px solid rgba(0,0,0,0.02);
+            border: 1px solid #f0f0f0;
         }
         
-        h2 { margin: 0 0 4px 0; font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
+        h2 { 
+            font-weight: 500; 
+            font-size: 1.4rem; 
+            margin: 0 0 8px 0; 
+            letter-spacing: 1px;
+        }
+
         #speed-tag { 
             font-size: 0.7rem; 
-            background: var(--accent-light); 
-            color: var(--accent); 
-            padding: 4px 12px; 
-            border-radius: 20px;
-            font-weight: 700; 
-            margin-bottom: 12px; 
+            border: 1px solid #eeeeee;
+            color: var(--text-sub); 
+            padding: 3px 10px; 
+            border-radius: 4px;
+            margin-bottom: 15px; 
             display: inline-block; 
-            letter-spacing: 0.5px;
         }
-        #status { font-size: 0.85rem; color: var(--text-sub); margin-bottom: 24px; }
         
-        /* 進度條 */
-        .progress-box { width: 100%; height: 6px; background: #E5E5EA; border-radius: 10px; position: relative; margin-bottom: 32px; cursor: pointer; }
-        #buf-bar { position: absolute; height: 100%; background: rgba(0,0,0,0.05); border-radius: 10px; width: 0%; transition: width 0.3s; }
-        #prog-bar { position: absolute; height: 100%; background: var(--accent); border-radius: 10px; width: 0%; transition: width 0.1s linear; }
+        #status { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 30px; letter-spacing: 1px; }
+
+        .progress-box { width: 100%; height: 2px; background: #eeeeee; position: relative; margin-bottom: 40px; cursor: pointer; }
+        #prog-bar { position: absolute; height: 100%; background: var(--text-main); width: 0%; }
         #prog-bar::after {
-            content: ''; position: absolute; right: -6px; top: -5px; width: 16px; height: 16px; 
-            background: #FFF; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            content: ''; position: absolute; right: -4px; top: -4px; width: 10px; height: 10px;
+            background: var(--text-main); border-radius: 50%;
         }
         
-        /* 控制按鈕 */
-        .btns { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 300px; margin: 0 auto; }
-        .btns button { 
-            background: none; border: none; color: var(--text-main); 
-            cursor: pointer; font-size: 1.4rem; 
-            display: flex; justify-content: center; align-items: center; 
-            transition: var(--transition);
-            opacity: 0.8;
-        }
-        #mode-btn { font-size: 0.75rem; font-weight: 700; color: var(--text-sub); border: 1.5px solid #E5E5EA; border-radius: 8px; padding: 4px 8px; }
-        .btns button:hover { opacity: 1; transform: scale(1.1); }
+        .btns { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 280px; margin: 0 auto; }
+        .btns button { background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 1.2rem; transition: 0.2s; font-family: var(--font-family); }
         .btns .main-play { 
-            font-size: 2.2rem; 
-            width: 64px; height: 64px; 
-            background: var(--text-main); 
-            color: #FFF; 
-            border-radius: 50%; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            font-size: 1.8rem; width: 56px; height: 56px; 
+            background: var(--text-main); color: #FFF; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
         }
-        .btns .main-play:hover { transform: scale(1.05); box-shadow: 0 12px 24px rgba(0,0,0,0.15); }
         
-        /* AI 面板 */
         .ai-panel { 
-            background: #F8F8FC; 
-            padding: 16px; 
-            margin-top: 24px; 
-            text-align: left; 
-            border-radius: var(--border-radius-md);
-            border: 1px solid rgba(88, 86, 214, 0.1);
+            background: #fafafa; padding: 16px; margin-top: 32px; text-align: left; 
+            border-radius: var(--border-radius-md); border: 1px solid #f0f0f0;
         }
-        .ai-title { color: var(--ai-color); font-weight: 700; margin-bottom: 8px; font-size: 0.8rem; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
-        #ai-text { font-size: 0.85rem; color: #48484A; line-height: 1.5; font-weight: 400; }
-        
-        /* 列表部分 */
-        .list-wrap { width: 100%; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-        .search { 
-            background: var(--panel); 
-            border: 1px solid rgba(0,0,0,0.05); 
-            padding: 14px 20px; 
-            color: var(--text-main); 
-            margin-bottom: 16px; 
-            outline: none; 
-            font-size: 0.95rem; 
-            border-radius: var(--border-radius-md);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-        .search:focus { border-color: var(--accent); }
+        .ai-title { color: var(--ai-color); font-weight: 700; margin-bottom: 6px; font-size: 0.75rem; letter-spacing: 1px; }
+        #ai-text { font-size: 0.85rem; line-height: 1.6; color: #333; }
         
         #list { 
             list-style: none; padding: 0; overflow-y: auto; flex: 1; margin: 0; 
-            -webkit-overflow-scrolling: touch; 
-            background: var(--panel);
-            border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow);
+            width: 100%; background: var(--panel); border: 1px solid #f0f0f0; border-radius: var(--border-radius-lg);
         }
         #list li { 
-            padding: 16px 20px; 
-            border-bottom: 1px solid rgba(0,0,0,0.03); 
-            cursor: pointer; 
-            display: flex; justify-content: space-between; align-items: center; 
-            font-size: 0.95rem; 
-            transition: var(--transition);
+            padding: 18px 24px; border-bottom: 1px solid #f9f9f9; cursor: pointer; 
+            display: flex; justify-content: space-between; font-size: 0.95rem; 
         }
-        #list li:last-child { border-bottom: none; }
-        #list li:hover { background: #FAFAFB; }
-        #list li.active { color: var(--accent); background: var(--accent-light); font-weight: 600; }
-        
-        .footer-info { 
-            width: 100%; max-width: 480px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-top: 16px; font-size: 0.75rem; color: var(--text-sub); 
-        }
-        
-        /* 桌面版響應式 */
+        #list li.active { background: #fafafa; font-weight: 700; border-left: 4px solid var(--text-main); }
+
         @media (min-width: 900px) {
-            .layout-wrapper { flex-direction: row; max-width: 1000px; gap: 32px; align-items: stretch; }
-            .glass-card { width: 400px; margin-bottom: 0; display: flex; flex-direction: column; justify-content: center; }
-            .footer-info { max-width: 1000px; }
+            .layout-wrapper { flex-direction: row; max-width: 1000px; gap: 32px; }
+            .glass-card { width: 420px; }
         }
 
-        /* 自定義捲軸 */
+        /* 捲軸美化 */
         #list::-webkit-scrollbar { width: 4px; }
-        #list::-webkit-scrollbar-thumb { background: #E5E5EA; border-radius: 10px; }
+        #list::-webkit-scrollbar-thumb { background: #eee; border-radius: 10px; }
     </style>
 </head>
 <body>
     
     <div id="login-screen">
         <div class="login-box">
-            <h1>JR Premium</h1>
-            <p>請輸入您的啟用碼以存取曲庫</p>
-            <input type="password" id="pwd-input" class="pwd-input" placeholder="啟用碼" onkeydown="if(event.key==='Enter') checkPwd()">
-            <button onclick="checkPwd()" class="login-btn">登入</button>
+            <h1>啟程</h1>
+            <p>請輸入啟用碼開啟音樂空間</p>
+            <input type="password" id="pwd-input" class="pwd-input" placeholder="代碼" onkeydown="if(event.key==='Enter') checkPwd()">
+            <button onclick="checkPwd()" class="login-btn">進入</button>
             <div id="pwd-error"></div>
         </div>
     </div>
@@ -246,223 +186,141 @@
     <div class="container" id="main-app">
         <div class="layout-wrapper">
             <div class="glass-card">
-                <div id="speed-tag">SMART ROUTING</div>
-                <h2 id="title">等待載入...</h2>
-                <div id="status">初始化中...</div>
+                <div id="speed-tag">經由智能節點傳輸</div>
+                <h2 id="title">曲目載入中</h2>
+                <div id="status">無播放內容</div>
                 
                 <div class="progress-box" id="seek-bar">
-                    <div id="buf-bar"></div>
                     <div id="prog-bar"></div>
                 </div>
                 
                 <div class="btns">
-                    <button onclick="setMode()" id="mode-btn">LIST</button>
-                    <button onclick="step(-1)">◁◁</button>
+                    <button onclick="setMode()" id="mode-btn">順序</button>
+                    <button onclick="step(-1)">上首</button>
                     <button onclick="playToggle()" class="main-play" id="play-btn">▶</button>
-                    <button onclick="step(1)">▷▷</button>
-                    <button onclick="dl()">↓</button>
+                    <button onclick="step(1)">下首</button>
+                    <button onclick="dl()">下載</button>
                 </div>
                 
                 <div class="ai-panel">
-                    <div class="ai-title">✦ GEMINI INSIGHT</div>
-                    <div id="ai-text">準備分析曲目內容...</div>
+                    <div class="ai-title">✦ AI 意境導讀</div>
+                    <div id="ai-text">分析功能已就緒。</div>
                 </div>
             </div>
             
-            <div class="list-wrap">
-                <input type="text" class="search" id="q" placeholder="搜尋曲庫內容..." oninput="doSearch()">
-                <ul id="list"></ul>
-            </div>
-        </div>
-        
-        <div class="footer-info">
-            <div class="left">💡 最高音質源文件存取中</div>
-            <div class="right">ZZH Studio 製作 • 2024</div>
+            <div id="list"></div>
         </div>
     </div>
     
-    <audio id="player" preload="auto"></audio>
+    <audio id="player"></audio>
     
     <script>
         // =========================================================================
-        // 🔑 配置區域
+        // 🔑 請填寫您的 API KEY
         // =========================================================================
-        const G = { 
-            user: 'zhangzhanhang855', 
-            repo: 'musicplayer', 
-            ver: 'main', 
-            github_token: '' 
-        };
-        const GEMINI_API_KEY = ''; 
+        const apiKey = ""; 
+        const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
         // =========================================================================
-        
+
         let all = [], filtered = [], cur = 0, isP = false, loop = 'list';
-        let aiTimer = null; 
-        let usingFallback = false;
-        
         const audio = document.getElementById('player');
-        const status = document.getElementById('status');
-        const prog = document.getElementById('prog-bar');
-        const buf = document.getElementById('buf-bar');
-        const playBtn = document.getElementById('play-btn');
-        const speedTag = document.getElementById('speed-tag');
-        const aiText = document.getElementById('ai-text'); 
-        
-        function updateMediaSession(title) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title,
-                    artist: 'Premium Music Player',
-                    album: 'Private Library',
-                    artwork: [{ src: 'https://dummyimage.com/512x512/FFFFFF/007AFF.png&text=PREMIUM', sizes: '512x512', type: 'image/png' }]
-                });
-                navigator.mediaSession.setActionHandler('play', () => { audio.play(); isP = true; ui(); });
-                navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); isP = false; ui(); });
-                navigator.mediaSession.setActionHandler('previoustrack', () => step(-1));
-                navigator.mediaSession.setActionHandler('nexttrack', () => step(1));
+        const aiText = document.getElementById('ai-text');
+
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                if (retries <= 0) throw error;
+                await new Promise(resolve => setTimeout(resolve, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
             }
         }
-        
+
+        async function analyzeSongTitle(title) {
+            if (!apiKey) {
+                aiText.innerText = "尚未配置分析密鑰。";
+                return;
+            }
+            aiText.innerText = "正在感應曲目意境...";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: `請分析歌曲《${title}》的意境，用一句充滿詩意的話描述，30字以內。不要前綴。` }] }]
+            };
+            try {
+                const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                aiText.innerText = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "意境深邃，難以言表。";
+            } catch (e) {
+                aiText.innerText = "暫時無法感應意境。";
+            }
+        }
+
         function checkPwd() {
-            const input = document.getElementById('pwd-input').value;
-            const errBox = document.getElementById('pwd-error');
-            // 使用原本的啟用碼
-            if (input === 'gmsf4rdth89Ky5632') {
+            if (document.getElementById('pwd-input').value === 'gmsf4rdth89Ky5632') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
-                document.title = "Premium 智能音樂播放器"; 
-                start(); 
+                start();
             } else {
-                errBox.innerText = '啟用碼錯誤，請重試';
-                document.getElementById('pwd-input').value = ''; 
-                document.getElementById('pwd-input').focus(); 
+                document.getElementById('pwd-error').innerText = '無效代碼';
             }
         }
-        
-        const getOptimalUrl = (fileObj) => {
-            if (fileObj.size < 1024) {
-                return { 
-                    url: `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`, 
-                    fallback: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                    type: 'DIRECT' 
-                };
-            } else {
-                return { 
-                    url: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`, 
-                    fallback: `https://cdn.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(fileObj.name)}`,
-                    type: 'FASTLY CDN' 
-                };
-            }
-        };
-        
-        async function analyzeSongTitle(title) {
-            if (!GEMINI_API_KEY) { aiText.innerText = "智能分析需要 API Key。"; return; }
-            aiText.innerText = "正在分析曲目意境...";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-            const prompt = `簡短分析歌曲《${title}》的風格與可能的情感意境，50字以內。`;
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-                const data = await response.json();
-                if (data.candidates) { aiText.innerText = data.candidates[0].content.parts[0].text; }
-            } catch (e) { aiText.innerText = "暫時無法分析，請稍後。"; }
-        }
-        
+
         async function start() {
             try {
-                const fetchOptions = G.github_token ? { headers: { 'Authorization': `Bearer ${G.github_token}` } } : {};
-                const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`, fetchOptions);
-                if (!r.ok) throw new Error("庫存讀取失敗");
+                const r = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
                 const d = await r.json();
-                all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
-                    const route = getOptimalUrl(f);
-                    return { t: f.name.replace(/\.[^/.]+$/, ""), f: f.name, u: route.url, fallbackUrl: route.fallback, routeType: route.type };
-                });
-                filtered = [...all]; drawList();
+                all = d.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
+                    t: f.name.replace(/\.[^/.]+$/, ""),
+                    u: `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`
+                }));
+                filtered = [...all];
+                drawList();
                 if(all.length > 0) loadTrack(0, false);
-                status.innerText = "服務就緒，已優化路由。";
-            } catch (e) { status.innerText = "錯誤: " + e.message; }
+            } catch (e) { document.getElementById('status').innerText = "連線失敗"; }
         }
-        
+
         function drawList() {
-            let html = '';
-            for(let i=0; i<filtered.length; i++) {
-                let s = filtered[i];
-                html += `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
-                <span>${s.t}</span>
-                <span style="opacity:0.4; font-size:0.7rem; font-weight:700;">${s.f.split('.').pop().toUpperCase()}</span>
-            </li>`;
-            }
-            document.getElementById('list').innerHTML = html;
+            document.getElementById('list').innerHTML = filtered.map((s, i) => 
+                `<li class="${cur === i ? 'active' : ''}" onclick="selectTrack(${i})">
+                    <span>${s.t}</span>
+                    <span style="opacity:0.3;font-size:0.7rem;">CH. ${i+1}</span>
+                </li>`).join('');
         }
-        
+
         function loadTrack(idx, auto = true) {
-            cur = idx; usingFallback = false; const s = filtered[cur];
-            audio.pause(); audio.src = s.u; audio.load(); 
-            document.getElementById('title').innerText = s.t;
-            speedTag.innerText = s.routeType;
-            status.innerText = `串流模式: ${s.routeType}`;
-            
-            updateMediaSession(s.t); 
-            drawList();
-            
-            clearTimeout(aiTimer);
-            aiTimer = setTimeout(() => { analyzeSongTitle(s.t); }, 2000);
-            if (auto || isP) audio.play().then(() => { isP = true; ui(); });
-        }
-        
-        audio.addEventListener('error', () => {
+            cur = idx;
             const s = filtered[cur];
-            if (!usingFallback) {
-                usingFallback = true; audio.src = s.fallbackUrl; audio.load(); audio.play();
-            } else { status.innerText = "載入失敗，請檢查網絡連結。"; }
-        });
-        
-        audio.addEventListener('progress', () => { 
-            if (audio.buffered.length > 0) { 
-                buf.style.width = ((audio.buffered.end(audio.buffered.length - 1) / audio.duration) * 100 || 0) + "%"; 
-            } 
-        });
-        audio.addEventListener('playing', () => { status.innerText = "串流播放中"; isP = true; ui(); });
-        audio.addEventListener('timeupdate', () => { prog.style.width = ((audio.currentTime / audio.duration) * 100 || 0) + '%'; });
-        
-        function playToggle() { if (audio.paused) { audio.play(); isP = true; } else { audio.pause(); isP = false; } ui(); }
-        function ui() { playBtn.innerHTML = isP ? '<span>||</span>' : '▶'; }
-        function step(d) { 
-            let n = (cur + d + filtered.length) % filtered.length; 
-            if (loop === 'random') n = Math.floor(Math.random() * filtered.length); 
-            loadTrack(n); 
+            audio.src = s.u;
+            document.getElementById('title').innerText = s.t;
+            document.getElementById('status').innerText = "串流載入中";
+            drawList();
+            clearTimeout(window.aiTimer);
+            window.aiTimer = setTimeout(() => analyzeSongTitle(s.t), 2000);
+            if (auto) { audio.play(); isP = true; updateUI(); }
         }
-        function selectTrack(i) { loadTrack(i); isP = true; ui(); }
+
+        function selectTrack(i) { loadTrack(i); }
+        function playToggle() { if (audio.paused) audio.play(); else audio.pause(); isP = !audio.paused; updateUI(); }
+        function updateUI() { document.getElementById('play-btn').innerText = isP ? '||' : '▶'; }
+        function step(d) { loadTrack((cur + d + filtered.length) % filtered.length); }
+        function setMode() {
+            const mArr = ['list', 'random', 'single'];
+            const mTxt = { list: '順序', random: '隨機', single: '單曲' };
+            loop = mArr[(mArr.indexOf(loop) + 1) % 3];
+            document.getElementById('mode-btn').innerText = mTxt[loop];
+        }
+        function dl() { window.open(filtered[cur].u); }
         
+        audio.onplaying = () => { document.getElementById('status').innerText = "正在播放"; };
+        audio.ontimeupdate = () => {
+            document.getElementById('prog-bar').style.width = (audio.currentTime / audio.duration * 100) + '%';
+        };
+        audio.onended = () => { if(loop === 'single') audio.play(); else step(1); };
         document.getElementById('seek-bar').onclick = (e) => { 
             const rect = e.currentTarget.getBoundingClientRect();
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
         };
-        
-        audio.onended = () => { if (loop === 'single') audio.play(); else step(1); };
-        
-        function setMode() { 
-            const mArr = ['list', 'random', 'single']; 
-            const mText = { list: 'LIST', random: 'RND', single: 'ONE' }; 
-            loop = mArr[(mArr.indexOf(loop) + 1) % 3]; 
-            document.getElementById('mode-btn').innerText = mText[loop]; 
-        }
-        
-        function doSearch() { 
-            const val = document.getElementById('q').value.toLowerCase();
-            filtered = all.filter(s => s.f.toLowerCase().includes(val)); 
-            drawList(); 
-        }
-        
-        function dl() { 
-            const a = document.createElement('a'); 
-            a.href = filtered[cur].u; 
-            a.download = filtered[cur].f; 
-            a.target = '_blank'; 
-            document.body.appendChild(a); 
-            a.click(); 
-            document.body.removeChild(a); 
-        }
     </script>
 </body>
 </html>
