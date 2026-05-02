@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Premium Music Space | Gemini Pro Ultimate</title>
+    <title>Premium Music Space | Pro Edition</title>
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -74,7 +74,7 @@
         }
         .main-content { display: flex; flex: 1; width: 100%; gap: 40px; overflow: hidden; perspective: 1200px; }
 
-        /* 播放器卡片 */
+        /* 左側播放器：3D 物理模組 */
         .player-card {
             flex: 1.1; display: flex; flex-direction: column;
             background: var(--panel); border-radius: var(--br-lg);
@@ -92,16 +92,22 @@
             position: relative; overflow: hidden;
             transition: all 1s var(--ease);
         }
+        .cover-art::after {
+            content: 'HI-RES'; font-family: var(--font-sans); font-size: 0.5rem; 
+            letter-spacing: 0.5em; opacity: 0.15; transform: rotate(-90deg);
+        }
 
         .meta { text-align: center; margin-bottom: 35px; }
-        .meta h2 { font-size: 1.7rem; font-weight: 600; margin: 0 0 10px 0; }
+        .meta h2 { font-size: 1.7rem; font-weight: 600; margin: 0 0 10px 0; color: #121212; }
         .meta p { font-size: 0.7rem; color: var(--text-sub); letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; }
 
+        /* 進度條 - 內凹設計 */
         .prog-wrap { width: 100%; margin-bottom: 40px; cursor: pointer; }
         .prog-bg { height: 6px; background: #eaebef; border-radius: 10px; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); }
         #prog-bar { height: 100%; background: linear-gradient(90deg, #1d1d1f, #434343); border-radius: 10px; width: 0%; position: relative; }
         #prog-bar::after { content: ''; position: absolute; right: -6px; top: -5px; width: 16px; height: 16px; background: #fff; border: 3px solid var(--accent); border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
+        /* 物理按鈕 */
         .controls { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 40px; }
         .controls button { background: none; border: none; cursor: pointer; color: var(--text-main); font-size: 0.85rem; font-weight: 700; opacity: 0.5; transition: 0.3s; }
         .controls .play-btn {
@@ -110,21 +116,22 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.2);
             transition: transform 0.2s, box-shadow 0.2s;
         }
+        .controls .play-btn:active { transform: scale(0.92) translateY(2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
+        /* AI 面板 */
         .ai-box {
             background: #fafafb; border: 1px solid #f0f0f2; padding: 22px; border-radius: var(--br-md);
             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.03); position: relative;
         }
-        .ai-label { font-size: 0.65rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .ai-label { font-size: 0.65rem; font-weight: 800; color: var(--ai-color); letter-spacing: 0.2em; margin-bottom: 10px; font-family: var(--font-sans); }
         #ai-text { font-size: 0.88rem; line-height: 1.8; color: #4a4a4f; min-height: 3.5rem; }
-        .ai-error-debug { font-family: monospace; font-size: 0.7rem; color: #ff3b30; margin-top: 8px; border-top: 1px dashed #eee; padding-top: 8px; display: none; }
 
-        /* 右側列表 */
+        /* 右側列表 - 滑動修復 */
         .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
         .search-bar { display: flex; gap: 12px; }
         .search-bar input {
             flex: 1; background: var(--panel); border: 1px solid #e2e2e5; padding: 18px 25px; border-radius: var(--br-md); 
-            font-family: var(--font-serif); font-size: 0.95rem;
+            font-family: var(--font-serif); font-size: 0.95rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
         .add-btn { background: var(--accent); color: #fff; border: none; padding: 0 22px; border-radius: var(--br-md); cursor: pointer; font-size: 1.2rem; }
 
@@ -134,7 +141,7 @@
         }
         #list {
             list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1;
-            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
         #list li {
             padding: 22px 30px; border-bottom: 1px solid #f2f2f5; cursor: pointer; 
@@ -143,6 +150,9 @@
         #list li:hover { background: #fafafc; padding-left: 35px; }
         #list li.active { background: #f8f8fb; border-left: 6px solid var(--accent); font-weight: 700; }
         .li-meta { font-size: 0.65rem; color: #a1a1a6; font-weight: 600; }
+
+        #list::-webkit-scrollbar { width: 5px; }
+        #list::-webkit-scrollbar-thumb { background: #d1d1d6; border-radius: 10px; }
 
         @media (max-width: 900px) {
             .container { padding: 20px; }
@@ -159,7 +169,7 @@
         <div class="login-box">
             <h1>PREMIUM</h1>
             <p>INTELLECTUAL SOUNDSCAPE</p>
-            <input type="password" id="pwd-input" class="pwd-input" placeholder="ACCESS CODE" onkeydown="if(event.key==='Enter') checkPwd()">
+            <input type="password" id="pwd-input" class="pwd-input" placeholder="••••••" onkeydown="if(event.key==='Enter') checkPwd()">
             <button onclick="checkPwd()" class="login-btn">進入空間</button>
             <div id="pwd-error" style="color:#ff3b30; font-size:0.75rem; margin-top:20px; font-weight: 600;"></div>
         </div>
@@ -182,12 +192,8 @@
                     <button onclick="dl()" style="width:50px">DL</button>
                 </div>
                 <div class="ai-box">
-                    <div class="ai-label">
-                        <span>✦ Gemini Pro Insight</span>
-                        <span id="ai-loading-dot" style="display:none; color:var(--ai-color); animation: pulse 1s infinite;">● Sensing...</span>
-                    </div>
-                    <div id="ai-text">準備進行深度曲目解析...</div>
-                    <div id="ai-debug" class="ai-error-debug"></div>
+                    <div class="ai-label">✦ Gemini Pro Intelligence</div>
+                    <div id="ai-text">準備進行深度曲目解析，感知旋律中的意象...</div>
                 </div>
             </div>
             
@@ -205,21 +211,20 @@
     
     <script>
         // =========================================================================
-        // 🔑 核心配置區域
+        // 🔑 配置區域 (修正模型名稱)
         // =========================================================================
-        const apiKey = "AIzaSyB_XsYIvO01YrhSRhTCo3ZboEByIxtch5M"; // <--- 填入您的 Gemini API Key
+        const apiKey = "AIzaSyB_XsYIvO01YrhSRhTCo3ZboEByIxtch5M"; // 已填入您的 Key
         const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
-        const FADE_TIME = 800; 
+        const FADE_TIME = 800; // 0.8秒平滑淡入淡出
         // =========================================================================
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
         let fadeInterval = null;
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
-        const aiDebug = document.getElementById('ai-debug');
-        const aiLoad = document.getElementById('ai-loading-dot');
         const cover = document.getElementById('cover');
 
+        // 音量漸變邏輯
         function fadeVolume(target, duration, callback) {
             if (fadeInterval) clearInterval(fadeInterval);
             const stepSize = 0.05;
@@ -240,78 +245,71 @@
             cover.style.background = `linear-gradient(145deg, hsl(${h}, 15%, 95%) 0%, hsl(${h}, 10%, 85%) 100%)`;
         }
 
-        // --- 核心修復：AI 解析邏輯 ---
+        // Gemini AI 解析邏輯 (修正模型識別碼)
         async function analyzeInsight(name) {
             if (!apiKey || apiKey === "") {
                 aiBox.innerText = "⚠️ 尚未配置 API Key。";
                 return;
             }
 
-            aiLoad.style.display = "inline";
-            aiDebug.style.display = "none";
             aiBox.innerText = "正在感應旋律中的微光...";
             
-            const prompt = `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。不要給出前綴，直接輸出內容。`;
+            // 修正為穩定的 Pro 等級模型 ID
+            const modelId = "gemini-1.5-flash"; 
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
             
-            // 嘗試不同模型節點以提高成功率
-            const models = ["gemini-2.5-flash-preview-09-2025", "gemini-1.5-flash"];
-            let lastError = "";
-
-            for (const model of models) {
-                try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-
-                    if (!response.ok) {
-                        const errBody = await response.json();
-                        throw new Error(`[${model}] ${response.status}: ${errBody.error?.message || 'Unknown Error'}`);
-                    }
-
-                    const data = await response.json();
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-                    if (text) {
-                        aiLoad.style.display = "none";
-                        typeText(text);
-                        return; // 成功後退出循環
-                    }
-                } catch (e) {
-                    lastError += e.message + "\n";
-                    console.warn(`Model ${model} failed, trying next...`);
-                }
-            }
-
-            // 如果所有模型都失敗
-            aiLoad.style.display = "none";
-            aiBox.innerText = "解析受阻。";
-            aiDebug.style.display = "block";
-            aiDebug.innerText = `診斷日誌：\n${lastError}${location.protocol === 'file:' ? '\n偵測到本地文件運行，這可能是 CORS 攔截的原因。建議使用服務器環境或安裝 CORS Unblock 插件。' : ''}`;
-        }
-
-        function typeText(text) {
-            aiBox.innerText = "";
-            let i = 0;
-            const type = () => {
-                if (i < text.length) {
-                    aiBox.innerText += text.charAt(i); i++;
-                    setTimeout(type, 50);
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意且富有層次感的話描述歌曲《${name}》的意境，30字以內。直接輸出內容，不要前綴。`
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 100
                 }
             };
-            type();
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
+                
+                // 打字機動效呈現
+                aiBox.innerText = "";
+                let i = 0;
+                const type = () => {
+                    if (i < text.length) {
+                        aiBox.innerText += text.charAt(i); i++;
+                        setTimeout(type, 50);
+                    }
+                };
+                type();
+            } catch (e) { 
+                console.error("Gemini AI Error:", e);
+                // 顯示具體錯誤以利調試
+                aiBox.innerText = "❌ 解析失敗：" + e.message;
+            }
         }
 
-        // --- 核心播放邏輯 ---
+        // --- 核心播放邏輯 (GitHub 倉庫版) ---
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 init();
             } else {
-                document.getElementById('pwd-error').innerText = '驗證代碼不正確';
+                document.getElementById('pwd-error').innerText = '身分驗證失敗，請重試';
             }
         }
 
@@ -334,7 +332,10 @@
         function renderList() {
             document.getElementById('list').innerHTML = filtered.map((s, i) => `
                 <li class="${curIdx === i ? 'active' : ''}" onclick="selectTrack(${i})">
-                    <div class="li-info"><span class="li-title">${s.t}</span><span class="li-meta">${s.type} STREAM</span></div>
+                    <div class="li-info">
+                        <span class="li-title">${s.t}</span>
+                        <span class="li-meta">${s.type} STREAMING</span>
+                    </div>
                     <span style="opacity:0.2; font-size:0.75rem; font-weight:700;">${i+1 < 10 ? '0'+(i+1) : i+1}</span>
                 </li>`).join('');
         }
@@ -385,12 +386,7 @@
             const rect = e.currentTarget.getBoundingClientRect();
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
         };
-
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-    </style>
-</head>
-<body>
-    <!-- (內容與上方樣式表一致，已整合在內) -->
+    </script>
 </body>
 </html>
 
