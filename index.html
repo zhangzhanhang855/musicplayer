@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -27,9 +28,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
 
-        /* 动态氛围背景 */
         .mesh-bg {
             position: fixed; inset: 0; z-index: -1;
             filter: blur(80px);
@@ -46,7 +47,6 @@
             to { transform: translate(20%, 20%) rotate(360deg); }
         }
 
-        /* 玻璃面板 */
         .glass-panel {
             background: var(--glass);
             backdrop-filter: blur(40px) saturate(180%);
@@ -55,22 +55,22 @@
             box-shadow: 0 40px 100px rgba(0,0,0,0.05);
         }
 
-        /* 隐藏滚动条 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 进度条动画 */
-        #prog-bar {
-            transition: width 0.1s linear;
-        }
+        #prog-bar { transition: width 0.1s linear; }
 
-        /* 列表激活样式 */
+        .list-item {
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s var(--ease-out-expo);
+        }
+        .list-item:active { transform: scale(0.98); background: rgba(0,0,0,0.04); }
         .list-item.active {
             background: rgba(0,0,0,0.03);
             border-left: 3px solid black;
         }
 
-        /* 响应式：在手机端占满，在电脑端居中 */
         @media (max-width: 1024px) {
             .main-layout { 
                 flex-direction: column; 
@@ -79,62 +79,72 @@
                 width: 100vw;
                 border-radius: 0; 
             }
-            .player-section { height: 60% !important; overflow-y: auto; }
+            .player-section { height: 60% !important; }
             .side-section { height: 40% !important; border-left: none; border-top: 1px solid rgba(0,0,0,0.05); }
+        }
+
+        .playing-icon {
+            display: flex; gap: 2px; align-items: flex-end; height: 10px;
+        }
+        .playing-icon div {
+            width: 2px; background: black; border-radius: 1px;
+            animation: bounce 0.8s infinite ease-in-out alternate;
+        }
+        @keyframes bounce { 
+            0% { height: 3px; } 
+            100% { height: 10px; } 
         }
     </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <!-- 背景 -->
     <div class="mesh-bg" id="bg-mesh">
         <div class="blob bg-purple-300 top-[-10%] left-[-10%]"></div>
         <div class="blob bg-blue-200 bottom-[-10%] right-[-10%]" style="animation-duration: 25s"></div>
         <div class="blob bg-pink-100 top-[20%] right-[20%]" style="animation-duration: 30s"></div>
     </div>
 
-    <!-- 登录屏幕 -->
-    <div id="login-screen" class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-50/80 backdrop-blur-md transition-opacity duration-700">
+    <!-- 驗證屏 -->
+    <div id="login-screen" class="fixed inset-0 z-[2000] flex items-center justify-center bg-slate-50/80 backdrop-blur-md transition-all duration-700">
         <div class="login-card glass-panel w-full max-w-[400px] p-12 rounded-[40px] text-center">
             <h1 class="font-serif text-3xl mb-4 tracking-[0.4rem]">藏心</h1>
             <p class="text-[10px] tracking-[0.3em] text-gray-400 mb-10 uppercase">Identity Verification</p>
-            <input type="password" id="pwd-input" class="w-full bg-white/50 border-none rounded-2xl py-4 px-6 text-center mb-6 font-mono tracking-widest focus:ring-2 ring-black/5 outline-none" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPwd()">
+            <input type="password" id="pwd-input" class="w-full bg-white/50 border-none rounded-2xl py-4 px-6 text-center mb-6 font-mono tracking-widest outline-none focus:ring-2 ring-black/5" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPwd()">
             <button onclick="checkPwd()" class="w-full bg-black text-white py-4 rounded-2xl font-semibold tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">ENTER SPACE</button>
-            <p id="pwd-error" class="mt-4 text-red-400 text-[10px] tracking-widest"></p>
+            <p id="pwd-error" class="mt-4 text-red-400 text-[10px] tracking-widest uppercase"></p>
         </div>
     </div>
 
-    <!-- 播放器主界面 -->
-    <div id="main-app" class="hidden opacity-0 w-full max-w-7xl px-6 py-12 transition-opacity duration-1000 flex items-center justify-center">
-        <div class="main-layout glass-panel w-full h-[800px] max-h-[85vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
+    <!-- 主播放器界面 -->
+    <div id="main-app" class="hidden opacity-0 w-full max-w-7xl px-4 py-8 transition-all duration-1000 flex items-center justify-center">
+        <div class="main-layout glass-panel w-full h-[760px] max-h-[90vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
             
-            <!-- 左侧：播放控制核心 -->
-            <div class="player-section flex-1 h-full flex flex-col p-12 lg:p-16 relative">
-                <div class="flex justify-between items-start">
+            <!-- 左側：播放區域 -->
+            <div class="player-section flex-1 h-full flex flex-col p-8 lg:p-10 relative overflow-hidden">
+                <div class="flex justify-between items-start mb-4">
                     <div class="flex flex-col">
-                        <span class="text-[10px] tracking-[0.5em] font-bold text-black/20 uppercase mb-1">Now Streaming</span>
-                        <div id="status" class="text-[10px] text-indigo-500 font-bold tracking-widest uppercase">Initializing...</div>
+                        <span class="text-[9px] tracking-[0.5em] font-bold text-black/20 uppercase mb-1">Now Streaming</span>
+                        <div id="status" class="text-[10px] text-indigo-500 font-bold tracking-widest uppercase">Ready</div>
                     </div>
-                    <div id="track-type" class="text-[10px] bg-black/5 px-3 py-1 rounded-full text-black/40 font-mono">HI-RES</div>
+                    <div id="track-type" class="text-[9px] bg-black/5 px-3 py-1 rounded-full text-black/40 font-mono">HI-RES</div>
                 </div>
 
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
-                    <!-- 封面 -->
-                    <div id="cover" class="w-60 h-60 lg:w-72 lg:h-72 rounded-[48px] mb-12 shadow-2xl transition-all duration-1000 flex items-center justify-center text-5xl group relative">
-                        <div class="absolute inset-0 bg-black/5 rounded-[48px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <!-- 封面略微縮小以留出空間 -->
+                    <div id="cover" class="w-52 h-52 lg:w-64 lg:h-64 rounded-[40px] mb-8 shadow-2xl transition-all duration-1000 flex items-center justify-center text-5xl group relative">
+                        <div class="absolute inset-0 bg-black/5 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         💿
                     </div>
                     
-                    <div class="mb-10">
-                        <h2 id="title" class="text-3xl lg:text-4xl font-semibold mb-3 tracking-tight font-serif">待命</h2>
-                        <p id="artist-name" class="text-[10px] tracking-[0.4em] text-black/30 uppercase">Premium Selection</p>
+                    <div class="mb-8">
+                        <h2 id="title" class="text-2xl lg:text-3xl font-semibold mb-2 tracking-tight font-serif">待命</h2>
+                        <p id="artist-name" class="text-[9px] tracking-[0.4em] text-black/30 uppercase">Premium Selection</p>
                     </div>
 
-                    <!-- 进度条 -->
-                    <div class="w-full max-w-md mb-12">
-                        <div class="relative h-[3px] w-full bg-black/[0.04] rounded-full mb-4 cursor-pointer group" id="seek-bar">
+                    <div class="w-full max-w-sm mb-10">
+                        <div class="relative h-[2.5px] w-full bg-black/[0.04] rounded-full mb-4 cursor-pointer group" id="seek-bar">
                             <div id="prog-bar" class="absolute h-full bg-black rounded-full w-0"></div>
-                            <div class="absolute h-3 w-3 bg-white border-2 border-black rounded-full top-1/2 -translate-y-1/2 -ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" style="left: 0;" id="prog-dot"></div>
+                            <div class="absolute h-3 w-3 bg-white border-2 border-black rounded-full top-1/2 -translate-y-1/2 -ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" id="prog-dot"></div>
                         </div>
                         <div class="flex justify-between text-[10px] font-mono text-black/20 tracking-widest">
                             <span id="cur-time">00:00</span>
@@ -142,52 +152,52 @@
                         </div>
                     </div>
 
-                    <!-- 控制按钮 -->
-                    <div class="flex items-center gap-10 lg:gap-14">
-                        <button onclick="setLoop()" id="mode-btn" class="text-[9px] font-bold tracking-[0.2em] text-black/30 hover:text-black transition-colors uppercase">List</button>
+                    <!-- 控制按鈕組 -->
+                    <div class="flex items-center gap-8 lg:gap-12">
+                        <button onclick="setLoop()" id="mode-btn" class="text-[9px] font-bold tracking-[0.1em] text-black/30 hover:text-black transition-colors uppercase w-10">List</button>
                         <button onclick="step(-1)" class="text-black/30 hover:text-black transition-colors">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                         </button>
-                        <button onclick="playToggle()" id="play-btn" class="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                            <svg id="play-svg" class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+                        <button onclick="playToggle()" id="play-btn" class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all">
+                            <svg id="play-svg" class="w-7 h-7 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5.14v14l11-7-11-7z"/></svg>
                         </button>
                         <button onclick="step(1)" class="text-black/30 hover:text-black transition-colors">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 18h2V6h-2M7 6v12l8.5-6z"/></svg>
                         </button>
-                        <button onclick="dl()" class="text-black/30 hover:text-black transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <button onclick="dl()" class="text-black/30 hover:text-black transition-colors w-10">
+                            <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <!-- AI 解读区 -->
-                <div class="mt-8 pt-8 border-t border-black/[0.03]">
-                    <div class="flex items-center gap-3 mb-3">
+                <!-- AI 區域 -->
+                <div class="mt-4 pt-6 border-t border-black/[0.03]">
+                    <div class="flex items-center gap-3 mb-2">
                         <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
                         <span class="text-[9px] font-bold tracking-[0.3em] text-indigo-500 uppercase">AI Interpret</span>
                     </div>
-                    <div id="ai-text" class="text-xs leading-relaxed text-black/50 font-serif italic max-w-xl h-8 overflow-hidden">
+                    <div id="ai-text" class="text-[11px] leading-relaxed text-black/40 font-serif italic max-w-xl h-6 overflow-hidden">
                         感應旋律中的微光，準備轉化聽覺意境...
                     </div>
                 </div>
             </div>
 
-            <!-- 右侧：極簡曲庫 -->
-            <div class="side-section w-full lg:w-[420px] bg-black/[0.01] border-l border-black/[0.03] flex flex-col">
-                <div class="p-10 border-b border-black/[0.03]">
+            <!-- 右側：曲庫 -->
+            <div class="side-section w-full lg:w-[400px] bg-black/[0.01] border-l border-black/[0.03] flex flex-col relative z-20">
+                <div class="p-8 border-b border-black/[0.03]">
                     <div class="relative group">
-                        <input type="text" id="q" oninput="doSearch()" placeholder="Search Library" class="w-full bg-transparent border-none py-2 text-sm focus:ring-0 placeholder:text-black/20 font-light tracking-wide">
+                        <input type="text" id="q" oninput="doSearch()" placeholder="Search Library" class="w-full bg-transparent border-none py-2 text-sm focus:ring-0 placeholder:text-black/20 font-light tracking-wide outline-none">
                         <div class="absolute bottom-0 left-0 w-full h-[1px] bg-black/[0.03] group-focus-within:bg-black/20 transition-all"></div>
                     </div>
                 </div>
                 
-                <ul id="list" class="flex-1 overflow-y-auto no-scrollbar">
-                    <!-- 动态列表 -->
+                <ul id="list" class="flex-1 overflow-y-auto no-scrollbar relative z-30">
+                    <!-- 列表由 JS 生成 -->
                 </ul>
 
-                <div class="p-10">
+                <div class="p-8">
                     <button onclick="addMusic()" class="w-full py-4 border border-black/10 rounded-2xl text-[9px] font-bold tracking-[0.3em] hover:bg-black hover:text-white transition-all uppercase">
-                        Request New Track
+                        Request Track
                     </button>
                 </div>
             </div>
@@ -199,9 +209,7 @@
     <script>
         const apiKey = ""; 
         const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
-        const FADE_TIME = 800;
-
-        // --- Cookie Utils ---
+        
         const setCookie = (n, v, d=7) => {
             const date = new Date();
             date.setTime(date.getTime() + (d*24*60*60*1000));
@@ -213,26 +221,10 @@
         };
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
-        let fadeInterval = null;
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
         const cover = document.getElementById('cover');
         const bgMesh = document.getElementById('bg-mesh');
-
-        function fadeVolume(target, duration, callback) {
-            if (fadeInterval) clearInterval(fadeInterval);
-            const step = 0.05;
-            const intervalTime = duration / (1 / step);
-            fadeInterval = setInterval(() => {
-                if (target > audio.volume) audio.volume = Math.min(audio.volume + step, target);
-                else audio.volume = Math.max(audio.volume - step, target);
-                if (Math.abs(audio.volume - target) < 0.01) {
-                    audio.volume = target;
-                    clearInterval(fadeInterval);
-                    if (callback) callback();
-                }
-            }, intervalTime);
-        }
 
         function updateVisuals() {
             const h = Math.floor(Math.random() * 360);
@@ -240,7 +232,7 @@
             cover.style.color = `hsl(${h}, 40%, 50%)`;
             const blobs = bgMesh.querySelectorAll('.blob');
             blobs.forEach(b => {
-                b.style.transform = `translate(${Math.random()*30-15}%, ${Math.random()*30-15}%)`;
+                b.style.transform = `translate(${Math.random()*20-10}%, ${Math.random()*20-10}%) rotate(${Math.random()*45}deg)`;
             });
         }
 
@@ -251,7 +243,7 @@
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是一位極具人文氣息的音樂導讀師。請用一句充滿詩意的話描述歌曲《${name}》的意境，25字以內。直接輸出內容。` }] }] })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是一位音樂導讀師。請用一句充滿詩意的話描述歌曲《${name}》的意境，20字以內。` }] }] })
                 });
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
@@ -276,7 +268,7 @@
                 setCookie('isLoggedIn', 'true', 7);
                 enterApp();
             } else {
-                document.getElementById('pwd-error').innerText = '身份驗證失敗';
+                document.getElementById('pwd-error').innerText = 'IDENTIFICATION FAILED';
             }
         }
 
@@ -313,33 +305,43 @@
 
                 renderList();
                 const savedIdx = getCookie('pref_last_idx');
-                curIdx = (savedIdx !== null && savedIdx < allSongs.length) ? parseInt(savedIdx) : 0;
-                loadTrack(curIdx, false);
+                curIdx = (savedIdx !== null && parseInt(savedIdx) < allSongs.length) ? parseInt(savedIdx) : 0;
+                executeLoad(curIdx, false);
             } catch (e) { document.getElementById('status').innerText = "CONNECT ERROR"; }
         }
 
         function renderList() {
-            document.getElementById('list').innerHTML = filtered.map((s, i) => `
-                <li class="list-item ${curIdx === i ? 'active' : ''} px-10 py-7 cursor-pointer flex justify-between items-center transition-all hover:bg-black/[0.02]" onclick="selectTrack(${i})">
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm font-medium tracking-tight text-black/70">${s.t}</span>
-                        <span class="text-[9px] font-mono text-black/20 uppercase tracking-[0.2em]">${s.type} STREAM</span>
+            const listEl = document.getElementById('list');
+            listEl.innerHTML = filtered.map((s, i) => {
+                const isCurrent = curIdx === i;
+                return `
+                <li class="list-item ${isCurrent ? 'active' : ''} px-8 py-6 cursor-pointer flex justify-between items-center" 
+                    onclick="selectTrack(${i})">
+                    <div class="flex flex-col gap-1 pointer-events-none">
+                        <span class="text-xs font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
+                        <span class="text-[8px] font-mono text-black/20 uppercase tracking-[0.1em]">${s.type} STREAM</span>
                     </div>
-                    <span class="text-[9px] font-mono text-black/10">0${i+1}</span>
+                    ${isCurrent && isPlaying ? `
+                        <div class="playing-icon">
+                            <div style="animation-delay: 0s"></div>
+                            <div style="animation-delay: 0.2s"></div>
+                            <div style="animation-delay: 0.4s"></div>
+                        </div>
+                    ` : `<span class="text-[9px] font-mono text-black/10">0${i+1}</span>`}
                 </li>
-            `).join('');
+            `}).join('');
         }
 
-        function loadTrack(idx, auto = true) {
-            if (isPlaying) fadeVolume(0, 400, () => executeLoad(idx, auto));
-            else executeLoad(idx, auto);
+        function selectTrack(i) {
+            executeLoad(i, true);
         }
 
         function executeLoad(idx, auto) {
+            if (idx < 0 || idx >= filtered.length) return;
             curIdx = idx;
             const song = filtered[curIdx];
+            
             audio.src = song.u;
-            audio.volume = 0;
             document.getElementById('title').innerText = song.t;
             document.getElementById('status').innerText = "Streaming " + song.type;
             document.getElementById('track-type').innerText = song.type;
@@ -352,23 +354,24 @@
             window.aiTimer = setTimeout(() => analyzeInsight(song.t), 1500);
 
             if (auto) {
-                audio.play();
-                isPlaying = true;
-                fadeVolume(1, FADE_TIME);
-                syncUI();
+                audio.play().then(() => {
+                    isPlaying = true;
+                    syncUI();
+                    renderList();
+                });
             }
         }
 
         function playToggle() {
-            const svg = document.getElementById('play-svg');
             if (audio.paused) {
-                audio.volume = 0; audio.play();
-                fadeVolume(1, FADE_TIME); isPlaying = true;
-                svg.innerHTML = `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
+                audio.play();
+                isPlaying = true;
             } else {
-                fadeVolume(0, FADE_TIME, () => audio.pause()); isPlaying = false;
-                svg.innerHTML = `<path d="M8 5.14v14l11-7-11-7z"/>`;
+                audio.pause();
+                isPlaying = false;
             }
+            syncUI();
+            renderList();
         }
         
         function syncUI() {
@@ -378,18 +381,23 @@
                 : `<path d="M8 5.14v14l11-7-11-7z"/>`;
         }
         
-        function step(d) { loadTrack((curIdx + d + filtered.length) % filtered.length); }
+        function step(d) { executeLoad((curIdx + d + filtered.length) % filtered.length, true); }
+
         function doSearch() {
-            filtered = allSongs.filter(s => s.t.toLowerCase().includes(document.getElementById('q').value.toLowerCase()));
+            const val = document.getElementById('q').value.toLowerCase();
+            filtered = allSongs.filter(s => s.t.toLowerCase().includes(val));
             renderList();
         }
-        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=MUSIC_REQUEST`; }
+        
+        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=REQUEST`; }
+        
         function setLoop() {
             const modes = ['list', 'random', 'single'];
             loopMode = modes[(modes.indexOf(loopMode) + 1) % 3];
             document.getElementById('mode-btn').innerText = loopMode.toUpperCase();
             setCookie('pref_loop_mode', loopMode, 30);
         }
+
         function dl() { window.open(filtered[curIdx].u); }
 
         function formatTime(sec) {
@@ -401,19 +409,20 @@
         audio.ontimeupdate = () => {
             const p = (audio.currentTime / audio.duration * 100);
             document.getElementById('prog-bar').style.width = p + '%';
-            document.getElementById('prog-dot').style.left = p + '%';
+            if(document.getElementById('prog-dot')) document.getElementById('prog-dot').style.left = p + '%';
             document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
             document.getElementById('dur-time').innerText = formatTime(audio.duration);
         };
         
         audio.onended = () => { 
             if(loopMode === 'single') audio.play(); 
-            else if(loopMode === 'random') loadTrack(Math.floor(Math.random()*filtered.length));
+            else if(loopMode === 'random') executeLoad(Math.floor(Math.random()*filtered.length), true);
             else step(1); 
         };
 
         document.getElementById('seek-bar').onclick = (e) => { 
-            audio.currentTime = ((e.clientX - e.currentTarget.getBoundingClientRect().left) / e.currentTarget.offsetWidth) * audio.duration; 
+            const rect = e.currentTarget.getBoundingClientRect();
+            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
         };
     </script>
 </body>
