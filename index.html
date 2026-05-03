@@ -81,7 +81,6 @@
         }
         .player-card::-webkit-scrollbar { display: none; }
 
-        /* 虛擬封面：填補空白 */
         .cover-art {
             width: 100%; aspect-ratio: 1/1; max-width: 280px; margin: 0 auto 30px;
             background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f7 100%);
@@ -125,7 +124,6 @@
         .ai-label { font-size: 0.65rem; font-weight: 700; color: var(--ai-color); letter-spacing: 0.15em; margin-bottom: 8px; font-family: var(--font-sans); }
         #ai-text { font-size: 0.85rem; line-height: 1.7; color: #444; min-height: 3em; }
 
-        /* 右側列表 */
         .side-content { flex: 0.9; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
         
         .search-bar { display: flex; gap: 10px; }
@@ -182,21 +180,17 @@
     
     <div class="container" id="main-app">
         <div class="main-content">
-            <!-- 播放主體 -->
             <div class="player-card">
                 <div class="cover-art" id="cover"></div>
-                
                 <div class="meta">
                     <p id="status">Ready to Stream</p>
                     <h2 id="title">待命</h2>
                 </div>
-                
                 <div class="prog-wrap" id="seek-bar">
                     <div class="prog-bg">
                         <div id="prog-bar"></div>
                     </div>
                 </div>
-                
                 <div class="controls">
                     <button onclick="setLoop()" id="mode-btn" style="width:50px">LIST</button>
                     <button onclick="step(-1)">PREV</button>
@@ -204,20 +198,16 @@
                     <button onclick="step(1)">NEXT</button>
                     <button onclick="dl()" style="width:50px">DL</button>
                 </div>
-
                 <div class="ai-box">
                     <div class="ai-label">✦ GEMINI AI INSIGHT</div>
                     <div id="ai-text">靜候曲目載入，準備感應旋律意境...</div>
                 </div>
             </div>
-            
-            <!-- 搜尋與列表 -->
             <div class="side-content">
                 <div class="search-bar">
                     <input type="text" id="q" placeholder="搜尋您的私藏曲庫..." oninput="doSearch()">
                     <button class="add-btn" onclick="addMusic()">＋</button>
                 </div>
-                
                 <div class="list-container">
                     <ul id="list"></ul>
                 </div>
@@ -229,11 +219,30 @@
     
     <script>
         // =========================================================================
-        // 核心配置
+        // 核心配置與 Cookie 工具
         // =========================================================================
         const apiKey = ""; 
         const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
         const FADE_TIME = 800; 
+
+        // --- COOKIE FUNCTIONS ---
+        function setCookie(name, value, days = 7) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/;SameSite=Lax`;
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i=0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
         // =========================================================================
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
@@ -242,7 +251,7 @@
         const aiBox = document.getElementById('ai-text');
         const cover = document.getElementById('cover');
 
-        // 漸變音量
+        // 音量漸變
         function fadeVolume(target, duration, callback) {
             if (fadeInterval) clearInterval(fadeInterval);
             const step = 0.05;
@@ -258,7 +267,6 @@
             }, intervalTime);
         }
 
-        // 隨機封面顏色：增加視覺飽滿度
         function updateCover() {
             const h = Math.floor(Math.random() * 360);
             cover.style.background = `linear-gradient(135deg, hsl(${h}, 20%, 90%) 0%, hsl(${h}, 10%, 98%) 100%)`;
@@ -300,14 +308,27 @@
             } catch (e) { aiBox.innerText = "旋律深邃，意境自成一體。"; }
         }
 
+        // 頁面加載檢查自動登錄
+        window.addEventListener('load', () => {
+            const loggedIn = getCookie('isLoggedIn');
+            if (loggedIn === 'true') {
+                enterApp();
+            }
+        });
+
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'flex';
-                init();
+                setCookie('isLoggedIn', 'true', 7); // 記錄登錄狀態 7 天
+                enterApp();
             } else {
                 document.getElementById('pwd-error').innerText = '身份驗證不正確';
             }
+        }
+
+        function enterApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'flex';
+            init();
         }
 
         async function init() {
@@ -319,8 +340,22 @@
                     return { t: f.name.replace(/\.[^/.]+$/, ""), u: route.url, type: route.type };
                 });
                 filtered = [...allSongs];
+                
+                // 恢復播放模式
+                const savedMode = getCookie('pref_loop_mode');
+                if (savedMode) {
+                    loopMode = savedMode;
+                    document.getElementById('mode-btn').innerText = loopMode.toUpperCase();
+                }
+
                 renderList();
-                if(allSongs.length > 0) loadTrack(0, false);
+
+                // 恢復上次播放曲目
+                if(allSongs.length > 0) {
+                    const savedIdx = getCookie('pref_last_idx');
+                    curIdx = (savedIdx !== null && savedIdx < allSongs.length) ? parseInt(savedIdx) : 0;
+                    loadTrack(curIdx, false);
+                }
             } catch (e) { document.getElementById('status').innerText = "CONNECT ERROR"; }
         }
 
@@ -352,6 +387,10 @@
             audio.volume = 0;
             document.getElementById('title').innerText = song.t;
             document.getElementById('status').innerText = song.type + " STREAMING";
+            
+            // 記錄當前曲目到 Cookie
+            setCookie('pref_last_idx', curIdx, 30);
+            
             updateCover();
             renderList();
             clearTimeout(window.aiTimer);
@@ -365,6 +404,7 @@
         }
 
         function selectTrack(i) { loadTrack(i); }
+        
         function playToggle() {
             if (audio.paused) {
                 audio.volume = 0; audio.play();
@@ -374,27 +414,45 @@
             }
             syncUI();
         }
+        
         function syncUI() { document.getElementById('play-btn').innerText = isPlaying ? '||' : '▶'; }
+        
         function step(d) { loadTrack((curIdx + d + filtered.length) % filtered.length); }
+        
         function doSearch() {
             const key = document.getElementById('q').value.toLowerCase();
             filtered = allSongs.filter(s => s.t.toLowerCase().includes(key));
             renderList();
         }
+        
         function addMusic() {
             window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=ADD_MUSIC`;
         }
+        
         function setLoop() {
             const modes = ['list', 'random', 'single'];
             loopMode = modes[(modes.indexOf(loopMode) + 1) % 3];
             document.getElementById('mode-btn').innerText = loopMode.toUpperCase();
+            // 記錄循環模式到 Cookie
+            setCookie('pref_loop_mode', loopMode, 30);
         }
+        
         function dl() { window.open(filtered[curIdx].u); }
 
         audio.ontimeupdate = () => {
             document.getElementById('prog-bar').style.width = (audio.currentTime / audio.duration * 100) + '%';
         };
-        audio.onended = () => { if(loopMode === 'single') audio.play(); else step(1); };
+        
+        audio.onended = () => { 
+            if(loopMode === 'single') audio.play(); 
+            else if(loopMode === 'random') {
+                let next = Math.floor(Math.random() * filtered.length);
+                loadTrack(next);
+            } else {
+                step(1); 
+            }
+        };
+
         document.getElementById('seek-bar').onclick = (e) => { 
             const rect = e.currentTarget.getBoundingClientRect();
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
@@ -402,5 +460,3 @@
     </script>
 </body>
 </html>
-
-```
