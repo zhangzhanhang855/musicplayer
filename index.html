@@ -7,6 +7,8 @@
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 jsmediatags 库用于解析 MP3 封面 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
     
     <style>
@@ -93,6 +95,13 @@
             0% { height: 3px; } 
             100% { height: 10px; } 
         }
+
+        /* 封面图容器样式 */
+        #cover {
+            background-size: cover;
+            background-position: center;
+            transition: all 0.6s var(--ease-out-expo);
+        }
     </style>
 </head>
 <body>
@@ -129,10 +138,10 @@
                 </div>
 
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
-                    <!-- 封面略微縮小以留出空間 -->
-                    <div id="cover" class="w-52 h-52 lg:w-64 lg:h-64 rounded-[40px] mb-8 shadow-2xl transition-all duration-1000 flex items-center justify-center text-5xl group relative">
-                        <div class="absolute inset-0 bg-black/5 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                        💿
+                    <!-- 封面展示区 -->
+                    <div id="cover" class="w-52 h-52 lg:w-64 lg:h-64 rounded-[40px] mb-8 shadow-2xl transition-all duration-1000 flex items-center justify-center text-5xl group relative overflow-hidden">
+                        <div class="absolute inset-0 bg-black/5 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+                        <span id="cover-emoji" class="z-0">💿</span>
                     </div>
                     
                     <div class="mb-8">
@@ -203,7 +212,7 @@
         </div>
     </div>
 
-    <audio id="player"></audio>
+    <audio id="player" crossorigin="anonymous"></audio>
 
     <script>
         const apiKey = ""; 
@@ -220,14 +229,97 @@
         };
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
+        let currentCoverObjectURL = null; // 用于存储当前的封面 Blob URL
+
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
         const cover = document.getElementById('cover');
+        const coverEmoji = document.getElementById('cover-emoji');
         const bgMesh = document.getElementById('bg-mesh');
+
+        // --- 系统媒体会话与封面处理核心 ---
+        
+        function setupMediaHandlers() {
+            if (!('mediaSession' in navigator)) return;
+            const handlers = [
+                ['play', () => { audio.play(); }],
+                ['pause', () => { audio.pause(); }],
+                ['previoustrack', () => { step(-1); }],
+                ['nexttrack', () => { step(1); }]
+            ];
+            for (const [action, handler] of handlers) {
+                try { navigator.mediaSession.setActionHandler(action, handler); } catch (e) {}
+            }
+        }
+
+        function updateMediaSession(song, coverUrl) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: song.t,
+                    artist: "Premium Selection",
+                    album: "Elite Music Space",
+                    artwork: [
+                        { src: coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=512', sizes: '512x512', type: 'image/jpeg' }
+                    ]
+                });
+                setupMediaHandlers();
+            }
+        }
+
+        // 提取 MP3 封面
+        function extractCover(songUrl, songData) {
+            // 清理旧的内存占用
+            if (currentCoverObjectURL) {
+                URL.revokeObjectURL(currentCoverObjectURL);
+                currentCoverObjectURL = null;
+            }
+
+            jsmediatags.read(songUrl, {
+                onSuccess: function(tag) {
+                    const image = tag.tags.picture;
+                    if (image) {
+                        let base64String = "";
+                        for (let i = 0; i < image.data.length; i++) {
+                            base64String += String.fromCharCode(image.data[i]);
+                        }
+                        const base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
+                        
+                        // 更新 UI 封面
+                        cover.style.backgroundImage = `url(${base64})`;
+                        coverEmoji.style.opacity = '0';
+                        currentCoverObjectURL = base64; // 存储以备后用
+                        
+                        // 同时同步到系统锁屏界面
+                        updateMediaSession(songData, base64);
+                    } else {
+                        resetCoverUI(songData);
+                    }
+                },
+                onError: function(error) {
+                    console.log('Error reading tags: ', error.type, error.info);
+                    resetCoverUI(songData);
+                }
+            });
+        }
+
+        function resetCoverUI(songData) {
+            cover.style.backgroundImage = 'none';
+            coverEmoji.style.opacity = '1';
+            updateVisuals();
+            updateMediaSession(songData, null);
+        }
+
+        function updatePlaybackState(state) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = state;
+            }
+        }
+
+        // --- 基础逻辑 ---
 
         function updateVisuals() {
             const h = Math.floor(Math.random() * 360);
-            cover.style.background = `linear-gradient(135deg, hsl(${h}, 40%, 92%) 0%, hsl(${h}, 20%, 98%) 100%)`;
+            cover.style.backgroundColor = `hsl(${h}, 40%, 92%)`;
             cover.style.color = `hsl(${h}, 40%, 50%)`;
             const blobs = bgMesh.querySelectorAll('.blob');
             blobs.forEach(b => {
@@ -346,9 +438,11 @@
             document.getElementById('track-type').innerText = song.type;
             
             setCookie('pref_last_idx', curIdx, 30);
-            updateVisuals();
             renderList();
             
+            // 尝试提取封面
+            extractCover(song.u, song);
+
             clearTimeout(window.aiTimer);
             window.aiTimer = setTimeout(() => analyzeInsight(song.t), 1500);
 
@@ -356,8 +450,9 @@
                 audio.play().then(() => {
                     isPlaying = true;
                     syncUI();
+                    updatePlaybackState('playing');
                     renderList();
-                });
+                }).catch(() => console.log("User Interaction Required"));
             }
         }
 
@@ -370,7 +465,6 @@
                 isPlaying = false;
             }
             syncUI();
-            renderList();
         }
         
         function syncUI() {
@@ -404,6 +498,20 @@
             let m = Math.floor(sec/60), s = Math.floor(sec%60);
             return `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
         }
+
+        audio.onplay = () => {
+            isPlaying = true;
+            syncUI();
+            updatePlaybackState('playing');
+            renderList();
+        };
+
+        audio.onpause = () => {
+            isPlaying = false;
+            syncUI();
+            updatePlaybackState('paused');
+            renderList();
+        };
 
         audio.ontimeupdate = () => {
             const p = (audio.currentTime / audio.duration * 100);
