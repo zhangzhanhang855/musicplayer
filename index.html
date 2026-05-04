@@ -7,7 +7,7 @@
     
     <link rel="dns-prefetch" href="https://api.github.com">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 jsmediatags 库用于解析 MP3 封面 -->
+    <!-- 解析 MP3 元数据与封面的库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
     
@@ -72,44 +72,73 @@
             border-left: 3px solid black;
         }
 
+        /* 封面动态效果：暂停时减弱 */
+        #cover {
+            background-size: cover;
+            background-position: center;
+            transition: all 0.8s var(--ease-out-expo);
+            transform: scale(1);
+            filter: brightness(1) grayscale(0);
+        }
+        .is-paused #cover {
+            transform: scale(0.92);
+            filter: brightness(0.7) grayscale(0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* YouTube 嵌入区域样式 */
+        .yt-widget {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            width: 200px;
+            height: 112px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        .yt-widget:hover {
+            width: 320px;
+            height: 180px;
+            transform: translateY(-5px);
+        }
+
         @media (max-width: 1024px) {
             .main-layout { 
-                flex-direction: column; 
-                height: 100vh; 
-                max-height: 100vh;
-                width: 100vw;
-                border-radius: 0; 
+                flex-direction: column; height: 100vh; max-height: 100vh; width: 100vw; border-radius: 0; 
             }
             .player-section { height: 60% !important; }
             .side-section { height: 40% !important; border-left: none; border-top: 1px solid rgba(0,0,0,0.05); }
+            .yt-widget { width: 140px; height: 80px; bottom: 12px; left: 12px; }
+            .yt-widget:hover { width: 140px; height: 80px; }
         }
 
-        .playing-icon {
-            display: flex; gap: 2px; align-items: flex-end; height: 10px;
-        }
+        .playing-icon { display: flex; gap: 2px; align-items: flex-end; height: 10px; }
         .playing-icon div {
             width: 2px; background: black; border-radius: 1px;
             animation: bounce 0.8s infinite ease-in-out alternate;
         }
-        @keyframes bounce { 
-            0% { height: 3px; } 
-            100% { height: 10px; } 
-        }
-
-        /* 封面图容器样式 */
-        #cover {
-            background-size: cover;
-            background-position: center;
-            transition: all 0.6s var(--ease-out-expo);
-        }
+        @keyframes bounce { 0% { height: 3px; } 100% { height: 10px; } }
     </style>
 </head>
-<body>
+<body class="is-paused"> <!-- 初始状态为暂停 -->
 
     <div class="mesh-bg" id="bg-mesh">
         <div class="blob bg-purple-300 top-[-10%] left-[-10%]"></div>
         <div class="blob bg-blue-200 bottom-[-10%] right-[-10%]" style="animation-duration: 25s"></div>
         <div class="blob bg-pink-100 top-[20%] right-[20%]" style="animation-duration: 30s"></div>
+    </div>
+
+    <!-- YouTube 固定嵌入 -->
+    <div class="yt-widget">
+        <iframe width="100%" height="100%" 
+                src="https://youtu.be/eOCe60MmpUI" 
+                title="YouTube video player" frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen></iframe>
     </div>
 
     <!-- 驗證屏 -->
@@ -125,7 +154,7 @@
 
     <!-- 主播放器界面 -->
     <div id="main-app" class="hidden opacity-0 w-full max-w-7xl px-4 py-8 transition-all duration-1000 flex items-center justify-center">
-        <div class="main-layout glass-panel w-full h-[760px] max-h-[90vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
+        <div id="player-container" class="main-layout glass-panel w-full h-[760px] max-h-[90vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
             
             <!-- 左側：播放區域 -->
             <div class="player-section flex-1 h-full flex flex-col p-8 lg:p-10 relative overflow-hidden">
@@ -138,8 +167,7 @@
                 </div>
 
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
-                    <!-- 封面展示区 -->
-                    <div id="cover" class="w-52 h-52 lg:w-64 lg:h-64 rounded-[40px] mb-8 shadow-2xl transition-all duration-1000 flex items-center justify-center text-5xl group relative overflow-hidden">
+                    <div id="cover" class="w-52 h-52 lg:w-64 lg:h-64 rounded-[40px] mb-8 shadow-2xl flex items-center justify-center text-5xl group relative overflow-hidden">
                         <div class="absolute inset-0 bg-black/5 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
                         <span id="cover-emoji" class="z-0">💿</span>
                     </div>
@@ -160,7 +188,6 @@
                         </div>
                     </div>
 
-                    <!-- 控制按鈕組 -->
                     <div class="flex items-center gap-8 lg:gap-12">
                         <button onclick="setLoop()" id="mode-btn" class="text-[9px] font-bold tracking-[0.1em] text-black/30 hover:text-black transition-colors uppercase w-10">List</button>
                         <button onclick="step(-1)" class="text-black/30 hover:text-black transition-colors">
@@ -178,7 +205,6 @@
                     </div>
                 </div>
 
-                <!-- AI 區域 -->
                 <div class="mt-4 pt-6 border-t border-black/[0.03]">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
@@ -198,11 +224,7 @@
                         <div class="absolute bottom-0 left-0 w-full h-[1px] bg-black/[0.03] group-focus-within:bg-black/20 transition-all"></div>
                     </div>
                 </div>
-                
-                <ul id="list" class="flex-1 overflow-y-auto no-scrollbar relative z-30">
-                    <!-- 列表由 JS 生成 -->
-                </ul>
-
+                <ul id="list" class="flex-1 overflow-y-auto no-scrollbar relative z-30"></ul>
                 <div class="p-8">
                     <button onclick="addMusic()" class="w-full py-4 border border-black/10 rounded-2xl text-[9px] font-bold tracking-[0.3em] hover:bg-black hover:text-white transition-all uppercase">
                         Request Track
@@ -229,7 +251,7 @@
         };
 
         let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
-        let currentCoverObjectURL = null; // 用于存储当前的封面 Blob URL
+        let currentCoverObjectURL = null;
 
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
@@ -237,20 +259,7 @@
         const coverEmoji = document.getElementById('cover-emoji');
         const bgMesh = document.getElementById('bg-mesh');
 
-        // --- 系统媒体会话与封面处理核心 ---
-        
-        function setupMediaHandlers() {
-            if (!('mediaSession' in navigator)) return;
-            const handlers = [
-                ['play', () => { audio.play(); }],
-                ['pause', () => { audio.pause(); }],
-                ['previoustrack', () => { step(-1); }],
-                ['nexttrack', () => { step(1); }]
-            ];
-            for (const [action, handler] of handlers) {
-                try { navigator.mediaSession.setActionHandler(action, handler); } catch (e) {}
-            }
-        }
+        // --- 系统媒体会话与封面解析 ---
 
         function updateMediaSession(song, coverUrl) {
             if ('mediaSession' in navigator) {
@@ -262,13 +271,20 @@
                         { src: coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=512', sizes: '512x512', type: 'image/jpeg' }
                     ]
                 });
-                setupMediaHandlers();
+                
+                const handlers = [
+                    ['play', () => audio.play()],
+                    ['pause', () => audio.pause()],
+                    ['previoustrack', () => step(-1)],
+                    ['nexttrack', () => step(1)]
+                ];
+                handlers.forEach(([action, handler]) => {
+                    try { navigator.mediaSession.setActionHandler(action, handler); } catch(e) {}
+                });
             }
         }
 
-        // 提取 MP3 封面
         function extractCover(songUrl, songData) {
-            // 清理旧的内存占用
             if (currentCoverObjectURL) {
                 URL.revokeObjectURL(currentCoverObjectURL);
                 currentCoverObjectURL = null;
@@ -276,29 +292,20 @@
 
             jsmediatags.read(songUrl, {
                 onSuccess: function(tag) {
-                    const image = tag.tags.picture;
-                    if (image) {
+                    const pic = tag.tags.picture;
+                    if (pic) {
                         let base64String = "";
-                        for (let i = 0; i < image.data.length; i++) {
-                            base64String += String.fromCharCode(image.data[i]);
-                        }
-                        const base64 = "data:" + image.format + ";base64," + window.btoa(base64String);
-                        
-                        // 更新 UI 封面
+                        for (let i = 0; i < pic.data.length; i++) base64String += String.fromCharCode(pic.data[i]);
+                        const base64 = "data:" + pic.format + ";base64," + window.btoa(base64String);
                         cover.style.backgroundImage = `url(${base64})`;
                         coverEmoji.style.opacity = '0';
-                        currentCoverObjectURL = base64; // 存储以备后用
-                        
-                        // 同时同步到系统锁屏界面
+                        currentCoverObjectURL = base64;
                         updateMediaSession(songData, base64);
                     } else {
                         resetCoverUI(songData);
                     }
                 },
-                onError: function(error) {
-                    console.log('Error reading tags: ', error.type, error.info);
-                    resetCoverUI(songData);
-                }
+                onError: function() { resetCoverUI(songData); }
             });
         }
 
@@ -309,22 +316,112 @@
             updateMediaSession(songData, null);
         }
 
-        function updatePlaybackState(state) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = state;
+        // --- 核心播放逻辑 ---
+
+        function syncAppState(playing) {
+            isPlaying = playing;
+            if (playing) {
+                document.body.classList.remove('is-paused');
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+            } else {
+                document.body.classList.add('is-paused');
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+            }
+            const svg = document.getElementById('play-svg');
+            svg.innerHTML = playing 
+                ? `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`
+                : `<path d="M8 5.14v14l11-7-11-7z"/>`;
+            renderList();
+        }
+
+        function executeLoad(idx, auto) {
+            if (idx < 0 || idx >= filtered.length) return;
+            curIdx = idx;
+            const song = filtered[curIdx];
+            audio.src = song.u;
+            document.getElementById('title').innerText = song.t;
+            document.getElementById('status').innerText = "Streaming " + song.type;
+            document.getElementById('track-type').innerText = song.type;
+            
+            setCookie('pref_last_idx', curIdx, 30);
+            renderList();
+            extractCover(song.u, song);
+
+            clearTimeout(window.aiTimer);
+            window.aiTimer = setTimeout(() => analyzeInsight(song.t), 1500);
+
+            if (auto) {
+                audio.play().catch(() => syncAppState(false));
             }
         }
 
-        // --- 基础逻辑 ---
+        function playToggle() { audio.paused ? audio.play() : audio.pause(); }
+        function step(d) { executeLoad((curIdx + d + filtered.length) % filtered.length, true); }
+
+        // --- 音频事件绑定 ---
+        audio.onplay = () => syncAppState(true);
+        audio.onpause = () => syncAppState(false);
+        audio.onended = () => { 
+            if(loopMode === 'single') audio.play(); 
+            else if(loopMode === 'random') executeLoad(Math.floor(Math.random()*filtered.length), true);
+            else step(1); 
+        };
+        audio.ontimeupdate = () => {
+            const p = (audio.currentTime / audio.duration * 100);
+            document.getElementById('prog-bar').style.width = p + '%';
+            if(document.getElementById('prog-dot')) document.getElementById('prog-dot').style.left = p + '%';
+            document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
+            document.getElementById('dur-time').innerText = formatTime(audio.duration);
+        };
+
+        // --- 基础辅助功能 ---
 
         function updateVisuals() {
             const h = Math.floor(Math.random() * 360);
             cover.style.backgroundColor = `hsl(${h}, 40%, 92%)`;
             cover.style.color = `hsl(${h}, 40%, 50%)`;
-            const blobs = bgMesh.querySelectorAll('.blob');
-            blobs.forEach(b => {
+            document.querySelectorAll('.blob').forEach(b => {
                 b.style.transform = `translate(${Math.random()*20-10}%, ${Math.random()*20-10}%) rotate(${Math.random()*45}deg)`;
             });
+        }
+
+        async function init() {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
+                const data = await res.json();
+                allSongs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
+                    t: f.name.replace(/\.[^/.]+$/, ""),
+                    u: f.size < 1024 
+                       ? `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(f.name)}`
+                       : `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`,
+                    type: f.size < 1024 ? 'LFS' : 'CDN'
+                }));
+                filtered = [...allSongs];
+                const savedMode = getCookie('pref_loop_mode');
+                if (savedMode) { loopMode = savedMode; document.getElementById('mode-btn').innerText = loopMode.toUpperCase(); }
+                renderList();
+                const savedIdx = getCookie('pref_last_idx');
+                curIdx = (savedIdx !== null && parseInt(savedIdx) < allSongs.length) ? parseInt(savedIdx) : 0;
+                executeLoad(curIdx, false);
+            } catch (e) { document.getElementById('status').innerText = "CONNECT ERROR"; }
+        }
+
+        function renderList() {
+            const listEl = document.getElementById('list');
+            listEl.innerHTML = filtered.map((s, i) => {
+                const isCurrent = curIdx === i;
+                return `
+                <li class="list-item ${isCurrent ? 'active' : ''} px-8 py-6 cursor-pointer flex justify-between items-center" 
+                    onclick="executeLoad(${i}, true)">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
+                        <span class="text-[8px] font-mono text-black/20 uppercase tracking-[0.1em]">${s.type} STREAM</span>
+                    </div>
+                    ${isCurrent && isPlaying ? `
+                        <div class="playing-icon"><div></div><div style="animation-delay: 0.2s"></div><div style="animation-delay: 0.4s"></div></div>
+                    ` : `<span class="text-[9px] font-mono text-black/10">0${i+1}</span>`}
+                </li>`;
+            }).join('');
         }
 
         async function analyzeInsight(name) {
@@ -340,27 +437,16 @@
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
                 aiBox.innerText = "";
                 let i = 0;
-                const type = () => {
-                    if (i < text.length) {
-                        aiBox.innerText += text.charAt(i); i++;
-                        setTimeout(type, 60);
-                    }
-                };
+                const type = () => { if (i < text.length) { aiBox.innerText += text.charAt(i++); setTimeout(type, 60); } };
                 type();
             } catch (e) { aiBox.innerText = "旋律深邃，意境自成一體。"; }
         }
-
-        window.addEventListener('load', () => {
-            if (getCookie('isLoggedIn') === 'true') enterApp();
-        });
 
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
                 setCookie('isLoggedIn', 'true', 7);
                 enterApp();
-            } else {
-                document.getElementById('pwd-error').innerText = 'IDENTIFICATION FAILED';
-            }
+            } else { document.getElementById('pwd-error').innerText = 'IDENTIFICATION FAILED'; }
         }
 
         function enterApp() {
@@ -375,157 +461,24 @@
             }, 700);
         }
 
-        async function init() {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
-                const data = await res.json();
-                allSongs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                    t: f.name.replace(/\.[^/.]+$/, ""),
-                    u: f.size < 1024 
-                       ? `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(f.name)}`
-                       : `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`,
-                    type: f.size < 1024 ? 'LFS' : 'CDN'
-                }));
-                filtered = [...allSongs];
-                
-                const savedMode = getCookie('pref_loop_mode');
-                if (savedMode) {
-                    loopMode = savedMode;
-                    document.getElementById('mode-btn').innerText = loopMode.toUpperCase();
-                }
-
-                renderList();
-                const savedIdx = getCookie('pref_last_idx');
-                curIdx = (savedIdx !== null && parseInt(savedIdx) < allSongs.length) ? parseInt(savedIdx) : 0;
-                executeLoad(curIdx, false);
-            } catch (e) { document.getElementById('status').innerText = "CONNECT ERROR"; }
-        }
-
-        function renderList() {
-            const listEl = document.getElementById('list');
-            listEl.innerHTML = filtered.map((s, i) => {
-                const isCurrent = curIdx === i;
-                return `
-                <li class="list-item ${isCurrent ? 'active' : ''} px-8 py-6 cursor-pointer flex justify-between items-center" 
-                    onclick="selectTrack(${i})">
-                    <div class="flex flex-col gap-1 pointer-events-none">
-                        <span class="text-xs font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
-                        <span class="text-[8px] font-mono text-black/20 uppercase tracking-[0.1em]">${s.type} STREAM</span>
-                    </div>
-                    ${isCurrent && isPlaying ? `
-                        <div class="playing-icon">
-                            <div style="animation-delay: 0s"></div>
-                            <div style="animation-delay: 0.2s"></div>
-                            <div style="animation-delay: 0.4s"></div>
-                        </div>
-                    ` : `<span class="text-[9px] font-mono text-black/10">0${i+1}</span>`}
-                </li>
-            `}).join('');
-        }
-
-        function selectTrack(i) {
-            executeLoad(i, true);
-        }
-
-        function executeLoad(idx, auto) {
-            if (idx < 0 || idx >= filtered.length) return;
-            curIdx = idx;
-            const song = filtered[curIdx];
-            
-            audio.src = song.u;
-            document.getElementById('title').innerText = song.t;
-            document.getElementById('status').innerText = "Streaming " + song.type;
-            document.getElementById('track-type').innerText = song.type;
-            
-            setCookie('pref_last_idx', curIdx, 30);
-            renderList();
-            
-            // 尝试提取封面
-            extractCover(song.u, song);
-
-            clearTimeout(window.aiTimer);
-            window.aiTimer = setTimeout(() => analyzeInsight(song.t), 1500);
-
-            if (auto) {
-                audio.play().then(() => {
-                    isPlaying = true;
-                    syncUI();
-                    updatePlaybackState('playing');
-                    renderList();
-                }).catch(() => console.log("User Interaction Required"));
-            }
-        }
-
-        function playToggle() {
-            if (audio.paused) {
-                audio.play();
-                isPlaying = true;
-            } else {
-                audio.pause();
-                isPlaying = false;
-            }
-            syncUI();
-        }
-        
-        function syncUI() {
-            const svg = document.getElementById('play-svg');
-            svg.innerHTML = isPlaying 
-                ? `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`
-                : `<path d="M8 5.14v14l11-7-11-7z"/>`;
-        }
-        
-        function step(d) { executeLoad((curIdx + d + filtered.length) % filtered.length, true); }
-
         function doSearch() {
             const val = document.getElementById('q').value.toLowerCase();
             filtered = allSongs.filter(s => s.t.toLowerCase().includes(val));
             renderList();
         }
-        
-        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=REQUEST`; }
-        
+        function formatTime(sec) {
+            if (isNaN(sec)) return "00:00";
+            let m = Math.floor(sec/60), s = Math.floor(sec%60);
+            return `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+        }
         function setLoop() {
             const modes = ['list', 'random', 'single'];
             loopMode = modes[(modes.indexOf(loopMode) + 1) % 3];
             document.getElementById('mode-btn').innerText = loopMode.toUpperCase();
             setCookie('pref_loop_mode', loopMode, 30);
         }
-
         function dl() { window.open(filtered[curIdx].u); }
-
-        function formatTime(sec) {
-            if (isNaN(sec)) return "00:00";
-            let m = Math.floor(sec/60), s = Math.floor(sec%60);
-            return `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
-        }
-
-        audio.onplay = () => {
-            isPlaying = true;
-            syncUI();
-            updatePlaybackState('playing');
-            renderList();
-        };
-
-        audio.onpause = () => {
-            isPlaying = false;
-            syncUI();
-            updatePlaybackState('paused');
-            renderList();
-        };
-
-        audio.ontimeupdate = () => {
-            const p = (audio.currentTime / audio.duration * 100);
-            document.getElementById('prog-bar').style.width = p + '%';
-            if(document.getElementById('prog-dot')) document.getElementById('prog-dot').style.left = p + '%';
-            document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
-            document.getElementById('dur-time').innerText = formatTime(audio.duration);
-        };
-        
-        audio.onended = () => { 
-            if(loopMode === 'single') audio.play(); 
-            else if(loopMode === 'random') executeLoad(Math.floor(Math.random()*filtered.length), true);
-            else step(1); 
-        };
+        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=REQUEST`; }
 
         document.getElementById('seek-bar').onclick = (e) => { 
             const rect = e.currentTarget.getBoundingClientRect();
