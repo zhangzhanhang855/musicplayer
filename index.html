@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -5,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Elite Music Space | Pro</title>
     
-    <link rel="dns-prefetch" href="https://api.github.com">
+    <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 解析 MP3 元数据与封面的库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -13,7 +14,7 @@
     
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.65);
+            --glass: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(255, 255, 255, 0.4);
             --accent: #000000;
             --font-serif: "Noto Serif TC", serif;
@@ -25,17 +26,18 @@
             margin: 0; padding: 0;
             min-height: 100vh; width: 100%;
             font-family: var(--font-sans);
-            background: #f0f0f2;
+            background: #f4f4f7;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .mesh-bg {
             position: fixed; inset: 0; z-index: -1;
             filter: blur(80px);
-            opacity: 0.6;
+            opacity: 0.5;
             transition: all 2s var(--ease-out-expo);
         }
         .blob {
@@ -59,7 +61,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        #prog-bar { transition: width 0.1s linear; }
+        #prog-bar { transition: width 0.2s ease-out; }
 
         .list-item {
             position: relative;
@@ -68,63 +70,64 @@
         }
         .list-item:active { transform: scale(0.98); background: rgba(0,0,0,0.04); }
         .list-item.active {
-            background: rgba(0,0,0,0.03);
-            border-left: 3px solid black;
+            background: rgba(0,0,0,0.04);
+            border-left: 4px solid black;
         }
 
-        /* 封面动态效果：暂停时减弱 */
+        /* 封面动态效果 */
         #cover {
             background-size: cover;
             background-position: center;
             transition: all 0.8s var(--ease-out-expo);
             transform: scale(1);
-            filter: brightness(1) grayscale(0);
+            filter: brightness(1);
         }
         .is-paused #cover {
             transform: scale(0.92);
-            filter: brightness(0.7) grayscale(0.2);
+            filter: brightness(0.8) grayscale(0.2);
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        /* YouTube 嵌入区域样式 */
+        /* 加载动画 */
+        .loading-ring {
+            display: none;
+            width: 40px; height: 40px;
+            border: 2px solid rgba(0,0,0,0.05);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .is-loading .loading-ring { display: block; }
+        .is-loading #cover-emoji { display: none; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         .yt-widget {
-            position: fixed;
-            bottom: 24px;
-            left: 24px;
-            width: 200px;
-            height: 112px;
-            border-radius: 16px;
-            overflow: hidden;
+            position: fixed; bottom: 24px; left: 24px;
+            width: 200px; height: 112px;
+            border-radius: 16px; overflow: hidden;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
             z-index: 100;
-            border: 1px solid rgba(255,255,255,0.3);
             transition: all 0.3s ease;
         }
-        .yt-widget:hover {
-            width: 320px;
-            height: 180px;
-            transform: translateY(-5px);
-        }
+        .yt-widget:hover { width: 320px; height: 180px; }
 
         @media (max-width: 1024px) {
-            .main-layout { 
-                flex-direction: column; height: 100vh; max-height: 100vh; width: 100vw; border-radius: 0; 
-            }
-            .player-section { height: 60% !important; }
-            .side-section { height: 40% !important; border-left: none; border-top: 1px solid rgba(0,0,0,0.05); }
-            .yt-widget { width: 140px; height: 80px; bottom: 12px; left: 12px; }
-            .yt-widget:hover { width: 140px; height: 80px; }
+            .main-layout { flex-direction: column; height: 100vh; max-height: 100vh; width: 100vw; border-radius: 0; }
+            .player-section { height: 65% !important; }
+            .side-section { height: 35% !important; border-left: none; border-top: 1px solid rgba(0,0,0,0.05); }
+            .yt-widget { display: none; } /* 移动端隐藏YT避免干扰 */
         }
 
-        .playing-icon { display: flex; gap: 2px; align-items: flex-end; height: 10px; }
+        .playing-icon { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
         .playing-icon div {
-            width: 2px; background: black; border-radius: 1px;
+            width: 2.5px; background: black; border-radius: 1px;
             animation: bounce 0.8s infinite ease-in-out alternate;
         }
-        @keyframes bounce { 0% { height: 3px; } 100% { height: 10px; } }
+        @keyframes bounce { 0% { height: 4px; } 100% { height: 12px; } }
     </style>
 </head>
-<body class="is-paused"> <!-- 初始状态为暂停 -->
+<body class="is-paused">
 
     <div class="mesh-bg" id="bg-mesh">
         <div class="blob bg-purple-300 top-[-10%] left-[-10%]"></div>
@@ -135,9 +138,9 @@
     <!-- YouTube 固定嵌入 -->
     <div class="yt-widget">
         <iframe width="100%" height="100%" 
-                src="https://youtu.be/eOCe60MmpUI" 
+                src="https://www.youtube.com/embed/eOCe60MmpUI" 
                 title="YouTube video player" frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowfullscreen></iframe>
     </div>
 
@@ -154,70 +157,70 @@
 
     <!-- 主播放器界面 -->
     <div id="main-app" class="hidden opacity-0 w-full max-w-7xl px-4 py-8 transition-all duration-1000 flex items-center justify-center">
-        <div id="player-container" class="main-layout glass-panel w-full h-[760px] max-h-[90vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
+        <div id="player-container" class="main-layout glass-panel w-full h-[780px] max-h-[90vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
             
             <!-- 左側：播放區域 -->
-            <div class="player-section flex-1 h-full flex flex-col p-8 lg:p-10 relative overflow-hidden">
-                <div class="flex justify-between items-start mb-4">
+            <div class="player-section flex-1 h-full flex flex-col p-8 lg:p-12 relative overflow-hidden">
+                <div class="flex justify-between items-start mb-6">
                     <div class="flex flex-col">
                         <span class="text-[9px] tracking-[0.5em] font-bold text-black/20 uppercase mb-1">Now Streaming</span>
-                        <div id="status" class="text-[10px] text-indigo-500 font-bold tracking-widest uppercase">Ready</div>
+                        <div id="status" class="text-[10px] text-indigo-500 font-bold tracking-widest uppercase">Initializing...</div>
                     </div>
                     <div id="track-type" class="text-[9px] bg-black/5 px-3 py-1 rounded-full text-black/40 font-mono">HI-RES</div>
                 </div>
 
                 <div class="flex-1 flex flex-col items-center justify-center text-center">
-                    <div id="cover" class="w-52 h-52 lg:w-64 lg:h-64 rounded-[40px] mb-8 shadow-2xl flex items-center justify-center text-5xl group relative overflow-hidden">
-                        <div class="absolute inset-0 bg-black/5 rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+                    <div id="cover" class="w-56 h-56 lg:w-72 lg:h-72 rounded-[48px] mb-10 shadow-2xl flex items-center justify-center text-5xl group relative overflow-hidden bg-white/40">
+                        <div class="loading-ring"></div>
                         <span id="cover-emoji" class="z-0">💿</span>
                     </div>
                     
-                    <div class="mb-8">
+                    <div class="mb-10">
                         <h2 id="title" class="text-2xl lg:text-3xl font-semibold mb-2 tracking-tight font-serif">待命</h2>
                         <p id="artist-name" class="text-[9px] tracking-[0.4em] text-black/30 uppercase">Premium Selection</p>
                     </div>
 
                     <div class="w-full max-w-sm mb-10">
-                        <div class="relative h-[2.5px] w-full bg-black/[0.04] rounded-full mb-4 cursor-pointer group" id="seek-bar">
+                        <div class="relative h-[3px] w-full bg-black/[0.06] rounded-full mb-4 cursor-pointer group" id="seek-bar">
                             <div id="prog-bar" class="absolute h-full bg-black rounded-full w-0"></div>
                             <div class="absolute h-3 w-3 bg-white border-2 border-black rounded-full top-1/2 -translate-y-1/2 -ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" id="prog-dot"></div>
                         </div>
-                        <div class="flex justify-between text-[10px] font-mono text-black/20 tracking-widest">
+                        <div class="flex justify-between text-[10px] font-mono text-black/30 tracking-widest">
                             <span id="cur-time">00:00</span>
                             <span id="dur-time">00:00</span>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-8 lg:gap-12">
+                    <div class="flex items-center gap-10 lg:gap-14">
                         <button onclick="setLoop()" id="mode-btn" class="text-[9px] font-bold tracking-[0.1em] text-black/30 hover:text-black transition-colors uppercase w-10">List</button>
                         <button onclick="step(-1)" class="text-black/30 hover:text-black transition-colors">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                         </button>
                         <button onclick="playToggle()" id="play-btn" class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all">
-                            <svg id="play-svg" class="w-7 h-7 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+                            <svg id="play-svg" class="w-8 h-8 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5.14v14l11-7-11-7z"/></svg>
                         </button>
                         <button onclick="step(1)" class="text-black/30 hover:text-black transition-colors">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 18h2V6h-2M7 6v12l8.5-6z"/></svg>
+                            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M16 18h2V6h-2M7 6v12l8.5-6z"/></svg>
                         </button>
                         <button onclick="dl()" class="text-black/30 hover:text-black transition-colors w-10">
-                            <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="mt-4 pt-6 border-t border-black/[0.03]">
+                <div class="mt-4 pt-6 border-t border-black/[0.04]">
                     <div class="flex items-center gap-3 mb-2">
                         <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
                         <span class="text-[9px] font-bold tracking-[0.3em] text-indigo-500 uppercase">AI Interpret</span>
                     </div>
-                    <div id="ai-text" class="text-[11px] leading-relaxed text-black/40 font-serif italic max-w-xl h-6 overflow-hidden">
+                    <div id="ai-text" class="text-[11px] leading-relaxed text-black/50 font-serif italic max-w-xl h-6 overflow-hidden">
                         感應旋律中的微光，準備轉化聽覺意境...
                     </div>
                 </div>
             </div>
 
             <!-- 右側：曲庫 -->
-            <div class="side-section w-full lg:w-[400px] bg-black/[0.01] border-l border-black/[0.03] flex flex-col relative z-20">
+            <div class="side-section w-full lg:w-[420px] bg-black/[0.01] border-l border-black/[0.03] flex flex-col relative z-20">
                 <div class="p-8 border-b border-black/[0.03]">
                     <div class="relative group">
                         <input type="text" id="q" oninput="doSearch()" placeholder="Search Library" class="w-full bg-transparent border-none py-2 text-sm focus:ring-0 placeholder:text-black/20 font-light tracking-wide outline-none">
@@ -259,7 +262,55 @@
         const coverEmoji = document.getElementById('cover-emoji');
         const bgMesh = document.getElementById('bg-mesh');
 
-        // --- 系统媒体会话与封面解析 ---
+        // --- 核心封面解析函数 ---
+        function extractCover(songUrl, songData) {
+            // 清理旧资源
+            if (currentCoverObjectURL && currentCoverObjectURL.startsWith('blob:')) {
+                URL.revokeObjectURL(currentCoverObjectURL);
+            }
+            currentCoverObjectURL = null;
+
+            // 显示加载状态
+            cover.parentElement.classList.add('is-loading');
+            cover.style.backgroundImage = 'none';
+
+            new jsmediatags.Reader(songUrl)
+                .setTagsToRead(["picture", "artist", "title"])
+                .read({
+                    onSuccess: function(tag) {
+                        const pic = tag.tags.picture;
+                        if (pic) {
+                            const data = pic.data;
+                            const format = pic.format;
+                            let base64String = "";
+                            for (let i = 0; i < data.length; i++) base64String += String.fromCharCode(data[i]);
+                            const base64 = `data:${format};base64,${window.btoa(base64String)}`;
+                            
+                            cover.style.backgroundImage = `url(${base64})`;
+                            coverEmoji.style.opacity = '0';
+                            currentCoverObjectURL = base64;
+                            updateMediaSession(songData, base64);
+                        } else {
+                            resetCoverUI(songData);
+                        }
+                        cover.parentElement.classList.remove('is-loading');
+                    },
+                    onError: function(error) {
+                        console.warn("MediaTags Error:", error);
+                        resetCoverUI(songData);
+                        cover.parentElement.classList.remove('is-loading');
+                    }
+                });
+        }
+
+        function resetCoverUI(songData) {
+            cover.style.backgroundImage = 'none';
+            coverEmoji.style.opacity = '1';
+            const h = Math.floor(Math.random() * 360);
+            cover.style.backgroundColor = `hsl(${h}, 30%, 95%)`;
+            cover.style.color = `hsl(${h}, 30%, 40%)`;
+            updateMediaSession(songData, null);
+        }
 
         function updateMediaSession(song, coverUrl) {
             if ('mediaSession' in navigator) {
@@ -284,49 +335,12 @@
             }
         }
 
-        function extractCover(songUrl, songData) {
-            if (currentCoverObjectURL) {
-                URL.revokeObjectURL(currentCoverObjectURL);
-                currentCoverObjectURL = null;
-            }
-
-            jsmediatags.read(songUrl, {
-                onSuccess: function(tag) {
-                    const pic = tag.tags.picture;
-                    if (pic) {
-                        let base64String = "";
-                        for (let i = 0; i < pic.data.length; i++) base64String += String.fromCharCode(pic.data[i]);
-                        const base64 = "data:" + pic.format + ";base64," + window.btoa(base64String);
-                        cover.style.backgroundImage = `url(${base64})`;
-                        coverEmoji.style.opacity = '0';
-                        currentCoverObjectURL = base64;
-                        updateMediaSession(songData, base64);
-                    } else {
-                        resetCoverUI(songData);
-                    }
-                },
-                onError: function() { resetCoverUI(songData); }
-            });
-        }
-
-        function resetCoverUI(songData) {
-            cover.style.backgroundImage = 'none';
-            coverEmoji.style.opacity = '1';
-            updateVisuals();
-            updateMediaSession(songData, null);
-        }
-
         // --- 核心播放逻辑 ---
-
         function syncAppState(playing) {
             isPlaying = playing;
-            if (playing) {
-                document.body.classList.remove('is-paused');
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-            } else {
-                document.body.classList.add('is-paused');
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-            }
+            document.body.classList.toggle('is-paused', !playing);
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
+            
             const svg = document.getElementById('play-svg');
             svg.innerHTML = playing 
                 ? `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`
@@ -338,6 +352,8 @@
             if (idx < 0 || idx >= filtered.length) return;
             curIdx = idx;
             const song = filtered[curIdx];
+            
+            // 使用 GitHub Raw 链接，这是最直接且支持流式传输的方案
             audio.src = song.u;
             document.getElementById('title').innerText = song.t;
             document.getElementById('status').innerText = "Streaming " + song.type;
@@ -358,7 +374,6 @@
         function playToggle() { audio.paused ? audio.play() : audio.pause(); }
         function step(d) { executeLoad((curIdx + d + filtered.length) % filtered.length, true); }
 
-        // --- 音频事件绑定 ---
         audio.onplay = () => syncAppState(true);
         audio.onpause = () => syncAppState(false);
         audio.onended = () => { 
@@ -367,43 +382,46 @@
             else step(1); 
         };
         audio.ontimeupdate = () => {
-            const p = (audio.currentTime / audio.duration * 100);
-            document.getElementById('prog-bar').style.width = p + '%';
-            if(document.getElementById('prog-dot')) document.getElementById('prog-dot').style.left = p + '%';
-            document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
-            document.getElementById('dur-time').innerText = formatTime(audio.duration);
+            if (audio.duration) {
+                const p = (audio.currentTime / audio.duration * 100);
+                document.getElementById('prog-bar').style.width = p + '%';
+                if(document.getElementById('prog-dot')) document.getElementById('prog-dot').style.left = p + '%';
+                document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
+                document.getElementById('dur-time').innerText = formatTime(audio.duration);
+            }
         };
-
-        // --- 基础辅助功能 ---
-
-        function updateVisuals() {
-            const h = Math.floor(Math.random() * 360);
-            cover.style.backgroundColor = `hsl(${h}, 40%, 92%)`;
-            cover.style.color = `hsl(${h}, 40%, 50%)`;
-            document.querySelectorAll('.blob').forEach(b => {
-                b.style.transform = `translate(${Math.random()*20-10}%, ${Math.random()*20-10}%) rotate(${Math.random()*45}deg)`;
-            });
-        }
 
         async function init() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
                 const data = await res.json();
-                allSongs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                    t: f.name.replace(/\.[^/.]+$/, ""),
-                    u: f.size < 1024 
-                       ? `https://media.githubusercontent.com/media/${G.user}/${G.repo}/${G.ver}/${encodeURIComponent(f.name)}`
-                       : `https://fastly.jsdelivr.net/gh/${G.user}/${G.repo}@${G.ver}/${encodeURIComponent(f.name)}`,
-                    type: f.size < 1024 ? 'LFS' : 'CDN'
-                }));
+                
+                allSongs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
+                    const fileName = encodeURIComponent(f.name);
+                    // GitHub API 中，LFS 指针文件通常非常小（100-200字节），普通 MP3 会很大
+                    const isLFS = f.size < 2000; 
+                    return {
+                        t: f.name.replace(/\.[^/.]+$/, ""),
+                        // 统一使用 raw 内容，稳定性最高
+                        u: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${fileName}`,
+                        type: isLFS ? 'HI-RES' : 'STD'
+                    };
+                });
+
+                if (allSongs.length === 0) throw new Error("No Songs Found");
+
                 filtered = [...allSongs];
                 const savedMode = getCookie('pref_loop_mode');
                 if (savedMode) { loopMode = savedMode; document.getElementById('mode-btn').innerText = loopMode.toUpperCase(); }
+                
                 renderList();
                 const savedIdx = getCookie('pref_last_idx');
                 curIdx = (savedIdx !== null && parseInt(savedIdx) < allSongs.length) ? parseInt(savedIdx) : 0;
                 executeLoad(curIdx, false);
-            } catch (e) { document.getElementById('status').innerText = "CONNECT ERROR"; }
+            } catch (e) { 
+                console.error(e);
+                document.getElementById('status').innerText = "CONNECT ERROR"; 
+            }
         }
 
         function renderList() {
@@ -413,8 +431,8 @@
                 return `
                 <li class="list-item ${isCurrent ? 'active' : ''} px-8 py-6 cursor-pointer flex justify-between items-center" 
                     onclick="executeLoad(${i}, true)">
-                    <div class="flex flex-col gap-1">
-                        <span class="text-xs font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
+                    <div class="flex flex-col gap-1.5">
+                        <span class="text-[13px] font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
                         <span class="text-[8px] font-mono text-black/20 uppercase tracking-[0.1em]">${s.type} STREAM</span>
                     </div>
                     ${isCurrent && isPlaying ? `
@@ -431,17 +449,20 @@
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `你是一位音樂導讀師。請用一句充滿詩意的話描述歌曲《${name}》的意境，20字以內。` }] }] })
+                    body: JSON.stringify({ 
+                        contents: [{ parts: [{ text: `你是一位音樂導讀師。請用一句充滿詩意的話描述歌曲《${name}》的意境，20字以內。不要使用引號。` }] }] 
+                    })
                 });
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
                 aiBox.innerText = "";
                 let i = 0;
-                const type = () => { if (i < text.length) { aiBox.innerText += text.charAt(i++); setTimeout(type, 60); } };
+                const type = () => { if (i < text.length) { aiBox.innerText += text.charAt(i++); setTimeout(type, 50); } };
                 type();
             } catch (e) { aiBox.innerText = "旋律深邃，意境自成一體。"; }
         }
 
+        // --- 交互功能 ---
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
                 setCookie('isLoggedIn', 'true', 7);
@@ -478,12 +499,24 @@
             setCookie('pref_loop_mode', loopMode, 30);
         }
         function dl() { window.open(filtered[curIdx].u); }
-        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=REQUEST`; }
+        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=TRACK_REQUEST`; }
 
         document.getElementById('seek-bar').onclick = (e) => { 
             const rect = e.currentTarget.getBoundingClientRect();
-            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
+            if (audio.duration) {
+                audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
+            }
         };
+
+        // 初始化检查登录状态
+        if (getCookie('isLoggedIn') === 'true') {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('main-app').style.opacity = '1';
+            init();
+        }
     </script>
 </body>
 </html>
+
+```
