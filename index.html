@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Elite Music Space | Pro</title>
+    <title>Elite Music Space | musiconly</title>
     
     <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 解析 MP3 元数据与封面的库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
     
@@ -15,7 +14,6 @@
         :root {
             --glass: rgba(255, 255, 255, 0.7);
             --glass-border: rgba(255, 255, 255, 0.4);
-            --accent: #000000;
             --font-serif: "Noto Serif TC", serif;
             --font-sans: "Inter", system-ui, sans-serif;
             --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
@@ -26,23 +24,18 @@
             min-height: 100vh; width: 100%;
             font-family: var(--font-sans);
             background: #f4f4f7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; -webkit-tap-highlight-color: transparent;
         }
 
         .mesh-bg {
             position: fixed; inset: 0; z-index: -1;
-            filter: blur(80px);
-            opacity: 0.5;
+            filter: blur(80px); opacity: 0.5;
             transition: all 2s var(--ease-out-expo);
         }
         .blob {
             position: absolute; width: 600px; height: 600px;
-            border-radius: 50%;
-            animation: drift 20s infinite alternate linear;
+            border-radius: 50%; animation: drift 20s infinite alternate linear;
         }
         @keyframes drift {
             from { transform: translate(-10%, -10%) rotate(0deg); }
@@ -63,59 +56,48 @@
         #prog-bar { transition: width 0.2s ease-out; }
 
         .list-item {
-            position: relative;
-            z-index: 10;
+            position: relative; z-index: 10;
             transition: all 0.3s var(--ease-out-expo);
         }
-        .list-item:active { transform: scale(0.98); background: rgba(0,0,0,0.04); }
         .list-item.active {
-            background: rgba(0,0,0,0.04);
+            background: rgba(0,0,0,0.06);
             border-left: 4px solid black;
         }
 
-        /* 封面动态效果 */
-        #cover {
-            background-size: cover;
-            background-position: center;
-            transition: all 0.8s var(--ease-out-expo);
-            transform: scale(1);
-            filter: brightness(1);
+        .playlist-tab {
+            transition: all 0.3s var(--ease-out-expo);
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+            padding: 8px 12px;
+            flex-shrink: 0;
+            opacity: 0.4;
         }
-        .is-paused #cover {
-            transform: scale(0.92);
-            filter: brightness(0.8) grayscale(0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .playlist-tab.active {
+            color: black;
+            border-bottom-color: black;
+            opacity: 1;
         }
 
-        /* 加载动画 */
+        #cover {
+            background-size: cover; background-position: center;
+            transition: all 0.8s var(--ease-out-expo);
+            transform: scale(1);
+        }
+        .is-paused #cover { transform: scale(0.92); filter: brightness(0.8); }
+
         .loading-ring {
-            display: none;
-            width: 40px; height: 40px;
-            border: 2px solid rgba(0,0,0,0.05);
-            border-top-color: #000;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            display: none; width: 40px; height: 40px;
+            border: 2px solid rgba(0,0,0,0.05); border-top-color: #000;
+            border-radius: 50%; animation: spin 1s linear infinite;
         }
         .is-loading .loading-ring { display: block; }
         .is-loading #cover-emoji { display: none; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .yt-widget {
-            position: fixed; bottom: 24px; left: 24px;
-            width: 200px; height: 112px;
-            border-radius: 16px; overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            z-index: 100;
-            transition: all 0.3s ease;
-        }
-        .yt-widget:hover { width: 320px; height: 180px; }
-
         @media (max-width: 1024px) {
-            .main-layout { flex-direction: column; height: 100vh; max-height: 100vh; width: 100vw; border-radius: 0; }
-            .player-section { height: 65% !important; }
-            .side-section { height: 35% !important; border-left: none; border-top: 1px solid rgba(0,0,0,0.05); }
-            .yt-widget { display: none; } /* 移动端隐藏YT避免干扰 */
+            .main-layout { flex-direction: column; height: 100vh; width: 100vw; border-radius: 0; }
+            .player-section { height: 55% !important; }
+            .side-section { height: 45% !important; border-left: none; border-top: 1px solid rgba(0,0,0,0.05); }
         }
 
         .playing-icon { display: flex; gap: 2px; align-items: flex-end; height: 12px; }
@@ -129,18 +111,8 @@
 <body class="is-paused">
 
     <div class="mesh-bg" id="bg-mesh">
-        <div class="blob bg-purple-300 top-[-10%] left-[-10%]"></div>
-        <div class="blob bg-blue-200 bottom-[-10%] right-[-10%]" style="animation-duration: 25s"></div>
-        <div class="blob bg-pink-100 top-[20%] right-[20%]" style="animation-duration: 30s"></div>
-    </div>
-
-    <!-- YouTube 固定嵌入 -->
-    <div class="yt-widget">
-        <iframe width="100%" height="100%" 
-                src="https://www.youtube.com/embed/eOCe60MmpUI" 
-                title="YouTube video player" frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen></iframe>
+        <div class="blob bg-purple-200 top-[-10%] left-[-10%]"></div>
+        <div class="blob bg-blue-100 bottom-[-10%] right-[-10%]"></div>
     </div>
 
     <!-- 驗證屏 -->
@@ -148,22 +120,22 @@
         <div class="login-card glass-panel w-full max-w-[400px] p-12 rounded-[40px] text-center">
             <h1 class="font-serif text-3xl mb-4 tracking-[0.4rem]">藏心</h1>
             <p class="text-[10px] tracking-[0.3em] text-gray-400 mb-10 uppercase">Identity Verification</p>
-            <input type="password" id="pwd-input" class="w-full bg-white/50 border-none rounded-2xl py-4 px-6 text-center mb-6 font-mono tracking-widest outline-none focus:ring-2 ring-black/5" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPwd()">
-            <button onclick="checkPwd()" class="w-full bg-black text-white py-4 rounded-2xl font-semibold tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">ENTER SPACE</button>
+            <input type="password" id="pwd-input" class="w-full bg-white/50 border-none rounded-2xl py-4 px-6 text-center mb-6 outline-none font-mono" placeholder="••••••••" onkeydown="if(event.key==='Enter') checkPwd()">
+            <button onclick="checkPwd()" class="w-full bg-black text-white py-4 rounded-2xl font-semibold tracking-widest hover:scale-[1.02] active:scale-95 transition-all">ENTER SPACE</button>
             <p id="pwd-error" class="mt-4 text-red-400 text-[10px] tracking-widest uppercase"></p>
         </div>
     </div>
 
-    <!-- 主播放器界面 -->
+    <!-- 主界面 -->
     <div id="main-app" class="hidden opacity-0 w-full max-w-7xl px-4 py-8 transition-all duration-1000 flex items-center justify-center">
-        <div id="player-container" class="main-layout glass-panel w-full h-[780px] max-h-[90vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
+        <div class="main-layout glass-panel w-full h-[820px] max-h-[95vh] rounded-[56px] overflow-hidden flex shadow-2xl relative">
             
-            <!-- 左側：播放區域 -->
+            <!-- 左：播放器區域 -->
             <div class="player-section flex-1 h-full flex flex-col p-8 lg:p-12 relative overflow-hidden">
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex flex-col">
-                        <span class="text-[9px] tracking-[0.5em] font-bold text-black/20 uppercase mb-1">Now Streaming</span>
-                        <div id="status" class="text-[10px] text-indigo-500 font-bold tracking-widest uppercase">Initializing...</div>
+                        <span class="text-[9px] tracking-[0.5em] font-bold text-black/20 uppercase mb-1">Playlist Active</span>
+                        <div id="current-folder-name" class="text-[10px] text-indigo-500 font-bold tracking-widest uppercase">Root</div>
                     </div>
                     <div id="track-type" class="text-[9px] bg-black/5 px-3 py-1 rounded-full text-black/40 font-mono">HI-RES</div>
                 </div>
@@ -175,58 +147,59 @@
                     </div>
                     
                     <div class="mb-10">
-                        <h2 id="title" class="text-2xl lg:text-3xl font-semibold mb-2 tracking-tight font-serif">待命</h2>
+                        <h2 id="title" class="text-2xl lg:text-3xl font-semibold mb-2 tracking-tight font-serif">載入庫中...</h2>
                         <p id="artist-name" class="text-[9px] tracking-[0.4em] text-black/30 uppercase">Premium Selection</p>
                     </div>
 
                     <div class="w-full max-w-sm mb-10">
-                        <div class="relative h-[3px] w-full bg-black/[0.06] rounded-full mb-4 cursor-pointer group" id="seek-bar">
+                        <div class="relative h-[3px] w-full bg-black/[0.06] rounded-full mb-4 cursor-pointer" id="seek-bar">
                             <div id="prog-bar" class="absolute h-full bg-black rounded-full w-0"></div>
-                            <div class="absolute h-3 w-3 bg-white border-2 border-black rounded-full top-1/2 -translate-y-1/2 -ml-1.5 opacity-0 group-hover:opacity-100 transition-opacity" id="prog-dot"></div>
                         </div>
-                        <div class="flex justify-between text-[10px] font-mono text-black/30 tracking-widest">
+                        <div class="flex justify-between text-[10px] font-mono text-black/30">
                             <span id="cur-time">00:00</span>
                             <span id="dur-time">00:00</span>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-10 lg:gap-14">
-                        <button onclick="setLoop()" id="mode-btn" class="text-[9px] font-bold tracking-[0.1em] text-black/30 hover:text-black transition-colors uppercase w-10">List</button>
-                        <button onclick="step(-1)" class="text-black/30 hover:text-black transition-colors">
+                        <button onclick="setLoop()" id="mode-btn" class="text-[9px] font-bold text-black/30 uppercase w-10">List</button>
+                        <button onclick="step(-1)" class="text-black/30 hover:text-black">
                             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                         </button>
                         <button onclick="playToggle()" id="play-btn" class="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all">
                             <svg id="play-svg" class="w-8 h-8 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5.14v14l11-7-11-7z"/></svg>
                         </button>
-                        <button onclick="step(1)" class="text-black/30 hover:text-black transition-colors">
+                        <button onclick="step(1)" class="text-black/30 hover:text-black">
                             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M16 18h2V6h-2M7 6v12l8.5-6z"/></svg>
                         </button>
-                        <button onclick="dl()" class="text-black/30 hover:text-black transition-colors w-10">
+                        <button onclick="dl()" class="text-black/30 hover:text-black w-10">
                             <svg class="w-6 h-6 mx-auto" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                         </button>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-6 border-t border-black/[0.04]">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-                        <span class="text-[9px] font-bold tracking-[0.3em] text-indigo-500 uppercase">AI Interpret</span>
-                    </div>
                     <div id="ai-text" class="text-[11px] leading-relaxed text-black/50 font-serif italic max-w-xl h-6 overflow-hidden">
-                        感應旋律中的微光，準備轉化聽覺意境...
+                        正在感應旋律中的微光...
                     </div>
                 </div>
             </div>
 
-            <!-- 右側：曲庫 -->
+            <!-- 右：播放清單與目錄 -->
             <div class="side-section w-full lg:w-[420px] bg-black/[0.01] border-l border-black/[0.03] flex flex-col relative z-20">
-                <div class="p-8 border-b border-black/[0.03]">
-                    <div class="relative group">
-                        <input type="text" id="q" oninput="doSearch()" placeholder="Search Library" class="w-full bg-transparent border-none py-2 text-sm focus:ring-0 placeholder:text-black/20 font-light tracking-wide outline-none">
-                        <div class="absolute bottom-0 left-0 w-full h-[1px] bg-black/[0.03] group-focus-within:bg-black/20 transition-all"></div>
+                <div class="px-8 pt-8 pb-4">
+                    <span class="text-[9px] tracking-[0.3em] font-bold text-black/20 uppercase block mb-4">Select Library</span>
+                    <div id="playlist-nav" class="flex gap-4 overflow-x-auto no-scrollbar pb-2 text-[10px] font-bold uppercase tracking-widest text-black/30">
+                        <!-- 資料夾標籤 -->
                     </div>
                 </div>
+                
+                <div class="px-8 pb-4">
+                    <input type="text" id="q" oninput="doSearch()" placeholder="Search current list" class="w-full bg-transparent border-b border-black/[0.05] py-2 text-sm focus:outline-none focus:border-black/20 placeholder:text-black/20 font-light">
+                </div>
+
                 <ul id="list" class="flex-1 overflow-y-auto no-scrollbar relative z-30"></ul>
+                
                 <div class="p-8">
                     <button onclick="addMusic()" class="w-full py-4 border border-black/10 rounded-2xl text-[9px] font-bold tracking-[0.3em] hover:bg-black hover:text-white transition-all uppercase">
                         Request Track
@@ -239,126 +212,121 @@
     <audio id="player" crossorigin="anonymous"></audio>
 
     <script>
+        // 核心配置
+        const G = { user: 'zhangzhanhang855', repo: 'musiconly', ver: 'main' };
         const apiKey = ""; 
-        const G = { user: 'zhangzhanhang855', repo: 'musicplayer', ver: 'main' };
-        
-        const setCookie = (n, v, d=7) => {
-            const date = new Date();
-            date.setTime(date.getTime() + (d*24*60*60*1000));
-            document.cookie = `${n}=${v};expires=${date.toUTCString()};path=/;SameSite=Lax`;
-        };
-        const getCookie = (n) => {
-            const m = document.cookie.match('(^|;)\\s*' + n + '\\s*=\\s*([^;]+)');
-            return m ? m.pop() : null;
-        };
 
-        let allSongs = [], filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
+        let playlists = {}; 
+        let currentPlaylistName = "";
+        let filtered = [], curIdx = 0, isPlaying = false, loopMode = 'list';
         let currentCoverObjectURL = null;
 
         const audio = document.getElementById('player');
         const aiBox = document.getElementById('ai-text');
         const cover = document.getElementById('cover');
         const coverEmoji = document.getElementById('cover-emoji');
-        const bgMesh = document.getElementById('bg-mesh');
+        const navEl = document.getElementById('playlist-nav');
 
-        // --- 核心封面解析函数 ---
-        function extractCover(songUrl, songData) {
-            // 清理旧资源
-            if (currentCoverObjectURL && currentCoverObjectURL.startsWith('blob:')) {
-                URL.revokeObjectURL(currentCoverObjectURL);
+        // --- GitHub API 讀取 ---
+        async function fetchRepoContents(path = "") {
+            const url = `https://api.github.com/repos/${G.user}/${G.repo}/contents/${path}`;
+            try {
+                const res = await fetch(url);
+                if (res.status === 403) {
+                    showError("API 頻率受限，請一小時後再試");
+                    return null;
+                }
+                if (!res.ok) {
+                    showError(`倉庫讀取失敗 (${res.status})`);
+                    return null;
+                }
+                return await res.json();
+            } catch (e) {
+                showError("網路連接失敗");
+                return null;
             }
-            currentCoverObjectURL = null;
+        }
 
-            // 显示加载状态
-            cover.parentElement.classList.add('is-loading');
-            cover.style.backgroundImage = 'none';
+        function showError(msg) {
+            document.getElementById('title').innerText = "ERROR";
+            document.getElementById('artist-name').innerText = msg;
+            console.error(msg);
+        }
 
-            new jsmediatags.Reader(songUrl)
-                .setTagsToRead(["picture", "artist", "title"])
-                .read({
-                    onSuccess: function(tag) {
-                        const pic = tag.tags.picture;
-                        if (pic) {
-                            const data = pic.data;
-                            const format = pic.format;
-                            let base64String = "";
-                            for (let i = 0; i < data.length; i++) base64String += String.fromCharCode(data[i]);
-                            const base64 = `data:${format};base64,${window.btoa(base64String)}`;
-                            
-                            cover.style.backgroundImage = `url(${base64})`;
-                            coverEmoji.style.opacity = '0';
-                            currentCoverObjectURL = base64;
-                            updateMediaSession(songData, base64);
-                        } else {
-                            resetCoverUI(songData);
+        async function init() {
+            // 1. 讀取根目錄
+            const rootItems = await fetchRepoContents();
+            if (!rootItems) return;
+
+            // 2. 獲取根目錄音樂
+            const rootSongs = filterSongs(rootItems);
+            if (rootSongs.length > 0) playlists["Root"] = rootSongs;
+
+            // 3. 識別目錄
+            const folders = rootItems.filter(item => item.type === "dir");
+            
+            // 先渲染導航（即使只有 Root）
+            renderPlaylistNav();
+            if (playlists["Root"]) switchPlaylist("Root");
+
+            // 4. 異步加載子目錄
+            for (const folder of folders) {
+                fetchRepoContents(folder.path).then(data => {
+                    if (data) {
+                        const songs = filterSongs(data);
+                        if (songs.length > 0) {
+                            playlists[folder.name] = songs;
+                            renderPlaylistNav();
+                            // 如果當前沒歌，自動切換到第一個加載出的目錄
+                            if (!currentPlaylistName) switchPlaylist(folder.name);
                         }
-                        cover.parentElement.classList.remove('is-loading');
-                    },
-                    onError: function(error) {
-                        console.warn("MediaTags Error:", error);
-                        resetCoverUI(songData);
-                        cover.parentElement.classList.remove('is-loading');
                     }
                 });
-        }
-
-        function resetCoverUI(songData) {
-            cover.style.backgroundImage = 'none';
-            coverEmoji.style.opacity = '1';
-            const h = Math.floor(Math.random() * 360);
-            cover.style.backgroundColor = `hsl(${h}, 30%, 95%)`;
-            cover.style.color = `hsl(${h}, 30%, 40%)`;
-            updateMediaSession(songData, null);
-        }
-
-        function updateMediaSession(song, coverUrl) {
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: song.t,
-                    artist: "Premium Selection",
-                    album: "Elite Music Space",
-                    artwork: [
-                        { src: coverUrl || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=512', sizes: '512x512', type: 'image/jpeg' }
-                    ]
-                });
-                
-                const handlers = [
-                    ['play', () => audio.play()],
-                    ['pause', () => audio.pause()],
-                    ['previoustrack', () => step(-1)],
-                    ['nexttrack', () => step(1)]
-                ];
-                handlers.forEach(([action, handler]) => {
-                    try { navigator.mediaSession.setActionHandler(action, handler); } catch(e) {}
-                });
             }
         }
 
-        // --- 核心播放逻辑 ---
-        function syncAppState(playing) {
-            isPlaying = playing;
-            document.body.classList.toggle('is-paused', !playing);
-            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = playing ? 'playing' : 'paused';
-            
-            const svg = document.getElementById('play-svg');
-            svg.innerHTML = playing 
-                ? `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`
-                : `<path d="M8 5.14v14l11-7-11-7z"/>`;
-            renderList();
+        function filterSongs(items) {
+            return items.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
+                const isLFS = f.size < 2000;
+                return {
+                    t: f.name.replace(/\.[^/.]+$/, ""),
+                    u: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${f.path}`,
+                    type: isLFS ? 'HI-RES' : 'STD'
+                };
+            });
         }
 
+        function renderPlaylistNav() {
+            const names = Object.keys(playlists);
+            navEl.innerHTML = names.map(name => `
+                <button onclick="switchPlaylist('${name}')" class="playlist-tab ${name === currentPlaylistName ? 'active' : ''}">
+                    ${name}
+                </button>
+            `).join('');
+        }
+
+        function switchPlaylist(name) {
+            if (!playlists[name]) return;
+            currentPlaylistName = name;
+            filtered = [...playlists[name]];
+            curIdx = 0;
+            
+            document.getElementById('current-folder-name').innerText = name;
+            renderPlaylistNav();
+            renderList();
+            executeLoad(0, false);
+        }
+
+        // --- 播放核心 ---
         function executeLoad(idx, auto) {
             if (idx < 0 || idx >= filtered.length) return;
             curIdx = idx;
             const song = filtered[curIdx];
             
-            // 使用 GitHub Raw 链接，这是最直接且支持流式传输的方案
             audio.src = song.u;
             document.getElementById('title').innerText = song.t;
-            document.getElementById('status').innerText = "Streaming " + song.type;
             document.getElementById('track-type').innerText = song.type;
             
-            setCookie('pref_last_idx', curIdx, 30);
             renderList();
             extractCover(song.u, song);
 
@@ -370,57 +338,40 @@
             }
         }
 
-        function playToggle() { audio.paused ? audio.play() : audio.pause(); }
-        function step(d) { executeLoad((curIdx + d + filtered.length) % filtered.length, true); }
-
-        audio.onplay = () => syncAppState(true);
-        audio.onpause = () => syncAppState(false);
-        audio.onended = () => { 
-            if(loopMode === 'single') audio.play(); 
-            else if(loopMode === 'random') executeLoad(Math.floor(Math.random()*filtered.length), true);
-            else step(1); 
-        };
-        audio.ontimeupdate = () => {
-            if (audio.duration) {
-                const p = (audio.currentTime / audio.duration * 100);
-                document.getElementById('prog-bar').style.width = p + '%';
-                if(document.getElementById('prog-dot')) document.getElementById('prog-dot').style.left = p + '%';
-                document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
-                document.getElementById('dur-time').innerText = formatTime(audio.duration);
+        function extractCover(songUrl, songData) {
+            if (currentCoverObjectURL && currentCoverObjectURL.startsWith('blob:')) {
+                URL.revokeObjectURL(currentCoverObjectURL);
             }
-        };
+            cover.parentElement.classList.add('is-loading');
+            cover.style.backgroundImage = 'none';
 
-        async function init() {
-            try {
-                const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
-                const data = await res.json();
-                
-                allSongs = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => {
-                    const fileName = encodeURIComponent(f.name);
-                    // GitHub API 中，LFS 指针文件通常非常小（100-200字节），普通 MP3 会很大
-                    const isLFS = f.size < 2000; 
-                    return {
-                        t: f.name.replace(/\.[^/.]+$/, ""),
-                        // 统一使用 raw 内容，稳定性最高
-                        u: `https://raw.githubusercontent.com/${G.user}/${G.repo}/${G.ver}/${fileName}`,
-                        type: isLFS ? 'HI-RES' : 'STD'
-                    };
-                });
+            new jsmediatags.Reader(songUrl).read({
+                onSuccess: function(tag) {
+                    const pic = tag.tags.picture;
+                    if (pic) {
+                        let base64String = "";
+                        for (let i = 0; i < pic.data.length; i++) base64String += String.fromCharCode(pic.data[i]);
+                        const base64 = `data:${pic.format};base64,${window.btoa(base64String)}`;
+                        cover.style.backgroundImage = `url(${base64})`;
+                        coverEmoji.style.opacity = '0';
+                        currentCoverObjectURL = base64;
+                    } else {
+                        resetCoverUI();
+                    }
+                    cover.parentElement.classList.remove('is-loading');
+                },
+                onError: () => { 
+                    resetCoverUI(); 
+                    cover.parentElement.classList.remove('is-loading'); 
+                }
+            });
+        }
 
-                if (allSongs.length === 0) throw new Error("No Songs Found");
-
-                filtered = [...allSongs];
-                const savedMode = getCookie('pref_loop_mode');
-                if (savedMode) { loopMode = savedMode; document.getElementById('mode-btn').innerText = loopMode.toUpperCase(); }
-                
-                renderList();
-                const savedIdx = getCookie('pref_last_idx');
-                curIdx = (savedIdx !== null && parseInt(savedIdx) < allSongs.length) ? parseInt(savedIdx) : 0;
-                executeLoad(curIdx, false);
-            } catch (e) { 
-                console.error(e);
-                document.getElementById('status').innerText = "CONNECT ERROR"; 
-            }
+        function resetCoverUI() {
+            cover.style.backgroundImage = 'none';
+            coverEmoji.style.opacity = '1';
+            const h = Math.floor(Math.random() * 360);
+            cover.style.backgroundColor = `hsl(${h}, 20%, 95%)`;
         }
 
         function renderList() {
@@ -428,45 +379,73 @@
             listEl.innerHTML = filtered.map((s, i) => {
                 const isCurrent = curIdx === i;
                 return `
-                <li class="list-item ${isCurrent ? 'active' : ''} px-8 py-6 cursor-pointer flex justify-between items-center" 
+                <li class="list-item ${isCurrent ? 'active' : ''} px-8 py-5 cursor-pointer flex justify-between items-center" 
                     onclick="executeLoad(${i}, true)">
-                    <div class="flex flex-col gap-1.5">
-                        <span class="text-[13px] font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
-                        <span class="text-[8px] font-mono text-black/20 uppercase tracking-[0.1em]">${s.type} STREAM</span>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[12px] font-medium tracking-tight ${isCurrent ? 'text-black' : 'text-black/60'}">${s.t}</span>
+                        <span class="text-[8px] font-mono text-black/20 uppercase">${s.type}</span>
                     </div>
-                    ${isCurrent && isPlaying ? `
-                        <div class="playing-icon"><div></div><div style="animation-delay: 0.2s"></div><div style="animation-delay: 0.4s"></div></div>
-                    ` : `<span class="text-[9px] font-mono text-black/10">0${i+1}</span>`}
+                    ${isCurrent && isPlaying ? `<div class="playing-icon"><div></div><div></div><div></div></div>` : `<span class="text-[9px] text-black/10">${i+1}</span>`}
                 </li>`;
             }).join('');
         }
 
+        // --- 控制 ---
+        function syncAppState(playing) {
+            isPlaying = playing;
+            document.body.classList.toggle('is-paused', !playing);
+            document.getElementById('play-svg').innerHTML = playing 
+                ? `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>` : `<path d="M8 5.14v14l11-7-11-7z"/>`;
+            renderList();
+        }
+
+        audio.onplay = () => syncAppState(true);
+        audio.onpause = () => syncAppState(false);
+        audio.ontimeupdate = () => {
+            if (audio.duration) {
+                const p = (audio.currentTime / audio.duration * 100);
+                document.getElementById('prog-bar').style.width = p + '%';
+                document.getElementById('cur-time').innerText = formatTime(audio.currentTime);
+                document.getElementById('dur-time').innerText = formatTime(audio.duration);
+            }
+        };
+        audio.onended = () => step(1);
+
+        function formatTime(sec) {
+            if (isNaN(sec)) return "00:00";
+            let m = Math.floor(sec/60), s = Math.floor(sec%60);
+            return `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+        }
+
+        function playToggle() { audio.paused ? audio.play() : audio.pause(); }
+        function step(d) { executeLoad((curIdx + d + filtered.length) % filtered.length, true); }
+        function doSearch() {
+            const val = document.getElementById('q').value.toLowerCase();
+            filtered = playlists[currentPlaylistName].filter(s => s.t.toLowerCase().includes(val));
+            renderList();
+        }
+
         async function analyzeInsight(name) {
             if (!apiKey) return;
-            aiBox.innerText = "感應中...";
+            aiBox.innerText = "...";
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `你是一位音樂導讀師。請用一句充滿詩意的話描述歌曲《${name}》的意境，20字以內。不要使用引號。` }] }] 
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `用一句15字以內中文描述《${name}》的音樂意境。` }] }] })
                 });
                 const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "旋律在無形中觸動靈魂深處。";
-                aiBox.innerText = "";
-                let i = 0;
-                const type = () => { if (i < text.length) { aiBox.innerText += text.charAt(i++); setTimeout(type, 50); } };
-                type();
-            } catch (e) { aiBox.innerText = "旋律深邃，意境自成一體。"; }
+                aiBox.innerText = data.candidates[0].content.parts[0].text;
+            } catch (e) { aiBox.innerText = "旋律在指尖流淌。"; }
         }
 
-        // --- 交互功能 ---
         function checkPwd() {
             if (document.getElementById('pwd-input').value === '12345678') {
-                setCookie('isLoggedIn', 'true', 7);
+                document.cookie = "isLoggedIn=true;max-age=604800;path=/";
                 enterApp();
-            } else { document.getElementById('pwd-error').innerText = 'IDENTIFICATION FAILED'; }
+            } else {
+                document.getElementById('pwd-error').innerText = 'IDENTIFICATION FAILED';
+            }
         }
 
         function enterApp() {
@@ -474,46 +453,31 @@
             screen.style.opacity = '0';
             setTimeout(() => {
                 screen.style.display = 'none';
-                const app = document.getElementById('main-app');
-                app.classList.remove('hidden');
-                setTimeout(() => app.style.opacity = '1', 50);
+                document.getElementById('main-app').classList.remove('hidden');
+                setTimeout(() => document.getElementById('main-app').style.opacity = '1', 50);
                 init();
             }, 700);
         }
 
-        function doSearch() {
-            const val = document.getElementById('q').value.toLowerCase();
-            filtered = allSongs.filter(s => s.t.toLowerCase().includes(val));
-            renderList();
-        }
-        function formatTime(sec) {
-            if (isNaN(sec)) return "00:00";
-            let m = Math.floor(sec/60), s = Math.floor(sec%60);
-            return `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
-        }
         function setLoop() {
             const modes = ['list', 'random', 'single'];
             loopMode = modes[(modes.indexOf(loopMode) + 1) % 3];
             document.getElementById('mode-btn').innerText = loopMode.toUpperCase();
-            setCookie('pref_loop_mode', loopMode, 30);
         }
+        
         function dl() { window.open(filtered[curIdx].u); }
-        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com?subject=TRACK_REQUEST`; }
-
-        document.getElementById('seek-bar').onclick = (e) => { 
+        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com`; }
+        
+        document.getElementById('seek-bar').onclick = (e) => {
             const rect = e.currentTarget.getBoundingClientRect();
-            if (audio.duration) {
-                audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration; 
-            }
+            if (audio.duration) audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
         };
 
-        // 初始化检查登录状态
-        if (getCookie('isLoggedIn') === 'true') {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('main-app').style.opacity = '1';
-            init();
-        }
+        window.onload = () => {
+            if (document.cookie.includes("isLoggedIn=true")) {
+                enterApp();
+            }
+        };
     </script>
 </body>
 </html>
