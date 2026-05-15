@@ -3,124 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOID DJ MK-IV | MASTER CONSOLE</title>
+    <title>VOID DJ MK-V | STUDIO FLAGSHIP</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --neon: #00f2ff; --panel: #111; }
-        body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        :root { --neon: #00f2ff; --warn: #ff3c00; --lcd: #050a05; }
+        body { background: #020202; color: #fff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 
-        /* 主架构 - 严格锁定宽度 */
+        /* 极致复杂背景 - 碳纤维 + 散热孔 */
         .dj-system {
-            width: 96vw; max-width: 1400px; height: 850px;
-            background: var(--panel); border: 8px solid #1a1a1a; border-radius: 12px;
-            display: flex; padding: 15px; gap: 15px; box-sizing: border-box;
+            width: 98vw; max-width: 1500px; height: 900px;
+            background: #151515; border: 10px solid #222; border-radius: 8px;
+            display: grid; grid-template-columns: 1.5fr 300px 1fr; gap: 10px; padding: 10px;
+            box-shadow: 0 100px 200px rgba(0,0,0,1); position: relative;
         }
 
-        /* 模块化布局 */
-        .deck-section { flex: 1.5; min-width: 0; background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%); border-radius: 10px; border: 1px solid #222; padding: 30px; display: flex; flex-direction: column; position: relative; }
-        .mixer-section { width: 240px; flex-shrink: 0; background: #0a0a0a; border-radius: 10px; border: 1px solid #222; display: flex; flex-direction: column; align-items: center; padding: 20px 0; }
-        .crate-section { flex: 1; min-width: 0; background: #0f0f0f; border-radius: 10px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
+        /* 核心装饰：螺丝 */
+        .screw { position: absolute; width: 12px; height: 12px; background: #333; border-radius: 50%; border: 2px solid #111; box-shadow: inset 0 2px 2px rgba(255,255,255,0.1); }
+        .s-tl { top: 10px; left: 10px; } .s-tr { top: 10px; right: 10px; } .s-bl { bottom: 10px; left: 10px; } .s-br { bottom: 10px; right: 10px; }
 
-        /* LCD 屏 */
-        .lcd-display { background: #050a05; border: 3px solid #000; border-radius: 4px; padding: 20px; font-family: 'Share Tech Mono', monospace; box-shadow: inset 0 0 30px #000; margin-bottom: 25px; }
-        .track-title { font-size: 1.8rem; color: var(--neon); text-shadow: 0 0 10px rgba(0, 242, 255, 0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* 模块统一样式 */
+        .module { background: #0d0d0d; border: 1px solid #222; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
 
-        /* 黑胶慢轮 - 精准对齐 */
-        .jog-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
-        .vinyl-record { width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, #222 0%, #111 50%, #000 100%); border: 10px solid #080808; box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; }
-        .vinyl-record::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px); pointer-events: none; }
+        /* --- DECK A: 极客屏 & 唱盘 --- */
+        .deck-area { padding: 30px; }
+        .lcd-master { background: var(--lcd); border: 2px solid #000; border-radius: 4px; padding: 15px; font-family: 'Share Tech Mono', monospace; box-shadow: inset 0 0 40px #000; }
+        .waveform-main { height: 60px; display: flex; align-items: center; gap: 2px; margin: 10px 0; border-bottom: 1px solid #111; }
+        .wave-bar { flex: 1; background: var(--neon); height: 10%; border-radius: 1px; transition: height 0.15s ease; opacity: 0.7; }
         
-        .artwork-core {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 140px; height: 140px; border-radius: 50%; border: 5px solid #000;
-            background: #111; z-index: 10; overflow: hidden; display: flex; align-items: center; justify-content: center;
-        }
-        #cover-art { width: 100%; height: 100%; background-size: cover; background-position: center; }
+        .metadata-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; font-size: 10px; color: #444; }
+        .meta-val { color: var(--neon); font-size: 14px; font-weight: bold; }
+
+        .jog-container { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; margin: 20px 0; }
+        .vinyl-3d { width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%); border: 15px solid #050505; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
+        .artwork-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 150px; height: 150px; border-radius: 50%; border: 8px solid #000; background: #111; z-index: 10; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        #cover-art { width: 100%; height: 100%; background-size: cover; background-position: center; transition: 0.5s; }
+
+        /* --- MIXER: 旋钮 & 推子 --- */
+        .mixer-area { padding: 20px 0; align-items: center; background: linear-gradient(90deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%); }
+        .knob-row { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; }
+        .knob { width: 45px; height: 45px; background: radial-gradient(circle, #444, #111); border-radius: 50%; border: 2px solid #000; position: relative; box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+        .knob::before { content: ''; position: absolute; top: 4px; left: 50%; width: 2px; height: 10px; background: var(--warn); transform: translateX(-50%); }
+        .knob-label { font-size: 8px; font-weight: bold; color: #444; margin-top: 4px; text-transform: uppercase; }
+
+        .vu-display { display: flex; gap: 4px; height: 150px; padding: 10px; background: #000; border-radius: 4px; border: 1px solid #222; }
+        .fader-track { width: 12px; height: 200px; background: #000; border-radius: 6px; position: relative; margin: 30px 0; border: 1px solid #222; }
+        .fader-cap { width: 44px; height: 64px; background: linear-gradient(180deg, #333 0%, #555 50%, #222 100%); border-radius: 4px; position: absolute; left: -16px; bottom: 60%; border: 1px solid #000; cursor: ns-resize; }
+
+        /* --- CRATE: 多彩打击垫 & 列表 --- */
+        .pad-matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; }
+        .pad { height: 50px; background: #1a1a1a; border-radius: 4px; border-bottom: 3px solid #000; cursor: pointer; transition: 0.1s; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; color: #333; }
+        .pad:hover { background: #222; }
+        .pad.active { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); border-bottom: 0; transform: translateY(2px); }
+
+        .track-list { flex: 1; overflow-y: auto; background: #050505; }
+        .track-item { padding: 12px 20px; border-bottom: 1px solid #111; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: #444; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-item:hover { background: #111; color: #fff; }
+        .track-item.active { background: #001a1a; color: var(--neon); border-left: 4px solid var(--neon); }
 
         /* 旋转动画 */
-        .is-playing .vinyl-record { animation: rotate-v 8s linear infinite; }
-        .is-playing .artwork-core { animation: rotate-a 8s linear infinite; }
+        .is-playing .vinyl-3d { animation: rotate-v 6s linear infinite; }
+        .is-playing .artwork-hub { animation: rotate-a 6s linear infinite; }
         @keyframes rotate-v { to { transform: rotate(360deg); } }
         @keyframes rotate-a { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* 列表区域 */
-        .track-list-container { flex: 1; overflow-y: auto; }
-        .track-item { padding: 15px 20px; border-bottom: 1px solid #1a1a1a; font-family: 'Share Tech Mono', monospace; font-size: 13px; color: #666; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .track-item:hover { background: #151515; color: #fff; }
-        .track-item.active { background: rgba(0, 242, 255, 0.05); color: var(--neon); border-left: 4px solid var(--neon); }
+        .is-playing .wave-bar { animation: wave-anim 0.5s infinite ease-in-out alternate; }
+        @keyframes wave-anim { from { height: 10%; } to { height: 90%; } }
 
-        /* VU 表 */
-        .vu-meter { display: flex; gap: 3px; height: 120px; padding: 10px; background: #000; border-radius: 4px; }
-        .vu-bar { flex: 1; display: flex; flex-direction: column-reverse; gap: 2px; }
-        .vu-dot { height: 5px; width: 100%; background: #1a1a1a; }
-        .vu-dot.lit { background: #10b981; box-shadow: 0 0 5px #10b981; }
-
-        .boot-screen { position: fixed; inset: 0; z-index: 100; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s ease; }
+        .boot-overlay { position: fixed; inset: 0; z-index: 500; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="is-paused">
 
-    <div id="boot-overlay" class="boot-screen">
-        <div class="text-[10px] tracking-[1em] text-cyan-900 mb-8 uppercase">VOID DJ MK-IV</div>
-        <button onclick="bootSystem()" class="w-24 h-24 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-500 hover:bg-cyan-500/10 transition">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <!-- 启动画面 -->
+    <div id="boot-overlay" class="boot-overlay">
+        <div class="text-[10px] tracking-[1.5em] text-cyan-900 mb-10 font-black">VOID STUDIO FLAGSHIP MK-V</div>
+        <button onclick="bootSystem()" class="relative group">
+            <div class="absolute inset-0 bg-cyan-500 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition"></div>
+            <div class="relative w-24 h-24 border-2 border-cyan-500 rounded-full flex items-center justify-center text-cyan-500 font-black tracking-widest">START</div>
         </button>
     </div>
 
     <main id="main-app" class="dj-system opacity-0 transition-opacity duration-1000">
-        <!-- DECK -->
-        <section class="deck-section">
-            <div class="lcd-display">
-                <div class="flex justify-between text-[10px] opacity-40 mb-2"><span>STUDIO REF</span><span>DECK A</span></div>
-                <div id="title" class="track-title">INITIALIZING...</div>
-                <div class="flex justify-between items-end mt-4">
-                    <div id="folder-name" class="text-[10px] text-cyan-900 font-bold uppercase">Loading...</div>
-                    <div class="text-3xl font-bold tracking-tighter" id="cur-time">00:00:00</div>
+        <div class="screw s-tl"></div><div class="screw s-tr"></div><div class="screw s-bl"></div><div class="screw s-br"></div>
+
+        <!-- DECK A: 控制中心 -->
+        <section class="module deck-area">
+            <div class="lcd-master">
+                <div class="flex justify-between text-[10px] opacity-30 mb-2">
+                    <span>MQA REFERENCE / 192KHZ 24BIT</span>
+                    <span id="deck-status">DECK A - MASTER</span>
+                </div>
+                <div id="title" class="text-3xl font-bold tracking-tighter text-cyan-400 truncate">SYSTEM READY...</div>
+                
+                <div class="waveform-main" id="waveform">
+                    <!-- 波形由JS生成 -->
+                </div>
+
+                <div class="metadata-grid">
+                    <div>BPM<br><span class="meta-val">128.00</span></div>
+                    <div>KEY<br><span class="meta-val">4A / Am</span></div>
+                    <div>BITRATE<br><span id="track-type" class="meta-val">---</span></div>
+                </div>
+                
+                <div class="flex justify-between items-center mt-6">
+                    <div class="text-4xl font-black italic tracking-tighter" id="cur-time">00:00:00</div>
+                    <div class="text-right">
+                        <div class="text-[9px] opacity-20 uppercase font-black">Time Remain</div>
+                        <div class="text-xl font-bold text-red-900" id="remain-time">-00:00:00</div>
+                    </div>
                 </div>
             </div>
+
             <div class="jog-container">
-                <div class="vinyl-record"></div>
-                <div class="artwork-core">
+                <div class="vinyl-3d"></div>
+                <div class="artwork-hub">
                     <div id="cover-art"></div>
-                    <span id="cover-emoji" class="text-5xl">💿</span>
+                    <span id="cover-emoji" class="text-6xl">💿</span>
                 </div>
+                <!-- 模拟传感器 -->
+                <div class="absolute top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-cyan-500/20 opacity-50"></div>
             </div>
-            <div class="flex justify-between items-center mt-8">
+
+            <div class="flex justify-between items-end">
                 <div class="flex gap-4">
-                    <button onclick="playToggle()" class="w-20 h-16 bg-black border border-white/10 rounded flex items-center justify-center hover:bg-white/5 transition">
-                        <div id="play-icon" class="w-0 h-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white"></div>
+                    <button onclick="playToggle()" class="w-24 h-20 bg-black border-2 border-white/5 rounded flex items-center justify-center hover:border-cyan-500 transition shadow-2xl">
+                        <div id="play-icon" class="w-0 h-0 border-y-[15px] border-y-transparent border-l-[24px] border-l-white"></div>
                     </button>
-                    <button onclick="step(1)" class="px-8 bg-black border border-white/10 rounded text-[10px] font-bold uppercase">Next</button>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="step(1)" class="px-8 h-9 bg-black border border-white/10 rounded text-[9px] font-black uppercase hover:bg-white/5">Track Forward</button>
+                        <button class="px-8 h-9 bg-black border border-white/10 rounded text-[9px] font-black uppercase opacity-20">CUE Point</button>
+                    </div>
                 </div>
-                <div class="text-xl font-black italic">+0.00%</div>
+                <div class="flex flex-col items-end">
+                    <span class="text-[9px] font-black opacity-20 uppercase">Vinyl Speed Adjust</span>
+                    <div class="w-48 h-1 bg-cyan-900/30 mt-2 relative"><div class="absolute w-12 h-3 bg-cyan-500 -top-1 left-1/2"></div></div>
+                </div>
             </div>
         </section>
 
-        <!-- MIXER -->
-        <section class="mixer-section">
-            <div class="vu-meter" id="vu-meter"></div>
-            <div class="mt-10 flex flex-col items-center gap-10">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-b from-[#333] to-[#111] border border-black"></div>
-                <div class="w-8 h-48 bg-black border border-white/5 relative">
-                    <div class="absolute w-12 h-8 bg-[#222] border border-black left-1/2 -translate-x-1/2 top-1/4"></div>
-                </div>
-                <span class="text-[8px] opacity-30 uppercase">Vol-Master</span>
+        <!-- MIXER: 混音模块 -->
+        <section class="module mixer-area">
+            <div class="knob-row"><div class="knob"></div><span class="knob-label">Trim</span></div>
+            <div class="knob-row"><div class="knob"></div><span class="knob-label">High</span></div>
+            <div class="knob-row"><div class="knob"></div><span class="knob-label">Mid</span></div>
+            <div class="knob-row"><div class="knob"></div><span class="knob-label">Low</span></div>
+            
+            <div class="vu-display" id="vu-meter"></div>
+
+            <div class="fader-track">
+                <div class="fader-cap"></div>
             </div>
+            <span class="text-[9px] font-black opacity-20">CH-1 MASTER</span>
         </section>
 
-        <!-- CRATE -->
-        <aside class="crate-section">
-            <div class="p-6 bg-black/40">
+        <!-- CRATE: 媒体与打击垫 -->
+        <aside class="module crate-section">
+            <div class="pad-matrix">
+                <div class="pad active">HOT CUE</div>
+                <div class="pad">PAD FX</div>
+                <div class="pad">BEAT JUMP</div>
+                <div class="pad">SAMPLER</div>
+                <div class="pad">KEYBOARD</div>
+                <div class="pad">SLICER</div>
+                <div class="pad">BEAT LOOP</div>
+                <div class="pad">SHIFT</div>
+            </div>
+
+            <div class="p-5 bg-black/40 border-y border-white/5">
                 <div id="playlist-nav" class="flex gap-2 overflow-x-auto no-scrollbar mb-4"></div>
-                <input type="text" id="q" oninput="doSearch()" placeholder="FILTER CRATE..." class="w-full bg-black border border-white/10 p-3 text-[10px] outline-none focus:border-cyan-500/50">
+                <div class="relative">
+                    <input type="text" id="q" oninput="doSearch()" placeholder="BROWSE LIBRARY..." class="w-full bg-black border border-white/10 p-3 pl-10 text-[10px] outline-none focus:border-cyan-500/50 transition">
+                    <div class="absolute left-3 top-3.5 opacity-20">🔍</div>
+                </div>
             </div>
-            <div class="track-list-container"><ul id="list"></ul></div>
-            <div class="p-4 border-t border-white/5"><p id="ai-text" class="text-[9px] text-cyan-600/50 font-mono italic uppercase">System Ready</p></div>
+
+            <div class="track-list"><ul id="list"></ul></div>
+
+            <div class="p-4 bg-black/80 border-t border-white/10">
+                <div class="flex justify-between text-[8px] font-black opacity-30 mb-2 uppercase">
+                    <span>Engine Status</span>
+                    <span>v5.0.24-Stable</span>
+                </div>
+                <p id="ai-text" class="text-[9px] text-cyan-600/50 font-mono italic leading-tight">SCANNING FREQUENCY RESPONSE...</p>
+            </div>
         </aside>
+
     </main>
 
     <audio id="player" crossorigin="anonymous"></audio>
@@ -132,58 +203,66 @@
         let filteredTracks = [], curIdx = 0;
         const audio = document.getElementById('player');
 
-        // VU表初始化
-        (function() {
+        // 初始化视觉组件
+        (function initVisuals() {
+            // 生成波形
+            const wf = document.getElementById('waveform');
+            for(let i=0; i<60; i++) {
+                const b = document.createElement('div');
+                b.className = 'wave-bar';
+                b.style.animationDelay = (i * 0.05) + 's';
+                wf.appendChild(b);
+            }
+            // 生成VU表
             const vu = document.getElementById('vu-meter');
             for(let i=0; i<2; i++) {
-                const bar = document.createElement('div'); bar.className='vu-bar';
-                for(let j=0; j<18; j++) { bar.appendChild(document.createElement('div')).className='vu-dot'; }
+                const bar = document.createElement('div');
+                bar.className = 'flex flex-col-reverse gap-1 flex-1';
+                for(let j=0; j<20; j++) {
+                    const d = document.createElement('div');
+                    d.className = 'flex-1 bg-zinc-900 rounded-sm vu-dot';
+                    bar.appendChild(d);
+                }
                 vu.appendChild(bar);
             }
         })();
 
         function bootSystem() {
+            document.getElementById('boot-overlay').style.transform = 'scale(1.5)';
             document.getElementById('boot-overlay').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('boot-overlay').style.display = 'none';
                 document.getElementById('main-app').style.opacity = '1';
-                loadAllData();
+                loadLibrary();
             }, 800);
         }
 
-        async function loadAllData() {
+        async function loadLibrary() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
                 const items = await res.json();
-                
-                // 加载根目录
                 playlists["Root"] = filterAudio(items);
-                
-                // 加载文件夹
                 const folders = items.filter(i => i.type === "dir");
                 for (let f of folders) {
                     const subRes = await fetch(f.url);
                     const subData = await subRes.json();
                     playlists[f.name] = filterAudio(subData);
                 }
-
                 renderNav();
                 switchPlaylist("Root");
-            } catch (e) {
-                document.getElementById('title').innerText = "API ERROR";
-            }
+            } catch (e) { document.getElementById('title').innerText = "IO ERROR"; }
         }
 
         function filterAudio(items) {
             return items.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                t: f.name.replace(/\.[^/.]+$/, ""), u: f.download_url
+                t: f.name.replace(/\.[^/.]+$/, ""), u: f.download_url, size: f.size
             }));
         }
 
         function renderNav() {
             const nav = document.getElementById('playlist-nav');
             nav.innerHTML = Object.keys(playlists).map(name => `
-                <button onclick="switchPlaylist('${name}')" class="text-[9px] px-3 py-1 border border-white/10 hover:bg-white/10 uppercase">
+                <button onclick="switchPlaylist('${name}')" class="text-[9px] px-3 py-1 border border-white/10 hover:bg-white/5 uppercase whitespace-nowrap">
                     ${name}
                 </button>
             `).join('');
@@ -192,7 +271,6 @@
         function switchPlaylist(name) {
             currentPlaylist = name;
             filteredTracks = [...playlists[name]];
-            document.getElementById('folder-name').innerText = name;
             renderList();
             if(filteredTracks.length > 0) executeLoad(0, false);
         }
@@ -201,7 +279,7 @@
             const listEl = document.getElementById('list');
             listEl.innerHTML = filteredTracks.map((s, i) => `
                 <li class="track-item ${curIdx === i ? 'active' : ''}" onclick="executeLoad(${i}, true)">
-                    ${String(i+1).padStart(2,'0')} . ${s.t}
+                    ${String(i+1).padStart(2,'0')} | ${s.t}
                 </li>
             `).join('');
         }
@@ -211,6 +289,7 @@
             const song = filteredTracks[curIdx];
             audio.src = song.u;
             document.getElementById('title').innerText = song.t;
+            document.getElementById('track-type').innerText = (song.size > 20000000 ? 'AIFF' : 'MP3') + " / 320K";
             
             const art = document.getElementById('cover-art');
             const emj = document.getElementById('cover-emoji');
@@ -227,7 +306,6 @@
                     }
                 }
             });
-
             renderList();
             if (auto) audio.play();
         }
@@ -235,11 +313,22 @@
         function playToggle() { audio.paused ? audio.play() : audio.pause(); }
         audio.onplay = () => { document.body.classList.replace('is-paused', 'is-playing'); document.getElementById('play-icon').style.borderLeftColor = "#00f2ff"; };
         audio.onpause = () => { document.body.classList.replace('is-playing', 'is-paused'); document.getElementById('play-icon').style.borderLeftColor = "#fff"; };
+        
         audio.ontimeupdate = () => {
-            document.getElementById('cur-time').innerText = fmt(audio.currentTime);
+            const cur = audio.currentTime;
+            const dur = audio.duration || 0;
+            document.getElementById('cur-time').innerText = fmt(cur);
+            document.getElementById('remain-time').innerText = "-" + fmt(dur - cur);
+            
             if(!audio.paused) {
+                // VU动画
                 document.querySelectorAll('.vu-dot').forEach((dot, idx) => {
-                    dot.className = (idx % 18 < Math.random() * 14) ? 'vu-dot lit' : 'vu-dot';
+                    const rand = Math.random() * 20;
+                    dot.style.background = (idx % 20 < rand) ? (idx % 20 > 16 ? '#ff3c00' : '#00f2ff') : '#111';
+                });
+                // 波形动画
+                document.querySelectorAll('.wave-bar').forEach(bar => {
+                    bar.style.height = (10 + Math.random() * 80) + '%';
                 });
             }
         };
@@ -249,7 +338,6 @@
             let m = Math.floor(s/60), sec = Math.floor(s%60), ms = Math.floor((s%1)*100);
             return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}:${ms.toString().padStart(2,'0')}`;
         }
-
         function step(d) { executeLoad((curIdx + d + filteredTracks.length) % filteredTracks.length, true); }
         function doSearch() {
             const val = document.getElementById('q').value.toLowerCase();
