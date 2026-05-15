@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VOID DJ MK-VI | PERFECT DOUBLE-TRACK</title>
+    <title>VOID DJ MK-VI | TACTILE & COVERS</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -76,13 +76,33 @@
 
         /* 黑胶慢轮 */
         .vinyl-wrap { width: 380px; height: 380px; border-radius: 50%; background: #050505; display: flex; align-items: center; justify-content: center; cursor: grab; position: relative; touch-action: none; }
-        .vinyl-disk { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%); border: 10px solid #080808; position: relative; pointer-events: none; }
+        
+        /* 优化点 2：最外圈黑胶盘边缘加厚加重，采用高对比拉丝灰 */
+        .vinyl-disk { 
+            width: 100%; height: 100%; border-radius: 50%; 
+            background: radial-gradient(circle, #252525 0%, #0a0a0a 60%, #000 100%); 
+            border: 12px solid #2a2a2a; 
+            position: relative; pointer-events: none; 
+            box-shadow: inset 0 0 20px #000, 0 15px 40px rgba(0,0,0,0.8);
+        }
         .vinyl-disk::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px); }
         
-        /* 慢轮中心孔与盖板 */
-        .art-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border-radius: 50%; border: 6px solid #000; background: #111; z-index: 10; overflow: hidden; pointer-events: none; }
+        /* 优化点 1：慢轮中心舱口 - 强化为重工业钛灰切削边框 + 独立霓虹光圈 */
+        .art-center { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 140px; height: 140px; border-radius: 50%; 
+            border: 6px solid #333; 
+            background: #111; z-index: 10; overflow: hidden; pointer-events: none; 
+            box-shadow: 0 0 0 2px #000, 0 0 0 3.5px var(--neon), 0 10px 25px rgba(0,0,0,0.6);
+        }
         #cover-art { width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s ease; }
         #cover-art.loaded { opacity: 1; }
+
+        /* 动画 */
+        .is-playing .vinyl-disk { animation: rotate-v 6s linear infinite; }
+        .is-playing .art-center { animation: rotate-a 6s linear infinite; }
+        @keyframes rotate-v { to { transform: rotate(360deg); } }
+        @keyframes rotate-a { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 
         .lcd-main { background: #050a05; border-radius: 4px; padding: 15px; font-family: 'Share Tech Mono', monospace; box-shadow: inset 0 0 50px #000; border: 2px solid #000; }
         .boot-overlay { position: fixed; inset: 0; z-index: 1000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -172,7 +192,6 @@
 
     </main>
 
-    <!-- 移除了容易引起跨域和多重解析冲突的无用属性 -->
     <audio id="player"></audio>
 
     <script>
@@ -287,7 +306,6 @@
             `).join('');
         }
 
-        // --- 核心升级：音频与封面双轨隔离技术 ---
         function executeLoad(idx, auto) {
             curIdx = idx;
             const song = filteredTracks[curIdx];
@@ -296,28 +314,23 @@
             const emj = document.getElementById('cover-emoji');
             const titleEl = document.getElementById('title');
             
-            // 1. 同步设置媒体流（主轨），不加任何异步阻塞
             audio.src = song.u;
             audio.load();
             titleEl.innerText = song.t;
 
-            // 2. 视觉预备重置
             art.classList.remove('loaded');
             art.style.backgroundImage = 'none';
             emj.style.opacity = '1';
 
-            // 3. 销毁旧封面内存指针
             if (currentCoverObjectURL) {
                 URL.revokeObjectURL(currentCoverObjectURL);
                 currentCoverObjectURL = null;
             }
 
-            // 4. 关键点：紧跟点击事件触发播放，锁死手机浏览器的安全令牌
             if (auto) {
                 audio.play().catch(e => console.log("移动端等待首次手势激活: ", e));
             }
 
-            // 5. 支轨：让 Fetch 在后台静默抓取，绝不拦截主轨的播放
             fetch(song.u)
                 .then(res => {
                     if (!res.ok) throw new Error();
@@ -332,16 +345,15 @@
                                 const coverBlob = new Blob([byteArray], { type: pic.format });
                                 currentCoverObjectURL = URL.createObjectURL(coverBlob);
                                 
-                                // 后台就绪后，丝滑淡入图像
                                 art.style.backgroundImage = `url(${currentCoverObjectURL})`;
                                 art.classList.add('loaded');
                                 emj.style.opacity = '0';
                             }
                         },
-                        onError: (err) => console.log("此音频文件内无内嵌封面标签")
+                        onError: (err) => console.log("无内嵌封面")
                     });
                 })
-                .catch(err => console.log("后台网络慢，封面获取中..."));
+                .catch(err => console.log("封面解析挂起..."));
 
             renderList();
         }
