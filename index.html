@@ -2,92 +2,79 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOID PRO-AUDIO | REFERENCE DECK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VOID DJ MK-II | REFERENCE STUDIO</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --panel-bg: #0d0d0d;
-            --accent: #00f2ff;
-            --warning: #ff3c00;
-            --metal-gradient: linear-gradient(180deg, #222 0%, #111 100%);
-            --lcd-glow: 0 0 15px rgba(0, 242, 255, 0.3);
+            --panel-black: #0a0a0a;
+            --metal-grey: #1a1a1a;
+            --neon-cyan: #00f2ff;
+            --warning-red: #ff3c00;
+            --lcd-green: #10b981;
         }
 
         body {
-            background-color: #050505;
-            color: #e0e0e0;
+            background: #050505;
+            color: #fff;
             font-family: 'Inter', sans-serif;
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            /* 碳纤维纹理 */
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%),
-                repeating-linear-gradient(45deg, #0a0a0a 0px, #0a0a0a 1px, transparent 1px, transparent 2px);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; /* 禁止页面级滚动，防止切歌抖动 */
         }
 
-        /* --- 工业级外壳 --- */
-        .pro-console {
+        /* 工业级拉丝背景 */
+        .console-frame {
             width: 96vw;
-            height: 860px;
-            background: #151515;
-            border: 6px solid #222;
-            border-radius: 12px;
+            max-width: 1400px;
+            height: 850px;
+            background: #111;
+            border: 8px solid #222;
+            border-radius: 16px;
             display: grid;
-            grid-template-columns: 1fr 320px 420px;
-            padding: 10px;
-            gap: 10px;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.5);
+            grid-template-columns: 1fr 280px 400px;
+            gap: 15px;
+            padding: 15px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9), inset 0 0 50px rgba(255,255,255,0.02);
+            box-sizing: border-box;
         }
 
-        /* --- DECK 部分 (左) --- */
-        .deck-core {
-            background: var(--metal-gradient);
-            border-radius: 8px;
+        /* --- DECK A: 核心盘面区 --- */
+        .deck {
+            background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%);
+            border-radius: 12px;
             padding: 30px;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             position: relative;
-            border: 1px solid #333;
+            border: 1px solid #2a2a2a;
+            overflow: hidden;
         }
 
-        /* LCD 仪表盘 */
-        .lcd-display {
-            background: #050a05;
-            border: 2px solid #222;
-            border-radius: 4px;
+        /* LCD 模拟显示屏 */
+        .lcd-panel {
+            background: #020502;
+            border: 3px solid #000;
+            border-radius: 6px;
             padding: 20px;
             font-family: 'Share Tech Mono', monospace;
-            color: var(--accent);
-            box-shadow: inset 0 0 20px #000;
-            margin-bottom: 20px;
+            box-shadow: inset 0 0 30px #000;
+            margin-bottom: 25px;
         }
 
-        /* 模拟波形图 */
-        .waveform-view {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            margin: 15px 0;
-            opacity: 0.8;
-        }
-        .wave-bar {
-            flex: 1;
-            background: var(--accent);
-            height: 20%;
-            border-radius: 2px;
-            transition: height 0.1s ease;
+        .lcd-title {
+            font-size: 1.8rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* 防止文字过长撑开容器 */
         }
 
-        /* 慢轮 Jog Wheel */
+        /* 黑胶慢轮容器：确保绝对居中 */
         .jog-container {
             flex: 1;
             display: flex;
@@ -95,204 +82,200 @@
             justify-content: center;
             position: relative;
         }
+
         .jog-wheel {
-            width: 360px;
-            height: 360px;
+            width: 380px; height: 380px;
             border-radius: 50%;
-            background: radial-gradient(circle, #222 0%, #111 70%, #000 100%);
-            border: 10px solid #080808;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            background: radial-gradient(circle, #222 0%, #111 40%, #050505 100%);
+            border: 12px solid #000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
             position: relative;
-            transition: transform 0.1s linear;
+            z-index: 1;
         }
-        /* 黑胶纹理 */
+
+        /* 唱盘螺纹纹理 */
         .jog-wheel::after {
             content: '';
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             border-radius: 50%;
             background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.03) 3px);
+            pointer-events: none;
         }
-        .is-playing .jog-wheel { animation: rotate-jog 4s linear infinite; }
-        @keyframes rotate-jog { to { transform: rotate(360deg); } }
 
-        /* --- MIXER 部分 (中) --- */
-        .mixer-section {
-            background: #111;
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 1px solid #222;
-        }
-        .eq-knob {
-            width: 50px; height: 50px;
-            background: radial-gradient(circle, #444, #222);
+        /* 核心 CD/封面：强制几何中心对齐 */
+        .jog-art-wrapper {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%); /* 核心对齐逻辑 */
+            width: 140px; height: 140px;
             border-radius: 50%;
-            margin-bottom: 20px;
-            position: relative;
-            border: 2px solid #000;
-        }
-        .eq-knob::before {
-            content: '';
-            position: absolute;
-            top: 5px; left: 50%; width: 3px; height: 12px;
-            background: var(--warning); transform: translateX(-50%);
-        }
-        .fader-slot {
-            width: 12px; height: 250px;
-            background: #000;
-            border-radius: 6px;
-            position: relative;
-            margin: 40px 0;
-        }
-        .fader-handle {
-            width: 40px; height: 60px;
-            background: linear-gradient(90deg, #333, #555, #333);
-            border-radius: 4px;
-            position: absolute;
-            left: -14px; bottom: 70%;
-            cursor: pointer;
-            border: 1px solid #000;
+            border: 6px solid #000;
+            overflow: hidden;
+            background: #111;
+            z-index: 10;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* --- CRATE 部分 (右) --- */
-        .crate-section {
-            background: #0f0f0f;
+        .jog-art-wrapper img, #cover-art {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+
+        /* 唱片中间的小孔（专业感） */
+        .spindle-hole {
+            position: absolute;
+            width: 12px; height: 12px;
+            background: #222;
+            border-radius: 50%;
+            z-index: 20;
+            border: 2px solid #555;
+            box-shadow: inset 0 0 4px #000;
+        }
+
+        /* 旋转动画 */
+        .is-playing .jog-wheel, .is-playing .jog-art-wrapper {
+            animation: rotate-deck 6s linear infinite;
+        }
+        @keyframes rotate-deck { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        /* 注意：wrapper旋转需要保持 translate(-50%, -50%) 否则会跑偏 */
+        @keyframes rotate-jog { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .is-playing .jog-wheel { animation: rotate-jog 6s linear infinite; }
+
+        /* --- 按钮美化 --- */
+        .pro-btn {
+            background: linear-gradient(180deg, #333 0%, #111 100%);
+            border: 1px solid #000;
+            color: #888;
+            border-radius: 4px;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            font-size: 11px; font-weight: 900;
+        }
+        .pro-btn:active { background: #222; transform: translateY(1px); }
+        .pro-btn.active-cyan { color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,255,0.3); }
+
+        /* --- 列表与搜索 --- */
+        .library-aside {
+            background: #0d0d0d;
             border-radius: 8px;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
             border: 1px solid #222;
             overflow: hidden;
         }
-        .track-list {
-            flex: 1;
-            overflow-y: auto;
-        }
+
         .track-item {
             padding: 15px 20px;
             border-bottom: 1px solid #1a1a1a;
             font-family: 'Share Tech Mono', monospace;
-            font-size: 13px;
+            font-size: 13px; color: #666;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .track-item:hover { background: #1a1a1a; }
-        .track-item.active { background: #003333; color: var(--accent); border-left: 4px solid var(--accent); }
+        .track-item:hover { background: #151515; color: #fff; }
+        .track-item.active { 
+            background: rgba(0, 242, 255, 0.05); 
+            color: var(--neon-cyan); 
+            border-left: 4px solid var(--neon-cyan); 
+        }
 
         /* 电平表 VU Meter */
         .vu-meter {
-            display: flex; gap: 3px; height: 100px; padding: 10px; background: #000;
+            display: flex; gap: 3px; height: 120px; padding: 10px; background: #000; border-radius: 4px;
         }
         .vu-bar { flex: 1; display: flex; flex-direction: column-reverse; gap: 2px; }
-        .vu-dot { height: 4px; width: 100%; background: #1a1a1a; }
-        .vu-dot.active-green { background: var(--neon-green); }
-        .vu-dot.active-cyan { background: var(--accent); }
+        .vu-dot { height: 5px; width: 100%; background: #1a1a1a; transition: background 0.1s; }
+        .vu-dot.lit { background: var(--lcd-green); box-shadow: 0 0 5px var(--lcd-green); }
+        .vu-dot.peak { background: var(--warning-red); box-shadow: 0 0 5px var(--warning-red); }
 
-        /* 系统启动屏 */
-        .boot-screen {
-            position: fixed; inset: 0; z-index: 100;
-            background: #000; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            transition: 0.8s cubic-bezier(0.8, 0, 0.2, 1);
-        }
     </style>
 </head>
 <body class="is-paused">
 
-    <div id="login-screen" class="boot-screen">
-        <div class="text-[10px] font-mono text-cyan-900 mb-10 tracking-[1em]">SYSTEM INITIALIZING</div>
-        <button onclick="bootSystem()" class="group relative">
-            <div class="absolute -inset-4 bg-cyan-500/20 rounded-full blur-xl group-hover:bg-cyan-500/40 transition"></div>
-            <div class="relative w-24 h-24 border-2 border-cyan-500 rounded-full flex items-center justify-center text-cyan-500 group-hover:scale-110 transition">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
+    <!-- 系统引导 -->
+    <div id="boot-overlay" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="text-[10px] tracking-[1em] text-cyan-900 mb-8">VOID AUDIO CORE v2.0</div>
+        <button onclick="bootSystem()" class="w-20 h-20 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-500 hover:bg-cyan-500/10 transition">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </button>
-        <input type="password" id="pwd-input" class="hidden">
     </div>
 
-    <main id="main-app" class="pro-console opacity-0 transition-opacity duration-1000">
+    <!-- DJ 核心面板 -->
+    <main id="main-app" class="console-frame opacity-0 transition-opacity duration-1000">
         
-        <!-- DECK A -->
-        <section class="deck-core">
-            <div class="lcd-display">
-                <div class="flex justify-between text-[9px] opacity-50 mb-2">
-                    <span>MQA / REF 192kHz</span>
-                    <span id="track-type">MASTER</span>
+        <!-- 左：DECK A -->
+        <section class="deck">
+            <div class="lcd-panel">
+                <div class="flex justify-between text-[10px] opacity-40 mb-2 tracking-widest">
+                    <span>96kHz / 32-BIT FLOAT</span>
+                    <span>DECK A</span>
                 </div>
-                <div class="text-2xl truncate mb-1" id="title">NO TRACK LOADED</div>
-                <div class="text-[10px] opacity-40 mb-4" id="artist-name">DECK READY</div>
-                
-                <div class="waveform-view" id="waveform">
-                    <!-- 波形条由JS生成 -->
-                </div>
-
-                <div class="flex justify-between font-bold text-2xl mt-2 tracking-tighter">
-                    <span id="cur-time" class="text-white">00:00:00</span>
-                    <span class="text-cyan-900">|</span>
-                    <span id="dur-time" class="text-cyan-800">00:00:00</span>
-                </div>
-            </div>
-
-            <div class="jog-container">
-                <div class="jog-wheel" id="jog-wheel" onclick="playToggle()">
-                    <div class="absolute inset-[30%] rounded-full bg-black border-4 border-cyan-500/20 flex items-center justify-center">
-                        <div id="cover-art" class="w-full h-full rounded-full bg-cover"></div>
-                        <span id="cover-emoji" class="text-4xl">💿</span>
+                <div id="title" class="lcd-title">NO TRACK LOADED</div>
+                <div class="flex justify-between items-end mt-4">
+                    <div id="artist-name" class="text-xs text-cyan-800 uppercase">System Ready</div>
+                    <div class="flex gap-4 font-bold text-2xl text-white">
+                        <span id="cur-time">00:00:00</span>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-end mt-6">
-                <div class="flex gap-4">
-                    <button onclick="playToggle()" class="w-16 h-16 rounded bg-black border border-white/10 flex items-center justify-center hover:bg-white/5">
-                        <div id="play-btn-icon" class="w-0 h-0 border-y-[10px] border-y-transparent border-l-[16px] border-l-white"></div>
+            <div class="jog-container">
+                <!-- 黑胶盘 -->
+                <div class="jog-wheel" id="jog-wheel"></div>
+                <!-- 封面：独立包装并居中 -->
+                <div class="jog-art-wrapper">
+                    <div id="cover-art" class="bg-cover bg-center w-full h-full"></div>
+                    <span id="cover-emoji" class="text-4xl">💿</span>
+                    <div class="spindle-hole"></div>
+                </div>
+            </div>
+
+            <div class="flex justify-between mt-8">
+                <div class="flex gap-3">
+                    <button onclick="playToggle()" class="w-16 h-16 pro-btn flex items-center justify-center" id="play-main">
+                        <div id="play-icon" class="w-0 h-0 border-y-[10px] border-y-transparent border-l-[16px] border-l-white"></div>
                     </button>
-                    <button onclick="step(1)" class="px-6 rounded bg-black border border-white/10 hover:bg-white/5 text-[10px] font-bold">NEXT</button>
+                    <button onclick="step(1)" class="px-6 pro-btn">Next Track</button>
                 </div>
                 <div class="text-right">
-                    <div class="text-[9px] opacity-30 mb-1 uppercase">Sync / BPM</div>
-                    <div class="text-xl font-bold italic text-cyan-400">128.00</div>
+                    <div class="text-[9px] opacity-30 mb-1">PITCH BEND</div>
+                    <div class="text-xl font-black text-white italic">+0.00%</div>
                 </div>
             </div>
         </section>
 
-        <!-- MIXER -->
-        <section class="mixer-section">
-            <div class="text-[9px] mb-8 opacity-20 font-bold">CHANNEL MIXER</div>
+        <!-- 中：MIXER / 混音区 -->
+        <section class="flex flex-col gap-4 p-4 bg-[#0a0a0a] border-x border-white/5">
+            <div class="text-[9px] text-center opacity-20 font-black tracking-widest">SIGNAL LEVEL</div>
+            <div class="vu-meter" id="vu-meter"></div>
             
-            <div class="eq-knob"></div>
-            <div class="text-[8px] mb-4 opacity-40">HI</div>
-            <div class="eq-knob"></div>
-            <div class="text-[8px] mb-4 opacity-40">MID</div>
-            <div class="eq-knob"></div>
-            <div class="text-[8px] mb-4 opacity-40">LOW</div>
-
-            <div class="fader-slot">
-                <div class="fader-handle"></div>
-            </div>
-
-            <div class="vu-meter" id="vu-meter">
-                <!-- VU表由JS生成 -->
+            <div class="mt-8 flex flex-col items-center gap-6">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-b from-[#333] to-[#111] border border-black shadow-xl"></div>
+                <span class="text-[8px] opacity-40">TRIM</span>
+                
+                <!-- 模拟推子 -->
+                <div class="w-8 h-48 bg-black rounded-sm relative border border-white/5">
+                    <div class="absolute w-full h-[1px] bg-white/10 top-1/2"></div>
+                    <div class="absolute w-12 h-8 bg-[#222] border border-black left-1/2 -translate-x-1/2 top-1/4 shadow-2xl rounded-sm"></div>
+                </div>
+                <span class="text-[8px] opacity-40">CHANNEL 1</span>
             </div>
         </section>
 
-        <!-- 曲库 -->
-        <aside class="crate-section">
-            <div class="p-6 bg-black/40">
+        <!-- 右：LIBRARY / 媒体库 -->
+        <aside class="library-aside">
+            <div class="p-6 bg-black/40 border-b border-white/5">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-[10px] font-bold tracking-[0.3em] opacity-40 uppercase">Crate Browser</h2>
-                    <span id="folder-name" class="text-[9px] bg-cyan-900/30 px-2 py-1 rounded text-cyan-400">ROOT</span>
+                    <h2 class="text-[10px] font-black tracking-widest opacity-30">TRACK BROWSER</h2>
+                    <span id="folder-tag" class="text-[9px] text-cyan-500 bg-cyan-500/10 px-2 py-0.5 rounded">ROOT</span>
                 </div>
-                <div id="playlist-nav" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
-                <input type="text" id="q" oninput="doSearch()" placeholder="FILTER TRACKS..." class="w-full bg-black border border-white/10 p-3 mt-2 text-[10px] outline-none focus:border-cyan-500/50">
+                <input type="text" id="q" oninput="doSearch()" placeholder="SEARCH CRATE..." class="w-full bg-black border border-white/10 p-3 text-[10px] text-cyan-500 outline-none focus:border-cyan-500/50">
             </div>
-
+            
             <ul id="list" class="track-list no-scrollbar"></ul>
 
-            <div class="p-6 border-t border-white/5">
-                <p id="ai-text" class="text-[9px] text-cyan-600/50 font-mono italic leading-relaxed">READY TO BROADCAST...</p>
+            <div class="mt-auto p-4 border-t border-white/5">
+                <div id="ai-text" class="text-[9px] text-white/20 italic leading-relaxed">
+                    Waiting for track selection...
+                </div>
             </div>
         </aside>
 
@@ -304,22 +287,15 @@
         const G = { user: 'zhangzhanhang855', repo: 'musiconly', ver: 'main' };
         let playlists = {}; 
         let filtered = [], curIdx = 0, isPlaying = false;
-        
         const audio = document.getElementById('player');
 
-        // 初始化背景与VU表
-        (function initVisuals() {
-            const wave = document.getElementById('waveform');
-            for(let i=0; i<40; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'wave-bar';
-                wave.appendChild(bar);
-            }
+        // 初始化 VU 表
+        (function createVU() {
             const vu = document.getElementById('vu-meter');
             for(let i=0; i<2; i++) {
                 const bar = document.createElement('div');
                 bar.className = 'vu-bar';
-                for(let j=0; j<15; j++) {
+                for(let j=0; j<18; j++) {
                     const dot = document.createElement('div');
                     dot.className = 'vu-dot';
                     bar.appendChild(dot);
@@ -329,78 +305,48 @@
         })();
 
         function bootSystem() {
-            document.getElementById('login-screen').style.transform = 'scale(2)';
-            document.getElementById('login-screen').style.opacity = '0';
+            document.getElementById('boot-overlay').style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('boot-overlay').style.display = 'none';
                 document.getElementById('main-app').style.opacity = '1';
-                loadData();
-            }, 800);
+                loadLibrary();
+            }, 1000);
         }
 
-        async function loadData() {
+        async function loadLibrary() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
-                const items = await res.json();
+                const data = await res.json();
                 
-                const rootSongs = filterSongs(items);
-                if (rootSongs.length > 0) playlists["Root"] = rootSongs;
+                // 简单处理：仅抓取根目录
+                playlists["Root"] = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
+                    t: f.name.replace(/\.[^/.]+$/, ""),
+                    u: f.download_url
+                }));
 
-                const folders = items.filter(i => i.type === "dir");
-                for (const f of folders) {
-                    const sub = await (await fetch(f.url)).json();
-                    const songs = filterSongs(sub);
-                    if (songs.length > 0) playlists[f.name] = songs;
-                }
-
-                renderNav();
-                switchPlaylist(Object.keys(playlists)[0]);
+                renderList();
+                executeLoad(0, false);
             } catch (e) {
-                document.getElementById('title').innerText = "IO ERROR: CHECK API";
+                console.error("Failed to load library");
             }
-        }
-
-        function filterSongs(items) {
-            return items.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
-                t: f.name.replace(/\.[^/.]+$/, ""),
-                u: f.download_url,
-                type: f.size > 20000000 ? '96k/24b' : '44k/16b'
-            }));
-        }
-
-        function renderNav() {
-            const nav = document.getElementById('playlist-nav');
-            nav.innerHTML = Object.keys(playlists).map(name => `
-                <button onclick="switchPlaylist('${name}')" class="text-[9px] px-3 py-1 border border-white/5 whitespace-nowrap hover:bg-white/10 uppercase">
-                    ${name}
-                </button>
-            `).join('');
-        }
-
-        function switchPlaylist(name) {
-            filtered = [...playlists[name]];
-            document.getElementById('folder-name').innerText = name;
-            renderList();
-            executeLoad(0, false);
         }
 
         function renderList() {
             const listEl = document.getElementById('list');
-            listEl.innerHTML = filtered.map((s, i) => `
+            listEl.innerHTML = playlists["Root"].map((s, i) => `
                 <li class="track-item ${curIdx === i ? 'active' : ''}" onclick="executeLoad(${i}, true)">
-                    ${String(i+1).padStart(2,'0')} > ${s.t}
+                    ${String(i+1).padStart(2,'0')} . ${s.t}
                 </li>
             `).join('');
         }
 
         function executeLoad(idx, auto) {
             curIdx = idx;
-            const song = filtered[curIdx];
+            const song = playlists["Root"][curIdx];
             audio.src = song.u;
             document.getElementById('title').innerText = song.t;
-            document.getElementById('track-type').innerText = song.type;
             
-            // 封面处理
+            // 封面图居中处理
             const art = document.getElementById('cover-art');
             const emj = document.getElementById('cover-emoji');
             art.style.backgroundImage = 'none';
@@ -428,25 +374,26 @@
 
         audio.onplay = () => {
             document.body.classList.replace('is-paused', 'is-playing');
-            document.getElementById('play-btn-icon').style.borderLeftColor = "#00f2ff";
+            document.getElementById('play-icon').style.borderLeftColor = "#00f2ff";
         };
 
         audio.onpause = () => {
             document.body.classList.replace('is-playing', 'is-paused');
-            document.getElementById('play-btn-icon').style.borderLeftColor = "#fff";
+            document.getElementById('play-icon').style.borderLeftColor = "#fff";
         };
 
         audio.ontimeupdate = () => {
-            document.getElementById('cur-time').innerText = fmt(audio.currentTime);
-            document.getElementById('dur-time').innerText = fmt(audio.duration);
+            const cur = audio.currentTime;
+            const dur = audio.duration;
+            document.getElementById('cur-time').innerText = fmt(cur);
             
-            // 模拟波形与VU表跳动
+            // VU 表动画
             if(!audio.paused) {
-                document.querySelectorAll('.wave-bar').forEach(bar => {
-                    bar.style.height = (20 + Math.random() * 60) + '%';
-                });
-                document.querySelectorAll('.vu-dot').forEach((dot, idx) => {
-                    dot.className = (idx % 15 < Math.random() * 12) ? 'vu-dot active-cyan' : 'vu-dot';
+                const dots = document.querySelectorAll('.vu-dot');
+                dots.forEach((dot, idx) => {
+                    const rand = Math.random() * 18;
+                    const isLit = (idx % 18) < rand;
+                    dot.className = isLit ? (idx % 18 > 14 ? 'vu-dot peak' : 'vu-dot lit') : 'vu-dot';
                 });
             }
         };
@@ -458,16 +405,9 @@
         }
 
         function step(d) {
-            executeLoad((curIdx + d + filtered.length) % filtered.length, true);
+            let next = (curIdx + d + playlists["Root"].length) % playlists["Root"].length;
+            executeLoad(next, true);
         }
-
-        function doSearch() {
-            const val = document.getElementById('q').value.toLowerCase();
-            filtered = playlists[currentPlaylistName].filter(s => s.t.toLowerCase().includes(val));
-            renderList();
-        }
-
-        function dl() { window.open(filtered[curIdx].u); }
     </script>
 </body>
 </html>
