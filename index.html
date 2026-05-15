@@ -189,8 +189,9 @@
         let filteredTracks = [], curIdx = 0;
         const audio = document.getElementById('player');
         
-        // 用于跟踪和释放 Blob URL，防止内存泄漏
-        let currentObjectURL = null;
+        // 缓存音轨和封面各自的 Blob URL
+        let currentAudioObjectURL = null;
+        let currentCoverObjectURL = null;
 
         // --- 触屏与交互逻辑核心 ---
         function handleInteraction(elements, type, callback) {
@@ -295,52 +296,73 @@
             `).join('');
         }
 
-        // --- 核心修改：无损封面解析与直引机制 ---
-        function executeLoad(idx, auto) {
+        // --- 核心升级：全缓冲本地解析预加载器 ---
+        async function executeLoad(idx, auto) {
             curIdx = idx;
             const song = filteredTracks[curIdx];
-            audio.src = song.u;
-            document.getElementById('title').innerText = song.t;
             
             const art = document.getElementById('cover-art');
             const emj = document.getElementById('cover-emoji');
+            const titleEl = document.getElementById('title');
             
-            // 重置上一首歌曲的视觉状态
+            // 1. 初始化界面视觉状态（进入加载态）
+            titleEl.innerText = "BUFFERING CONTAINER...";
             art.classList.remove('loaded');
             art.style.backgroundImage = 'none';
-            emj.style.opacity = '1';
+            emj.style.opacity = '0.3';
 
-            // 释放上一次创建的内存对象，防止长期挂载导致浏览器爆内存
-            if (currentObjectURL) {
-                URL.revokeObjectURL(currentObjectURL);
-                currentObjectURL = null;
+            // 2. 垃圾回收：释放此前音轨和封面的物理内存映射，防止爆内存
+            if (currentAudioObjectURL) URL.revokeObjectURL(currentAudioObjectURL);
+            if (currentCoverObjectURL) URL.revokeObjectURL(currentCoverObjectURL);
+            currentAudioObjectURL = null;
+            currentCoverObjectURL = null;
+
+            try {
+                // 3. 高速抓取纯净音频二进制流 (绕过 jsmediatags 的跨域限制缺陷)
+                const response = await fetch(song.u);
+                if (!response.ok) throw new Error("Fetch stream failed");
+                const audioBlob = await response.blob();
+
+                // 4. 将音频流封装成高敏本地引用地址传给播放器，秒速加载并完美缓存
+                currentAudioObjectURL = URL.createObjectURL(audioBlob);
+                audio.src = currentAudioObjectURL;
+                titleEl.innerText = song.t;
+
+                // 5. 将完整的本地 Blob 文件送入解析器（100% 绕开 GitHub 的 CORS 限制）
+                new jsmediatags.Reader(audioBlob).read({
+                    onSuccess: (tag) => {
+                        const pic = tag.tags.picture;
+                        if (pic) {
+                            // 极速提纯二进制字节阵列
+                            const byteArray = new Uint8Array(pic.data);
+                            const coverBlob = new Blob([byteArray], { type: pic.format });
+                            currentCoverObjectURL = URL.createObjectURL(coverBlob);
+                            
+                            // 淡入替换原有的 CD 表情
+                            art.style.backgroundImage = `url(${currentCoverObjectURL})`;
+                            art.classList.add('loaded');
+                            emj.style.opacity = '0';
+                        } else {
+                            emj.style.opacity = '1'; // 无内置封面则恢复默认 💿
+                        }
+                    },
+                    onError: (err) => {
+                        console.log("此音轨无内嵌标签或无法识别，回滚至标准 💿 图标:", err);
+                        emj.style.opacity = '1';
+                    }
+                });
+
+            } catch (error) {
+                console.error("预加载失败:", error);
+                titleEl.innerText = "STREAM DISCONNECTED";
+                emj.style.opacity = '1';
             }
 
-            // 利用 jsmediatags 异步读取远程音频流文件的元数据元块 (Range Requests)
-            new jsmediatags.Reader(song.u).read({
-                onSuccess: (tag) => {
-                    const pic = tag.tags.picture;
-                    if (pic) {
-                        // 将二进制字节流高速转换为 Uint8Array
-                        const byteArray = new Uint8Array(pic.data);
-                        // 封装生成高密 Blob 对象
-                        const blob = new Blob([byteArray], { type: pic.format });
-                        // 映射本地高速内存 URL
-                        currentObjectURL = URL.createObjectURL(blob);
-                        
-                        // 注入样式并执行淡入效果
-                        art.style.backgroundImage = `url(${currentObjectURL})`;
-                        art.classList.add('loaded');
-                        emj.style.opacity = '0'; // 隐退备用 Emoji
-                    }
-                },
-                onError: (error) => {
-                    console.log("此音轨无自带内嵌封面，保留默认机械CD图标:", error.type);
-                }
-            });
-
             renderList();
-            if (auto) audio.play();
+            if (auto) {
+                // 等待 Blob 加载就绪后直接瞬时触发硬解码播放
+                audio.play().catch(e => console.log("等待手势激活触发播放: ", e));
+            }
         }
 
         function playToggle() { audio.paused ? audio.play() : audio.pause(); }
