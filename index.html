@@ -2,173 +2,190 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOID DJ MK-VI | TACTILE STUDIO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VOID DJ MK-VI | HYBRID ADAPTIVE</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --neon: #00f2ff; --warn: #ff3c00; --panel: #121212; }
-        body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; user-select: none; }
-
-        /* 工业级架构 */
-        .dj-system {
-            width: 98vw; max-width: 1500px; height: 900px;
-            background: #1a1a1a; border: 10px solid #222; border-radius: 8px;
-            display: grid; grid-template-columns: 1.5fr 300px 1fr; gap: 10px; padding: 12px;
-            box-shadow: 0 100px 200px rgba(0,0,0,1); position: relative;
+        :root { --neon: #00f2ff; --panel: #121212; }
+        
+        body { 
+            background: #050505; color: #fff; font-family: 'Inter', sans-serif; 
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; 
+            overflow-x: hidden; user-select: none; margin: 0;
         }
 
-        .module { background: #0d0d0d; border: 1px solid #222; border-radius: 4px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        /* --- 核心响应式架构 --- */
+        .dj-system {
+            width: 98vw;
+            max-width: 1500px;
+            /* Pad/PC 默认高度固定 */
+            height: 850px; 
+            background: #1a1a1a; border: 6px solid #222; border-radius: 12px;
+            display: grid; 
+            /* PC/Pad 横屏：三栏 */
+            grid-template-columns: 1.5fr 260px 1fr; 
+            gap: 10px; padding: 10px;
+            box-shadow: 0 100px 200px rgba(0,0,0,1);
+            position: relative;
+            box-sizing: border-box;
+        }
 
-        /* --- 交互式旋钮 --- */
-        .knob-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; cursor: ns-resize; }
+        /* 手机竖屏适配 (max-width: 768px) */
+        @media (max-width: 1024px) and (orientation: portrait), (max-width: 640px) {
+            body { overflow-y: auto; align-items: flex-start; padding: 10px 0; }
+            .dj-system {
+                grid-template-columns: 1fr; /* 变为单列 */
+                height: auto; /* 高度随内容撑开 */
+                width: 95vw;
+                padding-bottom: 40px;
+            }
+            .mixer-section { order: 2; height: 500px; } /* 混音区排第二 */
+            .crate-section { order: 3; height: 600px; } /* 曲库排最后 */
+            .deck-section { order: 1; height: 750px; } /* 播放器在最顶 */
+            
+            /* 手机端缩小慢轮 */
+            .vinyl-wrap { width: 300px !important; height: 300px !important; }
+            .art-center { width: 110px !important; height: 110px !important; }
+        }
+
+        /* --- 模块基础样式 --- */
+        .module { background: #0d0d0d; border: 1px solid #222; border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+        /* 交互式旋钮 */
+        .knob-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; cursor: ns-resize; touch-action: none; }
         .knob-physical { 
-            width: 50px; height: 50px; border-radius: 50%; 
+            width: 48px; height: 48px; border-radius: 50%; 
             background: radial-gradient(circle at 30% 30%, #444, #111); 
             border: 3px solid #000; position: relative;
             transform: rotate(0deg); transition: transform 0.05s linear;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
         .knob-physical::after { 
             content: ''; position: absolute; top: 6px; left: 50%; 
-            width: 3px; height: 12px; background: var(--neon); 
+            width: 3px; height: 10px; background: var(--neon); 
             transform: translateX(-50%); border-radius: 2px;
         }
 
-        /* --- 交互式推子 --- */
-        .fader-track { width: 14px; height: 220px; background: #000; border-radius: 7px; position: relative; border: 1px solid #222; cursor: ns-resize; }
+        /* 交互式推子 */
+        .fader-track { width: 14px; height: 200px; background: #000; border-radius: 7px; position: relative; border: 1px solid #222; cursor: ns-resize; touch-action: none; }
         .fader-handle { 
-            width: 46px; height: 66px; 
+            width: 44px; height: 60px; 
             background: linear-gradient(180deg, #444 0%, #222 100%); 
-            border-radius: 4px; position: absolute; left: -16px; 
+            border-radius: 4px; position: absolute; left: -15px; 
             bottom: 50%; border: 1px solid #000; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
             transition: bottom 0.05s linear;
         }
-        .fader-handle::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.1); }
 
-        /* --- 打击垫反馈 --- */
+        /* 打击垫 */
         .pad { 
-            height: 55px; background: #1a1a1a; border-radius: 4px; 
+            height: 50px; background: #1a1a1a; border-radius: 4px; 
             border-bottom: 4px solid #000; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: 900; color: #333; transition: all 0.05s;
+            font-size: 9px; font-weight: 900; color: #444; transition: all 0.05s;
         }
-        .pad:active, .pad.lit { background: var(--neon); color: #000; border-bottom: 0; transform: translateY(3px); box-shadow: 0 0 30px var(--neon); }
+        .pad.lit { background: var(--neon); color: #000; border-bottom: 0; transform: translateY(3px); box-shadow: 0 0 30px var(--neon); }
 
-        /* --- 黑胶慢轮 --- */
-        .vinyl-wrap { width: 420px; height: 420px; border-radius: 50%; background: #050505; display: flex; align-items: center; justify-content: center; cursor: grab; position: relative; }
-        .vinyl-wrap:active { cursor: grabbing; }
-        .vinyl-disk { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%); border: 12px solid #080808; position: relative; pointer-events: none; }
+        /* 黑胶慢轮 */
+        .vinyl-wrap { width: 380px; height: 380px; border-radius: 50%; background: #050505; display: flex; align-items: center; justify-content: center; cursor: grab; position: relative; touch-action: none; }
+        .vinyl-disk { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%); border: 10px solid #080808; position: relative; pointer-events: none; }
         .vinyl-disk::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px); }
         
-        .art-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 155px; height: 155px; border-radius: 50%; border: 8px solid #000; background: #111; z-index: 10; overflow: hidden; pointer-events: none; }
+        .art-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border-radius: 50%; border: 6px solid #000; background: #111; z-index: 10; overflow: hidden; pointer-events: none; }
         #cover-art { width: 100%; height: 100%; background-size: cover; background-position: center; }
 
-        /* 动画控制 */
+        /* 动画 */
         .is-playing .vinyl-disk { animation: rotate-v 6s linear infinite; }
         .is-playing .art-center { animation: rotate-a 6s linear infinite; }
         @keyframes rotate-v { to { transform: rotate(360deg); } }
         @keyframes rotate-a { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-        /* 其它 */
-        .lcd-main { background: var(--lcd); border-radius: 4px; padding: 20px; font-family: 'Share Tech Mono', monospace; box-shadow: inset 0 0 50px #000; border: 2px solid #000; }
+        .lcd-main { background: #050a05; border-radius: 4px; padding: 15px; font-family: 'Share Tech Mono', monospace; box-shadow: inset 0 0 50px #000; border: 2px solid #000; }
         .boot-overlay { position: fixed; inset: 0; z-index: 1000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="is-paused">
 
     <div id="boot-overlay" class="boot-overlay">
-        <div class="text-[10px] tracking-[1.5em] text-cyan-900 mb-10 font-black">VOID TACTILE SYSTEM MK-VI</div>
-        <button onclick="bootSystem()" class="px-10 py-4 border border-cyan-500 text-cyan-500 font-black hover:bg-cyan-500/10 transition">INITIATE DECK</button>
+        <div class="text-[10px] tracking-[1.2em] text-cyan-900 mb-10 font-black">VOID HYBRID SYSTEM MK-VI</div>
+        <button onclick="bootSystem()" class="px-10 py-4 border border-cyan-500 text-cyan-500 font-black hover:bg-cyan-500/10 transition">INITIALIZE SYSTEM</button>
     </div>
 
     <main id="main-app" class="dj-system opacity-0 transition-opacity duration-1000">
         
         <!-- DECK SECTION -->
-        <section class="module p-8">
+        <section class="module deck-section p-6 lg:p-10">
             <div class="lcd-main">
-                <div class="flex justify-between text-[10px] opacity-30 mb-2"><span>STUDIO ENGINE</span><span>DECK A</span></div>
-                <div id="title" class="text-3xl font-bold tracking-tighter text-cyan-400 truncate">READY TO LOAD</div>
-                <div class="flex justify-between mt-8">
-                    <div class="text-5xl font-black italic" id="cur-time">00:00:00</div>
-                    <div class="text-right text-[10px] text-cyan-700">
-                        BPM: 128.00<br>KEY: 4A
-                    </div>
+                <div class="flex justify-between text-[9px] opacity-30 mb-2 uppercase"><span>Studio Engine v2</span><span>Deck A</span></div>
+                <div id="title" class="text-2xl lg:text-3xl font-bold tracking-tighter text-cyan-400 truncate">READY</div>
+                <div class="flex justify-between mt-6">
+                    <div class="text-4xl font-black italic" id="cur-time">00:00:00</div>
+                    <div class="text-right text-[10px] text-cyan-800">BPM: 128.00</div>
                 </div>
             </div>
 
-            <div class="jog-container flex-1 flex items-center justify-center">
+            <div class="flex-1 flex items-center justify-center my-6">
                 <div class="vinyl-wrap" id="jog-wrap">
                     <div class="vinyl-disk" id="vinyl-visual"></div>
                     <div class="art-center">
                         <div id="cover-art"></div>
-                        <span id="cover-emoji" class="absolute inset-0 flex items-center justify-center text-6xl">💿</span>
+                        <span id="cover-emoji" class="absolute inset-0 flex items-center justify-center text-5xl">💿</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex justify-between items-center">
-                <button onclick="playToggle()" class="w-24 h-24 bg-black border border-white/10 rounded-full flex items-center justify-center hover:border-cyan-500 transition">
-                    <div id="play-icon" class="w-0 h-0 border-y-[15px] border-y-transparent border-l-[25px] border-l-white ml-2"></div>
+                <button onclick="playToggle()" class="w-20 h-20 bg-black border border-white/10 rounded-full flex items-center justify-center shadow-xl">
+                    <div id="play-icon" class="w-0 h-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-1"></div>
                 </button>
                 <div class="flex flex-col items-end gap-2">
-                    <span class="text-[9px] opacity-20 font-black">PITCH CONTROL</span>
-                    <div class="fader-track h-32 w-10">
-                        <div class="fader-handle w-12 h-6 left-[-4px] bottom-[50%]"></div>
+                    <div class="fader-track h-24 w-8">
+                        <div class="fader-handle w-10 h-6 left-[-6px] bottom-[50%]"></div>
                     </div>
+                    <span class="text-[8px] opacity-20 font-black uppercase">Pitch</span>
                 </div>
             </div>
         </section>
 
         <!-- MIXER SECTION -->
-        <section class="module p-6 flex flex-col items-center">
+        <section class="module mixer-section p-6 flex flex-col items-center justify-center">
             <div class="knob-container" data-type="knob">
                 <div class="knob-physical"></div>
-                <span class="knob-label">Gain</span>
+                <span class="text-[8px] font-bold opacity-30 mt-1 uppercase">Gain</span>
             </div>
             <div class="knob-container" data-type="knob">
                 <div class="knob-physical" style="transform: rotate(45deg);"></div>
-                <span class="knob-label">High</span>
+                <span class="text-[8px] font-bold opacity-30 mt-1 uppercase">High</span>
             </div>
             <div class="knob-container" data-type="knob">
-                <div class="knob-physical" style="transform: rotate(-30deg);"></div>
-                <span class="knob-label">Mid</span>
-            </div>
-            <div class="knob-container" data-type="knob">
-                <div class="knob-physical"></div>
-                <span class="knob-label">Low</span>
+                <div class="knob-physical" style="transform: rotate(-20deg);"></div>
+                <span class="text-[8px] font-bold opacity-30 mt-1 uppercase">Low</span>
             </div>
 
             <div class="fader-track mt-4" data-type="fader">
                 <div class="fader-handle"></div>
             </div>
-            <span class="text-[9px] font-black opacity-20 mt-2 uppercase">Ch-1 Fader</span>
+            <span class="text-[8px] font-black opacity-20 mt-2 uppercase">Master Fader</span>
         </section>
 
         <!-- CRATE SECTION -->
-        <aside class="module flex flex-col">
+        <aside class="module crate-section flex flex-col">
             <div class="grid grid-cols-4 gap-2 p-4">
                 <div class="pad" onclick="flashPad(this)">CUE 1</div>
                 <div class="pad" onclick="flashPad(this)">CUE 2</div>
                 <div class="pad" onclick="flashPad(this)">LOOP</div>
-                <div class="pad" onclick="flashPad(this)">SLICER</div>
-                <div class="pad" onclick="flashPad(this)">ROLL</div>
-                <div class="pad" onclick="flashPad(this)">SYNC</div>
-                <div class="pad" onclick="flashPad(this)">FLANGER</div>
-                <div class="pad" onclick="flashPad(this)">ECHO</div>
+                <div class="pad" onclick="flashPad(this)">FX</div>
             </div>
 
             <div class="p-4 bg-black/40 border-y border-white/5">
-                <div id="playlist-nav" class="flex gap-2 overflow-x-auto no-scrollbar mb-4"></div>
-                <input type="text" id="q" oninput="doSearch()" placeholder="BROWSE CRATE..." class="w-full bg-black border border-white/10 p-3 text-[10px] outline-none focus:border-cyan-500/50">
+                <div id="playlist-nav" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 pb-1"></div>
+                <input type="text" id="q" oninput="doSearch()" placeholder="FIND TRACK..." class="w-full bg-black border border-white/10 p-3 text-[10px] outline-none focus:border-cyan-500/50">
             </div>
 
             <div class="flex-1 overflow-y-auto"><ul id="list"></ul></div>
-
-            <div class="p-4"><p id="ai-text" class="text-[9px] text-cyan-600/50 font-mono italic">SIGNAL STABLE...</p></div>
+            <div class="p-4"><p id="ai-text" class="text-[8px] text-cyan-600/50 font-mono italic uppercase">Broadcast Active</p></div>
         </aside>
 
     </main>
@@ -182,76 +199,63 @@
         let filteredTracks = [], curIdx = 0;
         const audio = document.getElementById('player');
 
-        // --- 核心交互逻辑 ---
+        // --- 触屏与交互逻辑核心 ---
         
-        // 1. 旋钮交互 (垂直拖动旋转)
-        document.querySelectorAll('.knob-container').forEach(knob => {
-            let isDragging = false;
-            let startY = 0;
-            let currentRotation = 0;
+        function handleInteraction(elements, type, callback) {
+            elements.forEach(el => {
+                let isMoving = false;
+                let startPos = 0;
 
-            knob.addEventListener('mousedown', e => {
-                isDragging = true;
-                startY = e.clientY;
-                currentRotation = parseInt(knob.querySelector('.knob-physical').style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
+                const start = (e) => {
+                    isMoving = true;
+                    startPos = e.clientY || e.touches[0].clientY;
+                    e.preventDefault();
+                };
+
+                const move = (e) => {
+                    if (!isMoving) return;
+                    let currentPos = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+                    let delta = startPos - currentPos;
+                    callback(el, delta, currentPos);
+                    // 如果是推子，持续更新基准点
+                    if (type === 'fader') startPos = currentPos; 
+                };
+
+                const end = () => isMoving = false;
+
+                el.addEventListener('mousedown', start);
+                el.addEventListener('touchstart', start, {passive: false});
+                window.addEventListener('mousemove', move);
+                window.addEventListener('touchmove', move, {passive: false});
+                window.addEventListener('mouseup', end);
+                window.addEventListener('touchend', end);
             });
-
-            window.addEventListener('mousemove', e => {
-                if (!isDragging) return;
-                let deltaY = startY - e.clientY;
-                let newRotation = currentRotation + deltaY;
-                // 限制旋转范围 -150到150度
-                newRotation = Math.max(-150, Math.min(150, newRotation));
-                knob.querySelector('.knob-physical').style.transform = `rotate(${newRotation}deg)`;
-            });
-
-            window.addEventListener('mouseup', () => isDragging = false);
-        });
-
-        // 2. 推子交互 (垂直拖动)
-        document.querySelectorAll('.fader-track').forEach(track => {
-            let isDragging = false;
-            const handle = track.querySelector('.fader-handle');
-
-            track.addEventListener('mousedown', e => { isDragging = true; updateFader(e); });
-            window.addEventListener('mousemove', e => { if (isDragging) updateFader(e); });
-            window.addEventListener('mouseup', () => isDragging = false);
-
-            function updateFader(e) {
-                const rect = track.getBoundingClientRect();
-                let y = e.clientY - rect.top;
-                let percent = 1 - (y / rect.height);
-                percent = Math.max(0, Math.min(1, percent));
-                handle.style.bottom = (percent * 100) + '%';
-                handle.style.transform = 'translateY(50%)'; // 居中修正
-            }
-        });
-
-        // 3. 搓盘模拟 (Jog Scratch)
-        const jogWrap = document.getElementById('jog-wrap');
-        const vinylVisual = document.getElementById('vinyl-visual');
-        let isScratching = false;
-        let lastAngle = 0;
-
-        jogWrap.addEventListener('mousedown', e => { isScratching = true; audio.playbackRate = 0.5; });
-        window.addEventListener('mouseup', () => { isScratching = false; audio.playbackRate = 1; });
-        window.addEventListener('mousemove', e => {
-            if (!isScratching) return;
-            const rect = jogWrap.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
-            vinylVisual.style.transform = `rotate(${angle}deg)`;
-            document.querySelector('.art-center').style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
-        });
-
-        // 4. 打击垫点亮
-        function flashPad(el) {
-            el.classList.add('lit');
-            setTimeout(() => el.classList.remove('lit'), 150);
         }
 
-        // --- 播放器原有逻辑 ---
+        // 旋钮旋转逻辑
+        handleInteraction(document.querySelectorAll('.knob-container'), 'knob', (el, delta) => {
+            const knob = el.querySelector('.knob-physical');
+            let currentRotation = parseInt(knob.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
+            let newRot = Math.max(-150, Math.min(150, currentRotation + delta));
+            knob.style.transform = `rotate(${newRot}deg)`;
+        });
+
+        // 推子滑动逻辑
+        handleInteraction(document.querySelectorAll('.fader-track'), 'fader', (el, delta, currentY) => {
+            const handle = el.querySelector('.fader-handle');
+            const rect = el.getBoundingClientRect();
+            let percent = 1 - ((currentY - rect.top) / rect.height);
+            percent = Math.max(0, Math.min(1, percent));
+            handle.style.bottom = (percent * 100) + '%';
+        });
+
+        // 打击垫反馈
+        function flashPad(el) {
+            el.classList.add('lit');
+            setTimeout(() => el.classList.remove('lit'), 100);
+        }
+
+        // --- 播放引擎逻辑 ---
 
         function bootSystem() {
             document.getElementById('boot-overlay').style.opacity = '0';
