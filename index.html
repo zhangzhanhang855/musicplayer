@@ -3,319 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VOID DJ-SYSTEM | MK-7</title>
+    <title>VOID PRO-AUDIO | REFERENCE DECK</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-    <!-- 引入硬核科技感字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --panel-bg: #121212;
-            --metal-finish: linear-gradient(145deg, #1e1e1e, #111);
-            --neon-blue: #00f2ff;
-            --neon-green: #39ff14;
-            --lcd-bg: #0a110a;
-            --carbon: repeating-linear-gradient(45deg, #111 0px, #111 2px, #1a1a1a 2px, #1a1a1a 4px);
+            --panel-bg: #0d0d0d;
+            --accent: #00f2ff;
+            --warning: #ff3c00;
+            --metal-gradient: linear-gradient(180deg, #222 0%, #111 100%);
+            --lcd-glow: 0 0 15px rgba(0, 242, 255, 0.3);
         }
 
         body {
-            background-color: #080808;
+            background-color: #050505;
             color: #e0e0e0;
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Inter', sans-serif;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            background-image: var(--carbon);
+            /* 碳纤维纹理 */
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(20,20,20,1) 0%, rgba(5,5,5,1) 100%),
+                repeating-linear-gradient(45deg, #0a0a0a 0px, #0a0a0a 1px, transparent 1px, transparent 2px);
         }
 
-        /* --- DJ 整体面板 --- */
-        .dj-console {
-            width: 98vw;
-            max-width: 1300px;
-            height: 850px;
-            background: #1a1a1a;
-            border: 4px solid #2a2a2a;
-            border-radius: 20px;
-            display: flex;
-            padding: 20px;
-            box-shadow: 0 0 50px rgba(0,0,0,1), inset 0 0 20px rgba(255,255,255,0.05);
-            position: relative;
+        /* --- 工业级外壳 --- */
+        .pro-console {
+            width: 96vw;
+            height: 860px;
+            background: #151515;
+            border: 6px solid #222;
+            border-radius: 12px;
+            display: grid;
+            grid-template-columns: 1fr 320px 420px;
+            padding: 10px;
+            gap: 10px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.5);
         }
 
-        /* --- 左侧：打碟机 Deck --- */
-        .deck-section {
-            flex: 2;
-            background: var(--metal-finish);
-            border-radius: 15px;
-            border: 2px solid #000;
-            margin-right: 20px;
+        /* --- DECK 部分 (左) --- */
+        .deck-core {
+            background: var(--metal-gradient);
+            border-radius: 8px;
             padding: 30px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             position: relative;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
-        }
-
-        /* 机械慢轮 Jog Wheel */
-        .jog-wheel {
-            width: 380px;
-            height: 380px;
-            border-radius: 50%;
-            background: conic-gradient(#111 0%, #222 5%, #111 10%, #222 15%, #111 20%);
-            border: 12px solid #000;
-            position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            cursor: pointer;
-            transition: transform 0.1s linear;
-        }
-
-        .jog-wheel::before {
-            content: '';
-            position: absolute;
-            inset: 10px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,242,0,0.1); /* 频闪刻度 */
-            background: repeating-conic-gradient(from 0deg, transparent 0deg 2deg, #000 2deg 4deg);
-        }
-
-        .jog-center {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 140px; height: 140px;
-            background: #000;
-            border-radius: 50%;
-            border: 4px solid var(--neon-blue);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 5;
-            background-size: cover;
-            box-shadow: 0 0 20px var(--neon-blue);
-        }
-
-        /* 旋转动画 */
-        .is-playing .jog-wheel {
-            animation: rotate-jog 4s linear infinite;
-        }
-
-        @keyframes rotate-jog {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* LCD 显示屏 */
-        .lcd-screen {
-            width: 100%;
-            background: var(--lcd-bg);
-            border: 3px solid #333;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 30px;
-            font-family: 'Share Tech Mono', monospace;
-            color: var(--neon-green);
-            text-shadow: 0 0 5px var(--neon-green);
-            box-shadow: inset 0 0 10px #000;
-        }
-
-        /* --- 按钮与推子 --- */
-        .fader-group {
-            position: absolute;
-            right: 40px; top: 150px;
-            height: 300px; width: 40px;
-            background: #000; border-radius: 5px;
-        }
-        .fader-knob {
-            width: 50px; height: 20px;
-            background: #444; border: 2px solid #666;
-            position: absolute; left: -5px; bottom: 50%;
-            border-radius: 3px; cursor: ns-resize;
-        }
-
-        .pad-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 40px;
-        }
-        .pad {
-            width: 65px; height: 50px;
-            background: #222;
-            border-radius: 4px;
-            border-bottom: 3px solid #000;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .pad.active { background: var(--neon-blue); box-shadow: 0 0 15px var(--neon-blue); transform: translateY(2px); }
-
-        /* --- 右侧：曲库 Crate --- */
-        .crate-section {
-            flex: 1.2;
-            background: #151515;
-            border-radius: 15px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
             border: 1px solid #333;
         }
 
+        /* LCD 仪表盘 */
+        .lcd-display {
+            background: #050a05;
+            border: 2px solid #222;
+            border-radius: 4px;
+            padding: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--accent);
+            box-shadow: inset 0 0 20px #000;
+            margin-bottom: 20px;
+        }
+
+        /* 模拟波形图 */
+        .waveform-view {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin: 15px 0;
+            opacity: 0.8;
+        }
+        .wave-bar {
+            flex: 1;
+            background: var(--accent);
+            height: 20%;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        /* 慢轮 Jog Wheel */
+        .jog-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .jog-wheel {
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #222 0%, #111 70%, #000 100%);
+            border: 10px solid #080808;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            position: relative;
+            transition: transform 0.1s linear;
+        }
+        /* 黑胶纹理 */
+        .jog-wheel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.03) 3px);
+        }
+        .is-playing .jog-wheel { animation: rotate-jog 4s linear infinite; }
+        @keyframes rotate-jog { to { transform: rotate(360deg); } }
+
+        /* --- MIXER 部分 (中) --- */
+        .mixer-section {
+            background: #111;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid #222;
+        }
+        .eq-knob {
+            width: 50px; height: 50px;
+            background: radial-gradient(circle, #444, #222);
+            border-radius: 50%;
+            margin-bottom: 20px;
+            position: relative;
+            border: 2px solid #000;
+        }
+        .eq-knob::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 50%; width: 3px; height: 12px;
+            background: var(--warning); transform: translateX(-50%);
+        }
+        .fader-slot {
+            width: 12px; height: 250px;
+            background: #000;
+            border-radius: 6px;
+            position: relative;
+            margin: 40px 0;
+        }
+        .fader-handle {
+            width: 40px; height: 60px;
+            background: linear-gradient(90deg, #333, #555, #333);
+            border-radius: 4px;
+            position: absolute;
+            left: -14px; bottom: 70%;
+            cursor: pointer;
+            border: 1px solid #000;
+        }
+
+        /* --- CRATE 部分 (右) --- */
+        .crate-section {
+            background: #0f0f0f;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #222;
+            overflow: hidden;
+        }
         .track-list {
             flex: 1;
             overflow-y: auto;
-            margin-top: 20px;
         }
         .track-item {
-            padding: 12px 15px;
-            margin-bottom: 5px;
-            background: rgba(255,255,255,0.03);
+            padding: 15px 20px;
+            border-bottom: 1px solid #1a1a1a;
             font-family: 'Share Tech Mono', monospace;
             font-size: 13px;
             cursor: pointer;
-            border-left: 3px solid transparent;
+            transition: 0.2s;
         }
-        .track-item:hover { background: rgba(255,255,255,0.1); }
-        .track-item.active {
-            border-left-color: var(--neon-blue);
-            background: rgba(0, 242, 255, 0.1);
-            color: var(--neon-blue);
-        }
+        .track-item:hover { background: #1a1a1a; }
+        .track-item.active { background: #003333; color: var(--accent); border-left: 4px solid var(--accent); }
 
-        /* 登录遮罩 */
-        .auth-mask {
-            position: fixed; inset: 0; z-index: 1000;
-            background: #000; display: flex; align-items: center; justify-content: center;
-            transition: 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+        /* 电平表 VU Meter */
+        .vu-meter {
+            display: flex; gap: 3px; height: 100px; padding: 10px; background: #000;
         }
-        .power-btn {
-            width: 120px; height: 120px;
-            border-radius: 50%; border: 4px solid #333;
-            color: #333; font-size: 40px;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s;
-        }
-        .power-btn:hover { color: var(--neon-red); border-color: #ff3131; text-shadow: 0 0 20px #ff3131; }
+        .vu-bar { flex: 1; display: flex; flex-direction: column-reverse; gap: 2px; }
+        .vu-dot { height: 4px; width: 100%; background: #1a1a1a; }
+        .vu-dot.active-green { background: var(--neon-green); }
+        .vu-dot.active-cyan { background: var(--accent); }
 
-        /* 隐藏滚动条 */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* 系统启动屏 */
+        .boot-screen {
+            position: fixed; inset: 0; z-index: 100;
+            background: #000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: 0.8s cubic-bezier(0.8, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body class="is-paused">
 
-    <!-- 启动电源键 -->
-    <div id="login-screen" class="auth-mask">
-        <div class="text-center">
-            <div class="power-btn" onclick="bootSystem()">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <div id="login-screen" class="boot-screen">
+        <div class="text-[10px] font-mono text-cyan-900 mb-10 tracking-[1em]">SYSTEM INITIALIZING</div>
+        <button onclick="bootSystem()" class="group relative">
+            <div class="absolute -inset-4 bg-cyan-500/20 rounded-full blur-xl group-hover:bg-cyan-500/40 transition"></div>
+            <div class="relative w-24 h-24 border-2 border-cyan-500 rounded-full flex items-center justify-center text-cyan-500 group-hover:scale-110 transition">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
-            <p class="mt-6 tracking-[0.5em] text-xs opacity-30">SYSTEM STANDBY</p>
-            <input type="password" id="pwd-input" placeholder="PASSCODE" class="mt-8 bg-transparent border-b border-white/10 text-center outline-none p-2 tracking-widest hidden">
-        </div>
+        </button>
+        <input type="password" id="pwd-input" class="hidden">
     </div>
 
-    <!-- DJ 核心台面 -->
-    <div id="main-app" class="dj-console opacity-0 transition-opacity duration-1000">
+    <main id="main-app" class="pro-console opacity-0 transition-opacity duration-1000">
         
-        <!-- Deck A -->
-        <section class="deck-section">
-            <div class="lcd-screen">
-                <div class="flex justify-between text-[10px] mb-1">
-                    <span>DECK A | MASTER</span>
-                    <span id="track-type">24BIT / 48kHz</span>
+        <!-- DECK A -->
+        <section class="deck-core">
+            <div class="lcd-display">
+                <div class="flex justify-between text-[9px] opacity-50 mb-2">
+                    <span>MQA / REF 192kHz</span>
+                    <span id="track-type">MASTER</span>
                 </div>
-                <div class="text-xl truncate" id="title">WAITING FOR LOAD...</div>
-                <div class="text-[10px] opacity-60 uppercase" id="artist-name">ENGINE v2.5</div>
-                <div class="mt-4 flex justify-between font-bold text-lg">
-                    <span id="cur-time">00:00:00</span>
-                    <span id="dur-time">00:00:00</span>
+                <div class="text-2xl truncate mb-1" id="title">NO TRACK LOADED</div>
+                <div class="text-[10px] opacity-40 mb-4" id="artist-name">DECK READY</div>
+                
+                <div class="waveform-view" id="waveform">
+                    <!-- 波形条由JS生成 -->
+                </div>
+
+                <div class="flex justify-between font-bold text-2xl mt-2 tracking-tighter">
+                    <span id="cur-time" class="text-white">00:00:00</span>
+                    <span class="text-cyan-900">|</span>
+                    <span id="dur-time" class="text-cyan-800">00:00:00</span>
                 </div>
             </div>
 
-            <div class="artwork-area relative">
-                <div id="cover-wheel" class="jog-wheel" onclick="playToggle()">
-                    <div id="jog-center" class="jog-center">
+            <div class="jog-container">
+                <div class="jog-wheel" id="jog-wheel" onclick="playToggle()">
+                    <div class="absolute inset-[30%] rounded-full bg-black border-4 border-cyan-500/20 flex items-center justify-center">
+                        <div id="cover-art" class="w-full h-full rounded-full bg-cover"></div>
                         <span id="cover-emoji" class="text-4xl">💿</span>
                     </div>
                 </div>
-                
-                <!-- 速度调节推子 -->
-                <div class="fader-group">
-                    <div class="fader-knob" id="pitch-fader"></div>
+            </div>
+
+            <div class="flex justify-between items-end mt-6">
+                <div class="flex gap-4">
+                    <button onclick="playToggle()" class="w-16 h-16 rounded bg-black border border-white/10 flex items-center justify-center hover:bg-white/5">
+                        <div id="play-btn-icon" class="w-0 h-0 border-y-[10px] border-y-transparent border-l-[16px] border-l-white"></div>
+                    </button>
+                    <button onclick="step(1)" class="px-6 rounded bg-black border border-white/10 hover:bg-white/5 text-[10px] font-bold">NEXT</button>
                 </div>
-            </div>
-
-            <!-- 打击垫功能区 -->
-            <div class="pad-grid">
-                <div class="pad active" onclick="step(-1)"></div>
-                <div class="pad" onclick="setLoop()"></div>
-                <div class="pad" onclick="dl()"></div>
-                <div class="pad active" onclick="step(1)"></div>
-            </div>
-
-            <!-- 底部控制 -->
-            <div class="mt-10 flex gap-8">
-                <button onclick="playToggle()" class="w-20 h-20 bg-black border-2 border-white/20 rounded-full flex items-center justify-center hover:border-white transition-all">
-                    <div id="play-icon" class="w-0 h-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-2"></div>
-                </button>
-                <div class="flex flex-col justify-center">
-                    <div class="text-[9px] mb-1 opacity-40">CUE POINT</div>
-                    <div class="w-12 h-6 bg-orange-600 rounded"></div>
+                <div class="text-right">
+                    <div class="text-[9px] opacity-30 mb-1 uppercase">Sync / BPM</div>
+                    <div class="text-xl font-bold italic text-cyan-400">128.00</div>
                 </div>
             </div>
         </section>
 
-        <!-- 曲库与列表 -->
-        <aside class="crate-section">
-            <div class="flex justify-between items-center px-2">
-                <h2 class="text-xs tracking-widest text-white/50">TRACK CRATE</h2>
-                <div id="folder-tag" class="text-[9px] bg-white/10 px-2 py-1 rounded">ROOT</div>
+        <!-- MIXER -->
+        <section class="mixer-section">
+            <div class="text-[9px] mb-8 opacity-20 font-bold">CHANNEL MIXER</div>
+            
+            <div class="eq-knob"></div>
+            <div class="text-[8px] mb-4 opacity-40">HI</div>
+            <div class="eq-knob"></div>
+            <div class="text-[8px] mb-4 opacity-40">MID</div>
+            <div class="eq-knob"></div>
+            <div class="text-[8px] mb-4 opacity-40">LOW</div>
+
+            <div class="fader-slot">
+                <div class="fader-handle"></div>
             </div>
 
-            <div id="playlist-nav" class="flex gap-2 mt-4 overflow-x-auto no-scrollbar py-2"></div>
+            <div class="vu-meter" id="vu-meter">
+                <!-- VU表由JS生成 -->
+            </div>
+        </section>
 
-            <div class="mt-4">
-                <input type="text" id="q" oninput="doSearch()" placeholder="FILTER TRACKS..." class="w-full bg-black/40 border border-white/5 py-2 px-4 text-[10px] outline-none focus:border-cyan-500">
+        <!-- 曲库 -->
+        <aside class="crate-section">
+            <div class="p-6 bg-black/40">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-[10px] font-bold tracking-[0.3em] opacity-40 uppercase">Crate Browser</h2>
+                    <span id="folder-name" class="text-[9px] bg-cyan-900/30 px-2 py-1 rounded text-cyan-400">ROOT</span>
+                </div>
+                <div id="playlist-nav" class="flex gap-2 overflow-x-auto no-scrollbar pb-2"></div>
+                <input type="text" id="q" oninput="doSearch()" placeholder="FILTER TRACKS..." class="w-full bg-black border border-white/10 p-3 mt-2 text-[10px] outline-none focus:border-cyan-500/50">
             </div>
 
             <ul id="list" class="track-list no-scrollbar"></ul>
 
-            <div class="pt-4 mt-auto">
-                <p id="ai-text" class="text-[10px] text-cyan-500/60 font-mono italic">SYSTEM ONLINE...</p>
+            <div class="p-6 border-t border-white/5">
+                <p id="ai-text" class="text-[9px] text-cyan-600/50 font-mono italic leading-relaxed">READY TO BROADCAST...</p>
             </div>
         </aside>
 
-    </div>
+    </main>
 
     <audio id="player" crossorigin="anonymous"></audio>
 
     <script>
         const G = { user: 'zhangzhanhang855', repo: 'musiconly', ver: 'main' };
         let playlists = {}; 
-        let currentPlaylistName = "";
         let filtered = [], curIdx = 0, isPlaying = false;
         
         const audio = document.getElementById('player');
-        const mainApp = document.getElementById('main-app');
 
-        // 启动系统
+        // 初始化背景与VU表
+        (function initVisuals() {
+            const wave = document.getElementById('waveform');
+            for(let i=0; i<40; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                wave.appendChild(bar);
+            }
+            const vu = document.getElementById('vu-meter');
+            for(let i=0; i<2; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'vu-bar';
+                for(let j=0; j<15; j++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'vu-dot';
+                    bar.appendChild(dot);
+                }
+                vu.appendChild(bar);
+            }
+        })();
+
         function bootSystem() {
-            // 这里可以加密码判断，直接进入则去掉判断
+            document.getElementById('login-screen').style.transform = 'scale(2)';
             document.getElementById('login-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('login-screen').style.display = 'none';
-                mainApp.style.opacity = '1';
-                init();
+                document.getElementById('main-app').style.opacity = '1';
+                loadData();
             }, 800);
         }
 
-        async function init() {
+        async function loadData() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
                 const items = await res.json();
                 
-                // 扫描音乐
                 const rootSongs = filterSongs(items);
                 if (rootSongs.length > 0) playlists["Root"] = rootSongs;
 
@@ -329,7 +356,7 @@
                 renderNav();
                 switchPlaylist(Object.keys(playlists)[0]);
             } catch (e) {
-                document.getElementById('title').innerText = "CONNECTION ERROR";
+                document.getElementById('title').innerText = "IO ERROR: CHECK API";
             }
         }
 
@@ -337,23 +364,22 @@
             return items.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
                 t: f.name.replace(/\.[^/.]+$/, ""),
                 u: f.download_url,
-                type: f.size > 15000000 ? 'HI-RES' : 'PCM'
+                type: f.size > 20000000 ? '96k/24b' : '44k/16b'
             }));
         }
 
         function renderNav() {
             const nav = document.getElementById('playlist-nav');
             nav.innerHTML = Object.keys(playlists).map(name => `
-                <button onclick="switchPlaylist('${name}')" class="text-[9px] px-3 py-1 bg-white/5 whitespace-nowrap hover:bg-white/20">
-                    ${name.toUpperCase()}
+                <button onclick="switchPlaylist('${name}')" class="text-[9px] px-3 py-1 border border-white/5 whitespace-nowrap hover:bg-white/10 uppercase">
+                    ${name}
                 </button>
             `).join('');
         }
 
         function switchPlaylist(name) {
-            currentPlaylistName = name;
             filtered = [...playlists[name]];
-            document.getElementById('folder-tag').innerText = name.toUpperCase();
+            document.getElementById('folder-name').innerText = name;
             renderList();
             executeLoad(0, false);
         }
@@ -362,7 +388,7 @@
             const listEl = document.getElementById('list');
             listEl.innerHTML = filtered.map((s, i) => `
                 <li class="track-item ${curIdx === i ? 'active' : ''}" onclick="executeLoad(${i}, true)">
-                    ${String(i+1).padStart(2,'0')} | ${s.t}
+                    ${String(i+1).padStart(2,'0')} > ${s.t}
                 </li>
             `).join('');
         }
@@ -375,9 +401,10 @@
             document.getElementById('track-type').innerText = song.type;
             
             // 封面处理
-            const center = document.getElementById('jog-center');
-            center.style.backgroundImage = 'none';
-            document.getElementById('cover-emoji').style.display = 'block';
+            const art = document.getElementById('cover-art');
+            const emj = document.getElementById('cover-emoji');
+            art.style.backgroundImage = 'none';
+            emj.style.display = 'block';
 
             new jsmediatags.Reader(song.u).read({
                 onSuccess: (tag) => {
@@ -385,8 +412,8 @@
                     if (p) {
                         let b64 = "";
                         for (let i = 0; i < p.data.length; i++) b64 += String.fromCharCode(p.data[i]);
-                        center.style.backgroundImage = `url(data:${p.format};base64,${window.btoa(b64)})`;
-                        document.getElementById('cover-emoji').style.display = 'none';
+                        art.style.backgroundImage = `url(data:${p.format};base64,${window.btoa(b64)})`;
+                        emj.style.display = 'none';
                     }
                 }
             });
@@ -401,20 +428,27 @@
 
         audio.onplay = () => {
             document.body.classList.replace('is-paused', 'is-playing');
-            document.getElementById('play-icon').style.borderLeftColor = "#39ff14";
-            document.getElementById('ai-text').innerText = "TRACK ANALYZED | DECK RUNNING";
+            document.getElementById('play-btn-icon').style.borderLeftColor = "#00f2ff";
         };
 
         audio.onpause = () => {
             document.body.classList.replace('is-playing', 'is-paused');
-            document.getElementById('play-icon').style.borderLeftColor = "#fff";
+            document.getElementById('play-btn-icon').style.borderLeftColor = "#fff";
         };
 
         audio.ontimeupdate = () => {
             document.getElementById('cur-time').innerText = fmt(audio.currentTime);
             document.getElementById('dur-time').innerText = fmt(audio.duration);
-            // 模拟推子随机微动
-            if(isPlaying) document.getElementById('pitch-fader').style.bottom = (50 + Math.random()*2) + '%';
+            
+            // 模拟波形与VU表跳动
+            if(!audio.paused) {
+                document.querySelectorAll('.wave-bar').forEach(bar => {
+                    bar.style.height = (20 + Math.random() * 60) + '%';
+                });
+                document.querySelectorAll('.vu-dot').forEach((dot, idx) => {
+                    dot.className = (idx % 15 < Math.random() * 12) ? 'vu-dot active-cyan' : 'vu-dot';
+                });
+            }
         };
 
         function fmt(s) {
@@ -434,8 +468,6 @@
         }
 
         function dl() { window.open(filtered[curIdx].u); }
-        function setLoop() { alert("LOOP MODE: AUTO-SYNC"); }
-        function addMusic() { window.location.href = `mailto:zhangzhanhang855@gmail.com`; }
     </script>
 </body>
 </html>
