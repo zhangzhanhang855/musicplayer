@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VOID DJ MK-II | REFERENCE STUDIO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOID DJ MK-III | STUDIO REFERENCE</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -11,11 +11,9 @@
     
     <style>
         :root {
-            --panel-black: #0a0a0a;
-            --metal-grey: #1a1a1a;
-            --neon-cyan: #00f2ff;
-            --warning-red: #ff3c00;
-            --lcd-green: #10b981;
+            --neon: #00f2ff;
+            --lcd-bg: #050a05;
+            --panel-border: #222;
         }
 
         body {
@@ -24,58 +22,80 @@
             font-family: 'Inter', sans-serif;
             height: 100vh;
             display: flex; align-items: center; justify-content: center;
-            overflow: hidden; /* 禁止页面级滚动，防止切歌抖动 */
+            overflow: hidden; /* 严禁页面滚动，确保UI稳定 */
         }
 
-        /* 工业级拉丝背景 */
-        .console-frame {
+        /* --- 主架构：锁定宽度防止位移 --- */
+        .dj-system {
             width: 96vw;
             max-width: 1400px;
             height: 850px;
             background: #111;
-            border: 8px solid #222;
-            border-radius: 16px;
-            display: grid;
-            grid-template-columns: 1fr 280px 400px;
-            gap: 15px;
+            border: 8px solid #1a1a1a;
+            border-radius: 12px;
+            display: flex; /* 使用Flex布局 */
             padding: 15px;
-            box-shadow: 0 50px 100px rgba(0,0,0,0.9), inset 0 0 50px rgba(255,255,255,0.02);
+            gap: 15px;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
             box-sizing: border-box;
         }
 
-        /* --- DECK A: 核心盘面区 --- */
-        .deck {
+        /* 左：Deck 区域 (固定比例) */
+        .deck-section {
+            flex: 1.5; 
+            min-width: 0; /* 极其重要：防止子元素撑开flex */
             background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%);
-            border-radius: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
             padding: 30px;
             display: flex; flex-direction: column;
             position: relative;
-            border: 1px solid #2a2a2a;
+        }
+
+        /* 中：Mixer 区域 (固定宽度) */
+        .mixer-section {
+            width: 240px; 
+            flex-shrink: 0; 
+            background: #0a0a0a;
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px 0;
+        }
+
+        /* 右：Crate 区域 (固定比例) */
+        .crate-section {
+            flex: 1;
+            min-width: 0;
+            background: #0f0f0f;
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
+            display: flex; flex-direction: column;
             overflow: hidden;
         }
 
-        /* LCD 模拟显示屏 */
-        .lcd-panel {
-            background: #020502;
+        /* --- 液晶显示屏 --- */
+        .lcd-display {
+            background: var(--lcd-bg);
             border: 3px solid #000;
-            border-radius: 6px;
+            border-radius: 4px;
             padding: 20px;
             font-family: 'Share Tech Mono', monospace;
             box-shadow: inset 0 0 30px #000;
             margin-bottom: 25px;
         }
 
-        .lcd-title {
+        .track-title {
             font-size: 1.8rem;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+            color: var(--neon);
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.4);
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* 防止文字过长撑开容器 */
+            text-overflow: ellipsis; /* 歌名过长自动省略，不撑开界面 */
         }
 
-        /* 黑胶慢轮容器：确保绝对居中 */
-        .jog-container {
+        /* --- 黑胶慢轮组件：解决不居中问题 --- */
+        .jog-wheel-container {
             flex: 1;
             display: flex;
             align-items: center;
@@ -83,85 +103,66 @@
             position: relative;
         }
 
-        .jog-wheel {
+        .vinyl-record {
             width: 380px; height: 380px;
             border-radius: 50%;
-            background: radial-gradient(circle, #222 0%, #111 40%, #050505 100%);
-            border: 12px solid #000;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            background: radial-gradient(circle, #222 0%, #111 50%, #000 100%);
+            border: 10px solid #080808;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
             position: relative;
             z-index: 1;
         }
 
-        /* 唱盘螺纹纹理 */
-        .jog-wheel::after {
+        /* 唱片螺纹 */
+        .vinyl-record::after {
             content: '';
             position: absolute; inset: 0;
             border-radius: 50%;
-            background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.03) 3px);
+            background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px);
             pointer-events: none;
         }
 
-        /* 核心 CD/封面：强制几何中心对齐 */
-        .jog-art-wrapper {
+        /* 封面容器：绝对几何中心定位 */
+        .artwork-core {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%); /* 核心对齐逻辑 */
             width: 140px; height: 140px;
             border-radius: 50%;
-            border: 6px solid #000;
-            overflow: hidden;
+            border: 5px solid #000;
             background: #111;
             z-index: 10;
+            overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
 
-        .jog-art-wrapper img, #cover-art {
+        .artwork-core img, .artwork-core div {
             width: 100%; height: 100%;
             object-fit: cover;
         }
 
-        /* 唱片中间的小孔（专业感） */
-        .spindle-hole {
-            position: absolute;
-            width: 12px; height: 12px;
-            background: #222;
-            border-radius: 50%;
-            z-index: 20;
-            border: 2px solid #555;
-            box-shadow: inset 0 0 4px #000;
+        /* 旋转逻辑 */
+        .is-playing .vinyl-record {
+            animation: rotate-vinyl 8s linear infinite;
+        }
+        .is-playing .artwork-core {
+            /* 旋转时必须保持 translate 偏移 */
+            animation: rotate-artwork 8s linear infinite;
         }
 
-        /* 旋转动画 */
-        .is-playing .jog-wheel, .is-playing .jog-art-wrapper {
-            animation: rotate-deck 6s linear infinite;
+        @keyframes rotate-vinyl { to { transform: rotate(360deg); } }
+        @keyframes rotate-artwork { 
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
         }
-        @keyframes rotate-deck { to { transform: translate(-50%, -50%) rotate(360deg); } }
-        /* 注意：wrapper旋转需要保持 translate(-50%, -50%) 否则会跑偏 */
-        @keyframes rotate-jog { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .is-playing .jog-wheel { animation: rotate-jog 6s linear infinite; }
 
-        /* --- 按钮美化 --- */
-        .pro-btn {
-            background: linear-gradient(180deg, #333 0%, #111 100%);
-            border: 1px solid #000;
-            color: #888;
-            border-radius: 4px;
-            transition: all 0.1s;
-            text-transform: uppercase;
-            font-size: 11px; font-weight: 900;
+        /* --- 列表美化 --- */
+        .track-list-container {
+            flex: 1;
+            overflow-y: auto;
         }
-        .pro-btn:active { background: #222; transform: translateY(1px); }
-        .pro-btn.active-cyan { color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0,242,255,0.3); }
-
-        /* --- 列表与搜索 --- */
-        .library-aside {
-            background: #0d0d0d;
-            border-radius: 8px;
-            display: flex; flex-direction: column;
-            border: 1px solid #222;
-            overflow: hidden;
-        }
+        .track-list-container::-webkit-scrollbar { width: 4px; }
+        .track-list-container::-webkit-scrollbar-thumb { background: #333; }
 
         .track-item {
             padding: 15px 20px;
@@ -169,113 +170,115 @@
             font-family: 'Share Tech Mono', monospace;
             font-size: 13px; color: #666;
             cursor: pointer;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .track-item:hover { background: #151515; color: #fff; }
         .track-item.active { 
             background: rgba(0, 242, 255, 0.05); 
-            color: var(--neon-cyan); 
-            border-left: 4px solid var(--neon-cyan); 
+            color: var(--neon); 
+            border-left: 4px solid var(--neon); 
         }
 
-        /* 电平表 VU Meter */
+        /* VU 电平表 */
         .vu-meter {
             display: flex; gap: 3px; height: 120px; padding: 10px; background: #000; border-radius: 4px;
         }
         .vu-bar { flex: 1; display: flex; flex-direction: column-reverse; gap: 2px; }
         .vu-dot { height: 5px; width: 100%; background: #1a1a1a; transition: background 0.1s; }
-        .vu-dot.lit { background: var(--lcd-green); box-shadow: 0 0 5px var(--lcd-green); }
-        .vu-dot.peak { background: var(--warning-red); box-shadow: 0 0 5px var(--warning-red); }
+        .vu-dot.lit { background: #10b981; box-shadow: 0 0 5px #10b981; }
 
+        /* 启动层 */
+        .boot-screen {
+            position: fixed; inset: 0; z-index: 100;
+            background: #000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: 0.8s ease;
+        }
     </style>
 </head>
 <body class="is-paused">
 
-    <!-- 系统引导 -->
-    <div id="boot-overlay" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="text-[10px] tracking-[1em] text-cyan-900 mb-8">VOID AUDIO CORE v2.0</div>
-        <button onclick="bootSystem()" class="w-20 h-20 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-500 hover:bg-cyan-500/10 transition">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <!-- 启动层 -->
+    <div id="boot-overlay" class="boot-screen">
+        <div class="text-[10px] tracking-[1em] text-cyan-900 mb-8 uppercase">VOID DJ-SYSTEM MK-III</div>
+        <button onclick="bootSystem()" class="w-24 h-24 border border-cyan-500/30 rounded-full flex items-center justify-center text-cyan-500 hover:bg-cyan-500/10 transition">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </button>
     </div>
 
-    <!-- DJ 核心面板 -->
-    <main id="main-app" class="console-frame opacity-0 transition-opacity duration-1000">
+    <!-- 主系统 -->
+    <main id="main-app" class="dj-system opacity-0 transition-opacity duration-1000">
         
-        <!-- 左：DECK A -->
-        <section class="deck">
-            <div class="lcd-panel">
-                <div class="flex justify-between text-[10px] opacity-40 mb-2 tracking-widest">
+        <!-- 左侧：DECK A -->
+        <section class="deck-section">
+            <div class="lcd-display">
+                <div class="flex justify-between text-[10px] opacity-40 mb-2">
                     <span>96kHz / 32-BIT FLOAT</span>
                     <span>DECK A</span>
                 </div>
-                <div id="title" class="lcd-title">NO TRACK LOADED</div>
+                <div id="title" class="track-title">SYSTEM READY...</div>
                 <div class="flex justify-between items-end mt-4">
-                    <div id="artist-name" class="text-xs text-cyan-800 uppercase">System Ready</div>
-                    <div class="flex gap-4 font-bold text-2xl text-white">
-                        <span id="cur-time">00:00:00</span>
-                    </div>
+                    <div class="text-[10px] text-cyan-900 font-bold uppercase">Master Output</div>
+                    <div class="text-3xl font-bold tracking-tighter" id="cur-time">00:00:00</div>
                 </div>
             </div>
 
-            <div class="jog-container">
-                <!-- 黑胶盘 -->
-                <div class="jog-wheel" id="jog-wheel"></div>
-                <!-- 封面：独立包装并居中 -->
-                <div class="jog-art-wrapper">
+            <div class="jog-wheel-container">
+                <!-- 黑胶盘本体 -->
+                <div class="vinyl-record" id="vinyl"></div>
+                <!-- 封面图：严格居中层 -->
+                <div class="artwork-core">
                     <div id="cover-art" class="bg-cover bg-center w-full h-full"></div>
-                    <span id="cover-emoji" class="text-4xl">💿</span>
-                    <div class="spindle-hole"></div>
+                    <span id="cover-emoji" class="text-5xl">💿</span>
                 </div>
             </div>
 
-            <div class="flex justify-between mt-8">
-                <div class="flex gap-3">
-                    <button onclick="playToggle()" class="w-16 h-16 pro-btn flex items-center justify-center" id="play-main">
-                        <div id="play-icon" class="w-0 h-0 border-y-[10px] border-y-transparent border-l-[16px] border-l-white"></div>
+            <div class="flex justify-between items-center mt-8">
+                <div class="flex gap-4">
+                    <button onclick="playToggle()" class="w-20 h-16 bg-black border border-white/10 rounded flex items-center justify-center hover:bg-white/5 active:scale-95 transition">
+                        <div id="play-icon" class="w-0 h-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white"></div>
                     </button>
-                    <button onclick="step(1)" class="px-6 pro-btn">Next Track</button>
+                    <button onclick="step(1)" class="px-8 bg-black border border-white/10 rounded text-[10px] font-bold uppercase hover:bg-white/5">Next</button>
                 </div>
                 <div class="text-right">
-                    <div class="text-[9px] opacity-30 mb-1">PITCH BEND</div>
-                    <div class="text-xl font-black text-white italic">+0.00%</div>
+                    <div class="text-[9px] opacity-20 mb-1">PITCH BEND</div>
+                    <div class="text-xl font-black italic">+0.00%</div>
                 </div>
             </div>
         </section>
 
-        <!-- 中：MIXER / 混音区 -->
-        <section class="flex flex-col gap-4 p-4 bg-[#0a0a0a] border-x border-white/5">
-            <div class="text-[9px] text-center opacity-20 font-black tracking-widest">SIGNAL LEVEL</div>
+        <!-- 中侧：MIXER -->
+        <section class="mixer-section">
+            <div class="text-[9px] opacity-20 font-black tracking-widest mb-6 uppercase">Audio Mixer</div>
+            
             <div class="vu-meter" id="vu-meter"></div>
-            
-            <div class="mt-8 flex flex-col items-center gap-6">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-b from-[#333] to-[#111] border border-black shadow-xl"></div>
-                <span class="text-[8px] opacity-40">TRIM</span>
-                
-                <!-- 模拟推子 -->
+
+            <div class="mt-10 flex flex-col items-center gap-10">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-b from-[#333] to-[#111] border border-black shadow-lg"></div>
                 <div class="w-8 h-48 bg-black rounded-sm relative border border-white/5">
-                    <div class="absolute w-full h-[1px] bg-white/10 top-1/2"></div>
-                    <div class="absolute w-12 h-8 bg-[#222] border border-black left-1/2 -translate-x-1/2 top-1/4 shadow-2xl rounded-sm"></div>
+                    <div class="absolute w-12 h-8 bg-[#222] border border-black left-1/2 -translate-x-1/2 top-1/4 rounded-sm"></div>
                 </div>
-                <span class="text-[8px] opacity-40">CHANNEL 1</span>
+                <span class="text-[8px] opacity-30">VOL-CH1</span>
             </div>
         </section>
 
-        <!-- 右：LIBRARY / 媒体库 -->
-        <aside class="library-aside">
-            <div class="p-6 bg-black/40 border-b border-white/5">
+        <!-- 右侧：CRATE -->
+        <aside class="crate-section">
+            <div class="p-6 bg-black/40">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-[10px] font-black tracking-widest opacity-30">TRACK BROWSER</h2>
-                    <span id="folder-tag" class="text-[9px] text-cyan-500 bg-cyan-500/10 px-2 py-0.5 rounded">ROOT</span>
+                    <h2 class="text-[10px] font-black tracking-widest opacity-30 uppercase">Track Browser</h2>
                 </div>
-                <input type="text" id="q" oninput="doSearch()" placeholder="SEARCH CRATE..." class="w-full bg-black border border-white/10 p-3 text-[10px] text-cyan-500 outline-none focus:border-cyan-500/50">
+                <input type="text" id="q" oninput="doSearch()" placeholder="FILTER CRATE..." class="w-full bg-black border border-white/10 p-3 text-[10px] outline-none focus:border-cyan-500/50">
             </div>
-            
-            <ul id="list" class="track-list no-scrollbar"></ul>
 
-            <div class="mt-auto p-4 border-t border-white/5">
-                <div id="ai-text" class="text-[9px] text-white/20 italic leading-relaxed">
-                    Waiting for track selection...
-                </div>
+            <div class="track-list-container">
+                <ul id="list"></ul>
+            </div>
+
+            <div class="p-6 border-t border-white/5">
+                <p id="ai-text" class="text-[9px] text-cyan-600/50 font-mono italic leading-relaxed uppercase">
+                    Awaiting Signal...
+                </p>
             </div>
         </aside>
 
@@ -285,12 +288,12 @@
 
     <script>
         const G = { user: 'zhangzhanhang855', repo: 'musiconly', ver: 'main' };
-        let playlists = {}; 
+        let playlists = []; 
         let filtered = [], curIdx = 0, isPlaying = false;
         const audio = document.getElementById('player');
 
         // 初始化 VU 表
-        (function createVU() {
+        (function initVisuals() {
             const vu = document.getElementById('vu-meter');
             for(let i=0; i<2; i++) {
                 const bar = document.createElement('div');
@@ -310,30 +313,46 @@
                 document.getElementById('boot-overlay').style.display = 'none';
                 document.getElementById('main-app').style.opacity = '1';
                 loadLibrary();
-            }, 1000);
+            }, 800);
         }
 
         async function loadLibrary() {
+            console.log("正在尝试加载曲库...");
+            document.getElementById('ai-text').innerText = "CONNECTING TO GITHUB...";
+
             try {
                 const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
+                if(!res.ok) throw new Error(`API 访问失败: ${res.status}`);
+                
                 const data = await res.json();
                 
-                // 简单处理：仅抓取根目录
-                playlists["Root"] = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
+                // 仅抓取音乐文件
+                playlists = data.filter(f => /\.(mp3|flac|wav|m4a)$/i.test(f.name)).map(f => ({
                     t: f.name.replace(/\.[^/.]+$/, ""),
                     u: f.download_url
                 }));
 
-                renderList();
-                executeLoad(0, false);
+                console.log(`成功加载 ${playlists.length} 首歌曲`);
+                filtered = [...playlists];
+                
+                if(playlists.length > 0) {
+                    renderList();
+                    executeLoad(0, false);
+                    document.getElementById('ai-text').innerText = "SYSTEM ONLINE - TRACKS LOADED";
+                } else {
+                    document.getElementById('ai-text').innerText = "ERROR: NO AUDIO FILES FOUND IN REPO";
+                }
+
             } catch (e) {
-                console.error("Failed to load library");
+                console.error("加载失败:", e);
+                document.getElementById('title').innerText = "LINK ERROR";
+                document.getElementById('ai-text').innerText = "ERROR: " + e.message;
             }
         }
 
         function renderList() {
             const listEl = document.getElementById('list');
-            listEl.innerHTML = playlists["Root"].map((s, i) => `
+            listEl.innerHTML = filtered.map((s, i) => `
                 <li class="track-item ${curIdx === i ? 'active' : ''}" onclick="executeLoad(${i}, true)">
                     ${String(i+1).padStart(2,'0')} . ${s.t}
                 </li>
@@ -342,11 +361,11 @@
 
         function executeLoad(idx, auto) {
             curIdx = idx;
-            const song = playlists["Root"][curIdx];
+            const song = filtered[curIdx];
             audio.src = song.u;
             document.getElementById('title').innerText = song.t;
             
-            // 封面图居中处理
+            // 封面处理
             const art = document.getElementById('cover-art');
             const emj = document.getElementById('cover-emoji');
             art.style.backgroundImage = 'none';
@@ -383,17 +402,12 @@
         };
 
         audio.ontimeupdate = () => {
-            const cur = audio.currentTime;
-            const dur = audio.duration;
-            document.getElementById('cur-time').innerText = fmt(cur);
-            
-            // VU 表动画
+            document.getElementById('cur-time').innerText = fmt(audio.currentTime);
+            // 模拟VU跳动
             if(!audio.paused) {
                 const dots = document.querySelectorAll('.vu-dot');
                 dots.forEach((dot, idx) => {
-                    const rand = Math.random() * 18;
-                    const isLit = (idx % 18) < rand;
-                    dot.className = isLit ? (idx % 18 > 14 ? 'vu-dot peak' : 'vu-dot lit') : 'vu-dot';
+                    dot.className = (idx % 18 < Math.random() * 14) ? 'vu-dot lit' : 'vu-dot';
                 });
             }
         };
@@ -405,8 +419,13 @@
         }
 
         function step(d) {
-            let next = (curIdx + d + playlists["Root"].length) % playlists["Root"].length;
-            executeLoad(next, true);
+            executeLoad((curIdx + d + filtered.length) % filtered.length, true);
+        }
+
+        function doSearch() {
+            const val = document.getElementById('q').value.toLowerCase();
+            filtered = playlists.filter(s => s.t.toLowerCase().includes(val));
+            renderList();
         }
     </script>
 </body>
