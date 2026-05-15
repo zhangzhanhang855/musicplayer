@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VOID DJ MK-VI | HYBRID ADAPTIVE</title>
+    <title>VOID DJ MK-VI | TACTILE & COVERS</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -20,34 +20,20 @@
 
         /* --- 核心响应式架构 --- */
         .dj-system {
-            width: 98vw;
-            max-width: 1500px;
-            /* Pad/PC 默认高度固定 */
-            height: 850px; 
+            width: 98vw; max-width: 1500px; height: 850px; 
             background: #1a1a1a; border: 6px solid #222; border-radius: 12px;
-            display: grid; 
-            /* PC/Pad 横屏：三栏 */
-            grid-template-columns: 1.5fr 260px 1fr; 
-            gap: 10px; padding: 10px;
-            box-shadow: 0 100px 200px rgba(0,0,0,1);
-            position: relative;
-            box-sizing: border-box;
+            display: grid; grid-template-columns: 1.5fr 260px 1fr; 
+            gap: 10px; padding: 10px; box-shadow: 0 100px 200px rgba(0,0,0,1);
+            position: relative; box-sizing: border-box;
         }
 
-        /* 手机竖屏适配 (max-width: 768px) */
+        /* 手机竖屏适配 */
         @media (max-width: 1024px) and (orientation: portrait), (max-width: 640px) {
             body { overflow-y: auto; align-items: flex-start; padding: 10px 0; }
-            .dj-system {
-                grid-template-columns: 1fr; /* 变为单列 */
-                height: auto; /* 高度随内容撑开 */
-                width: 95vw;
-                padding-bottom: 40px;
-            }
-            .mixer-section { order: 2; height: 500px; } /* 混音区排第二 */
-            .crate-section { order: 3; height: 600px; } /* 曲库排最后 */
-            .deck-section { order: 1; height: 750px; } /* 播放器在最顶 */
-            
-            /* 手机端缩小慢轮 */
+            .dj-system { grid-template-columns: 1fr; height: auto; width: 95vw; padding-bottom: 40px; }
+            .mixer-section { order: 2; height: 500px; } 
+            .crate-section { order: 3; height: 600px; } 
+            .deck-section { order: 1; height: 750px; } 
             .vinyl-wrap { width: 300px !important; height: 300px !important; }
             .art-center { width: 110px !important; height: 110px !important; }
         }
@@ -93,8 +79,10 @@
         .vinyl-disk { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #222 0%, #0a0a0a 60%, #000 100%); border: 10px solid #080808; position: relative; pointer-events: none; }
         .vinyl-disk::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px); }
         
+        /* 慢轮中心孔与盖板：强制圆剪裁 */
         .art-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 140px; border-radius: 50%; border: 6px solid #000; background: #111; z-index: 10; overflow: hidden; pointer-events: none; }
-        #cover-art { width: 100%; height: 100%; background-size: cover; background-position: center; }
+        #cover-art { width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s ease; }
+        #cover-art.loaded { opacity: 1; }
 
         /* 动画 */
         .is-playing .vinyl-disk { animation: rotate-v 6s linear infinite; }
@@ -130,7 +118,9 @@
                 <div class="vinyl-wrap" id="jog-wrap">
                     <div class="vinyl-disk" id="vinyl-visual"></div>
                     <div class="art-center">
+                        <!-- 音乐封面渲染节点 -->
                         <div id="cover-art"></div>
+                        <!-- 备用 Emoji 节点 -->
                         <span id="cover-emoji" class="absolute inset-0 flex items-center justify-center text-5xl">💿</span>
                     </div>
                 </div>
@@ -198,9 +188,11 @@
         let currentPlaylist = "Root";
         let filteredTracks = [], curIdx = 0;
         const audio = document.getElementById('player');
+        
+        // 用于跟踪和释放 Blob URL，防止内存泄漏
+        let currentObjectURL = null;
 
         // --- 触屏与交互逻辑核心 ---
-        
         function handleInteraction(elements, type, callback) {
             elements.forEach(el => {
                 let isMoving = false;
@@ -217,7 +209,6 @@
                     let currentPos = e.clientY || (e.touches ? e.touches[0].clientY : 0);
                     let delta = startPos - currentPos;
                     callback(el, delta, currentPos);
-                    // 如果是推子，持续更新基准点
                     if (type === 'fader') startPos = currentPos; 
                 };
 
@@ -232,7 +223,6 @@
             });
         }
 
-        // 旋钮旋转逻辑
         handleInteraction(document.querySelectorAll('.knob-container'), 'knob', (el, delta) => {
             const knob = el.querySelector('.knob-physical');
             let currentRotation = parseInt(knob.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
@@ -240,7 +230,6 @@
             knob.style.transform = `rotate(${newRot}deg)`;
         });
 
-        // 推子滑动逻辑
         handleInteraction(document.querySelectorAll('.fader-track'), 'fader', (el, delta, currentY) => {
             const handle = el.querySelector('.fader-handle');
             const rect = el.getBoundingClientRect();
@@ -249,14 +238,12 @@
             handle.style.bottom = (percent * 100) + '%';
         });
 
-        // 打击垫反馈
         function flashPad(el) {
             el.classList.add('lit');
             setTimeout(() => el.classList.remove('lit'), 100);
         }
 
         // --- 播放引擎逻辑 ---
-
         function bootSystem() {
             document.getElementById('boot-overlay').style.opacity = '0';
             setTimeout(() => {
@@ -308,6 +295,7 @@
             `).join('');
         }
 
+        // --- 核心修改：无损封面解析与直引机制 ---
         function executeLoad(idx, auto) {
             curIdx = idx;
             const song = filteredTracks[curIdx];
@@ -315,20 +303,42 @@
             document.getElementById('title').innerText = song.t;
             
             const art = document.getElementById('cover-art');
+            const emj = document.getElementById('cover-emoji');
+            
+            // 重置上一首歌曲的视觉状态
+            art.classList.remove('loaded');
             art.style.backgroundImage = 'none';
-            document.getElementById('cover-emoji').style.display = 'block';
+            emj.style.opacity = '1';
 
+            // 释放上一次创建的内存对象，防止长期挂载导致浏览器爆内存
+            if (currentObjectURL) {
+                URL.revokeObjectURL(currentObjectURL);
+                currentObjectURL = null;
+            }
+
+            // 利用 jsmediatags 异步读取远程音频流文件的元数据元块 (Range Requests)
             new jsmediatags.Reader(song.u).read({
                 onSuccess: (tag) => {
-                    const p = tag.tags.picture;
-                    if (p) {
-                        let b64 = "";
-                        for (let i = 0; i < p.data.length; i++) b64 += String.fromCharCode(p.data[i]);
-                        art.style.backgroundImage = `url(data:${p.format};base64,${window.btoa(b64)})`;
-                        document.getElementById('cover-emoji').style.display = 'none';
+                    const pic = tag.tags.picture;
+                    if (pic) {
+                        // 将二进制字节流高速转换为 Uint8Array
+                        const byteArray = new Uint8Array(pic.data);
+                        // 封装生成高密 Blob 对象
+                        const blob = new Blob([byteArray], { type: pic.format });
+                        // 映射本地高速内存 URL
+                        currentObjectURL = URL.createObjectURL(blob);
+                        
+                        // 注入样式并执行淡入效果
+                        art.style.backgroundImage = `url(${currentObjectURL})`;
+                        art.classList.add('loaded');
+                        emj.style.opacity = '0'; // 隐退备用 Emoji
                     }
+                },
+                onError: (error) => {
+                    console.log("此音轨无自带内嵌封面，保留默认机械CD图标:", error.type);
                 }
             });
+
             renderList();
             if (auto) audio.play();
         }
