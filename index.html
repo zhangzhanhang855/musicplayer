@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VOID DJ MK-VI | TACTILE & COVERS</title>
+    <title>VOID DJ MK-VI | AUTOMATION STATION</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -65,7 +65,7 @@
             transition: bottom 0.05s linear;
         }
 
-        /* 打击垫 */
+        /* 打击垫与实体功能键 */
         .pad { 
             height: 50px; background: #1a1a1a; border-radius: 4px; 
             border-bottom: 4px solid #000; cursor: pointer;
@@ -74,24 +74,28 @@
         }
         .pad.lit { background: var(--neon); color: #000; border-bottom: 0; transform: translateY(3px); box-shadow: 0 0 30px var(--neon); }
 
+        .hardware-btn {
+            background: linear-gradient(180deg, #252525 0%, #111 100%);
+            border: 1px solid #333; border-radius: 4px; color: #aaa;
+            font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: all 0.1s;
+        }
+        .hardware-btn:active { transform: translateY(1px); box-shadow: 0 2px 3px rgba(0,0,0,0.5); }
+
         /* 黑胶慢轮 */
         .vinyl-wrap { width: 380px; height: 380px; border-radius: 50%; background: #050505; display: flex; align-items: center; justify-content: center; cursor: grab; position: relative; touch-action: none; }
-        
-        /* 优化点 2：最外圈黑胶盘边缘加厚加重，采用高对比拉丝灰 */
         .vinyl-disk { 
             width: 100%; height: 100%; border-radius: 50%; 
             background: radial-gradient(circle, #252525 0%, #0a0a0a 60%, #000 100%); 
-            border: 12px solid #2a2a2a; 
-            position: relative; pointer-events: none; 
+            border: 12px solid #2a2a2a; position: relative; pointer-events: none; 
             box-shadow: inset 0 0 20px #000, 0 15px 40px rgba(0,0,0,0.8);
         }
         .vinyl-disk::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px); }
         
-        /* 优化点 1：慢轮中心舱口 - 强化为重工业钛灰切削边框 + 独立霓虹光圈 */
+        /* 慢轮中心孔与盖板 */
         .art-center { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            width: 140px; height: 140px; border-radius: 50%; 
-            border: 6px solid #333; 
+            width: 140px; height: 140px; border-radius: 50%; border: 6px solid #333; 
             background: #111; z-index: 10; overflow: hidden; pointer-events: none; 
             box-shadow: 0 0 0 2px #000, 0 0 0 3.5px var(--neon), 0 10px 25px rgba(0,0,0,0.6);
         }
@@ -120,7 +124,11 @@
         <!-- DECK SECTION -->
         <section class="module deck-section p-6 lg:p-10">
             <div class="lcd-main">
-                <div class="flex justify-between text-[9px] opacity-30 mb-2 uppercase"><span>Studio Engine v2</span><span>Deck A</span></div>
+                <div class="flex justify-between text-[9px] opacity-30 mb-2 uppercase">
+                    <!-- 新增：液晶屏上的模式联动显示 -->
+                    <span>Engine v2 [<span id="lcd-mode" class="text-cyan-400">LIST</span>]</span>
+                    <span>Deck A</span>
+                </div>
                 <div id="title" class="text-2xl lg:text-3xl font-bold tracking-tighter text-cyan-400 truncate">READY</div>
                 <div class="flex justify-between mt-6">
                     <div class="text-4xl font-black italic" id="cur-time">00:00:00</div>
@@ -139,9 +147,16 @@
             </div>
 
             <div class="flex justify-between items-center">
-                <button onclick="playToggle()" class="w-20 h-20 bg-black border border-white/10 rounded-full flex items-center justify-center shadow-xl">
-                    <div id="play-icon" class="w-0 h-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-1"></div>
-                </button>
+                <!-- 控制按键模组组 -->
+                <div class="flex gap-2 items-center">
+                    <button onclick="playToggle()" class="w-20 h-20 bg-black border border-white/10 rounded-full flex items-center justify-center shadow-xl hover:border-cyan-500 transition">
+                        <div id="play-icon" class="w-0 h-0 border-y-[12px] border-y-transparent border-l-[20px] border-l-white ml-1"></div>
+                    </button>
+                    <button onclick="step(1)" class="w-12 h-12 hardware-btn flex items-center justify-center">NEXT</button>
+                    <!-- 新增：硬件模式切换开关 -->
+                    <button onclick="toggleLoopMode()" id="mode-btn" class="px-3 h-12 hardware-btn border-cyan-500/30 text-cyan-400">MODE: LIST</button>
+                </div>
+                
                 <div class="flex flex-col items-end gap-2">
                     <div class="fader-track h-24 w-8">
                         <div class="fader-handle w-10 h-6 left-[-6px] bottom-[50%]"></div>
@@ -202,6 +217,9 @@
         const audio = document.getElementById('player');
         
         let currentCoverObjectURL = null;
+        
+        // 新增：连续播放逻辑核心模式控制 ('list' | 'random' | 'single')
+        let loopMode = 'list'; 
 
         // --- 触屏与交互逻辑 ---
         function handleInteraction(elements, type, callback) {
@@ -254,7 +272,27 @@
             setTimeout(() => el.classList.remove('lit'), 100);
         }
 
-        // --- 播放引擎逻辑 ---
+        // 新增：模式循环切换切换及发光反馈
+        function toggleLoopMode() {
+            const modes = ['list', 'random', 'single'];
+            let nextIndex = (modes.indexOf(loopMode) + 1) % modes.length;
+            loopMode = modes[nextIndex];
+            
+            // 刷新按键与LCD显示文本
+            document.getElementById('mode-btn').innerText = `MODE: ${loopMode.toUpperCase()}`;
+            document.getElementById('lcd-mode').innerText = loopMode === 'random' ? 'RAND' : (loopMode === 'single' ? 'SGLE' : 'LIST');
+            
+            // 模拟专业硬件物理按键高亮呼吸
+            const btn = document.getElementById('mode-btn');
+            btn.style.borderColor = 'var(--neon)';
+            btn.style.boxShadow = '0 0 15px var(--neon)';
+            setTimeout(() => {
+                btn.style.borderColor = 'rgba(6, 182, 212, 0.3)';
+                btn.style.boxShadow = 'none';
+            }, 150);
+        }
+
+        // --- 播放引擎与无缝连播驱动 ---
         function bootSystem() {
             document.getElementById('boot-overlay').style.opacity = '0';
             setTimeout(() => {
@@ -307,6 +345,7 @@
         }
 
         function executeLoad(idx, auto) {
+            if (filteredTracks.length === 0) return;
             curIdx = idx;
             const song = filteredTracks[curIdx];
             
@@ -328,14 +367,11 @@
             }
 
             if (auto) {
-                audio.play().catch(e => console.log("移动端等待首次手势激活: ", e));
+                audio.play().catch(e => console.log("等待手势激活: ", e));
             }
 
             fetch(song.u)
-                .then(res => {
-                    if (!res.ok) throw new Error();
-                    return res.blob();
-                })
+                .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
                 .then(audioBlob => {
                     new jsmediatags.Reader(audioBlob).read({
                         onSuccess: (tag) => {
@@ -344,7 +380,6 @@
                                 const byteArray = new Uint8Array(pic.data);
                                 const coverBlob = new Blob([byteArray], { type: pic.format });
                                 currentCoverObjectURL = URL.createObjectURL(coverBlob);
-                                
                                 art.style.backgroundImage = `url(${currentCoverObjectURL})`;
                                 art.classList.add('loaded');
                                 emj.style.opacity = '0';
@@ -353,10 +388,31 @@
                         onError: (err) => console.log("无内嵌封面")
                     });
                 })
-                .catch(err => console.log("封面解析挂起..."));
+                .catch(err => console.log("封面抓取挂起..."));
 
             renderList();
         }
+
+        // 新增：自动连续播放与中断防御逻辑
+        audio.onended = () => {
+            if (filteredTracks.length === 0) return;
+            
+            if (loopMode === 'single') {
+                // 单曲循环：原地重载，直接触发
+                executeLoad(curIdx, true);
+            } else if (loopMode === 'random') {
+                // 随机播放算法：提取伪随机索引
+                let nextIndex = Math.floor(Math.random() * filteredTracks.length);
+                if (filteredTracks.length > 1 && nextIndex === curIdx) {
+                    nextIndex = (nextIndex + 1) % filteredTracks.length; // 防重复碰撞
+                }
+                executeLoad(nextIndex, true);
+            } else {
+                // 列表循环：顺序下推一条音轨
+                let nextIndex = (curIdx + 1) % filteredTracks.length;
+                executeLoad(nextIndex, true);
+            }
+        };
 
         function playToggle() { audio.paused ? audio.play() : audio.pause(); }
         audio.onplay = () => { document.body.classList.replace('is-paused', 'is-playing'); document.getElementById('play-icon').style.borderLeftColor = "#00f2ff"; };
