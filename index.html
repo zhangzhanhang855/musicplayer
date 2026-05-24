@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>JRmusic</title>
+    <title>VOID DJ MK-VII | PROFESSIONAL HYBRID STATION</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -131,7 +131,6 @@
         .playlist-col { width: 250px; border-right: 1px solid #222; overflow-y: auto; }
         .tracks-col { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
         
-        /* 优化后的列表行布局，加入独立加载按钮区 */
         .track-row { 
             display: grid; grid-template-columns: 30px 3fr 1.5fr 60px 80px; padding: 8px 15px; 
             border-bottom: 1px solid #1a1a1a; cursor: pointer; font-size: 12px; align-items: center;
@@ -152,7 +151,7 @@
         <button onclick="bootSystem()" class="px-12 py-5 border-2 border-cyan-500 text-cyan-500 font-black hover:bg-cyan-500 hover:text-black transition-all duration-300 shadow-[0_0_30px_rgba(0,242,255,0.3)]">
             ENGAGE AUDIO CONTEXT
         </button>
-        <div class="mt-8 text-[10px] text-gray-600 font-mono">WARNING: EXTREME VOLUME POSSIBLE</div>
+        <div class="mt-8 text-[10px] text-gray-600 font-mono">SUPPORT: BACKGROUND AUDIO & LOCKSCREEN (支持后台息屏播放)</div>
     </div>
 
     <!-- 主界面 -->
@@ -323,6 +322,7 @@
 
     </div>
 
+    <!-- Web Audio API 后台播放的核心：必须要原生的 audio 标签持续播放才能维持手机后台唤醒 -->
     <audio id="audio-A" crossorigin="anonymous"></audio>
     <audio id="audio-B" crossorigin="anonymous"></audio>
 
@@ -330,6 +330,9 @@
         const G = { user: 'zhangzhanhang855', repo: 'musiconly' };
         let audioCtx;
         
+        // 手机端通用的默认锁屏封面占位符
+        const fallbackCoverUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTExIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiMwMGYyZmYiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNDgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5WT0lEIERKPC90ZXh0Pjwvc3ZnPg==';
+
         class Library {
             constructor() {
                 this.tracks = []; 
@@ -377,7 +380,6 @@
 
             render() {
                 const container = document.getElementById('track-list-container');
-                // 修复 1：在列表渲染中加入直观的 Load A / Load B 快捷按钮，并支持双击自动加载
                 container.innerHTML = this.filtered.map((t, i) => `
                     <div class="track-row ${i === this.selectedIndex ? 'bg-gray-800' : ''}" 
                          onclick="lib.select(${i})" 
@@ -401,6 +403,21 @@
 
             getSelected() {
                 return this.filtered[this.selectedIndex];
+            }
+
+            // 新增：为手机端线控/锁屏界面的“下一首/上一首”提供逻辑
+            getNextTrack() {
+                if (this.filtered.length === 0) return null;
+                this.selectedIndex = (this.selectedIndex + 1) % this.filtered.length;
+                this.render();
+                return this.getSelected();
+            }
+
+            getPrevTrack() {
+                if (this.filtered.length === 0) return null;
+                this.selectedIndex = (this.selectedIndex - 1 + this.filtered.length) % this.filtered.length;
+                this.render();
+                return this.getSelected();
             }
         }
 
@@ -430,6 +447,7 @@
                     loop: { active: false, in: null, out: null }
                 };
 
+                this.currentTrackInfo = null; // 缓存当前音轨信息供息屏使用
                 this.source = null; this.gainNode = null;
                 this.eqLow = null; this.eqMid = null; this.eqHigh = null;
                 this.filterNode = null; this.analyser = null;
@@ -457,14 +475,13 @@
             }
 
             loadTrack(track) {
-                // 如果当前在播放，先暂停
                 if(this.state.playing) this.pause();
-                
                 this.ui.modeTxt.innerText = "LOADING...";
                 
-                this.audio.src = track.blob ? URL.createObjectURL(track.blob) : track.url;
+                this.currentTrackInfo = track; // 缓存供锁屏使用
+                engine.setMediaSessionActiveDeck(this.id, track); // 更新锁屏状态
                 
-                // 修复 2：极其重要！更换 SRC 后必须显式调用 load() 强制浏览器抓取新的远程流数据
+                this.audio.src = track.blob ? URL.createObjectURL(track.blob) : track.url;
                 this.audio.load(); 
                 
                 this.ui.title.innerText = track.title;
@@ -475,14 +492,30 @@
                 this.state.loaded = true;
                 this.state.cuePoint = 0;
                 
-                // 监听足够的数据加载完毕再提示 READY
-                this.audio.oncanplay = () => {
-                    this.ui.modeTxt.innerText = "READY";
-                };
+                this.audio.oncanplay = () => { this.ui.modeTxt.innerText = "READY"; };
             }
 
-            play() { if(!this.state.loaded) return; this.audio.play(); this.state.playing = true; this.ui.btnPlay.classList.add('active'); this.ui.modeTxt.innerText = "PLAYING"; }
-            pause() { this.audio.pause(); this.state.playing = false; this.ui.btnPlay.classList.remove('active'); this.ui.modeTxt.innerText = "PAUSED"; }
+            play() { 
+                if(!this.state.loaded) return; 
+                this.audio.play(); 
+                this.state.playing = true; 
+                this.ui.btnPlay.classList.add('active'); 
+                this.ui.modeTxt.innerText = "PLAYING"; 
+                
+                // 将手机锁屏焦点转移到当前正在播放的轨道
+                engine.setMediaSessionActiveDeck(this.id, this.currentTrackInfo);
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+            }
+
+            pause() { 
+                this.audio.pause(); 
+                this.state.playing = false; 
+                this.ui.btnPlay.classList.remove('active'); 
+                this.ui.modeTxt.innerText = "PAUSED"; 
+                
+                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+            }
+
             togglePlay() { this.state.playing ? this.pause() : this.play(); }
 
             cue() {
@@ -520,6 +553,11 @@
                     let r = (cur * 33.33) % 360; 
                     this.ui.jogMarker.style.transform = `translateX(-50%) rotate(${r}deg)`;
                     this.ui.jogMarker.style.transformOrigin = "bottom center"; this.ui.jogMarker.style.height = "130px"; 
+                });
+                
+                // 监听原生播放结束事件（可选：用于单轨自动播放下一首，但DJ系统通常是手动的）
+                this.audio.addEventListener('ended', () => {
+                    this.pause();
                 });
             }
 
@@ -571,6 +609,7 @@
             deckB: new Deck('B'),
             masterGain: null,
             crossfader: 0.5,
+            activeMediaDeckId: 'A', // 记录当前拥有手机息屏控制权的焦点 Deck
             
             init() {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -584,6 +623,65 @@
                 this.updateCrossfader();
                 this.startVUMeter();
                 this.syncGitHub();
+                this.setupMediaSessionAPI(); // 激活后台息屏与硬件媒体控制
+            },
+
+            // 核心新增：接管系统级锁屏与媒体按键
+            setupMediaSessionAPI() {
+                if ('mediaSession' in navigator) {
+                    // 当你在耳机按播放键或锁屏按播放
+                    navigator.mediaSession.setActionHandler('play', () => {
+                        this.getActiveMediaDeck().play();
+                    });
+                    
+                    // 当你在耳机按暂停键或锁屏按暂停
+                    navigator.mediaSession.setActionHandler('pause', () => {
+                        this.getActiveMediaDeck().pause();
+                    });
+                    
+                    // 当你在锁屏或耳机按下一首
+                    navigator.mediaSession.setActionHandler('nexttrack', () => {
+                        const nextTrack = lib.getNextTrack();
+                        if (nextTrack) {
+                            const deck = this.getActiveMediaDeck();
+                            deck.loadTrack(nextTrack);
+                            deck.play(); // 自动续播
+                        }
+                    });
+                    
+                    // 当你在锁屏或耳机按上一首
+                    navigator.mediaSession.setActionHandler('previoustrack', () => {
+                        const prevTrack = lib.getPrevTrack();
+                        if (prevTrack) {
+                            const deck = this.getActiveMediaDeck();
+                            deck.loadTrack(prevTrack);
+                            deck.play();
+                        }
+                    });
+                }
+            },
+
+            // 核心新增：向手机操作系统汇报当前的曲目信息（显示封面和名字）
+            setMediaSessionActiveDeck(deckId, trackInfo) {
+                this.activeMediaDeckId = deckId;
+                if ('mediaSession' in navigator && trackInfo) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: trackInfo.title || 'Unknown Track',
+                        artist: trackInfo.artist || `Deck ${deckId}`,
+                        album: trackInfo.playlist || 'VOID DJ Station',
+                        artwork: [
+                            { 
+                                src: trackInfo.cover || fallbackCoverUrl, 
+                                sizes: '512x512', 
+                                type: trackInfo.cover ? 'image/jpeg' : 'image/svg+xml' 
+                            }
+                        ]
+                    });
+                }
+            },
+
+            getActiveMediaDeck() {
+                return this.activeMediaDeckId === 'A' ? this.deckA : this.deckB;
             },
 
             async syncGitHub() {
@@ -624,23 +722,20 @@
                 }
             },
 
-            loadToDeck(deckId) {
-                const track = lib.getSelected();
+            loadToDeck(deckId, explicitTrack = null) {
+                const track = explicitTrack || lib.getSelected();
                 if(!track) return;
                 if(deckId === 'A') this.deckA.loadTrack(track);
                 else this.deckB.loadTrack(track);
             },
 
-            // 修复 3：双击智能加载逻辑
             autoLoadTrack(index) {
                 lib.select(index);
-                // 优先分配给当前没有播放音乐的那个 Deck
                 if (!this.deckA.state.playing) {
                     this.loadToDeck('A');
                 } else if (!this.deckB.state.playing) {
                     this.loadToDeck('B');
                 } else {
-                    // 如果都在播，默认挤掉 Deck A
                     this.loadToDeck('A');
                 }
             },
