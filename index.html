@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>VOID DJ MK-VII | PROFESSIONAL HYBRID STATION</title>
+    <title>JRmusic</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
@@ -23,10 +23,16 @@
             display: flex; flex-direction: column;
         }
 
+        /* --- 模式控制样式 --- */
+        body.simple-mode .waveform-canvas { opacity: 0; transition: opacity 0.3s; }
+        body.simple-mode .vu-fill { display: none; }
+        body.simple-mode .jog-marker { display: none; }
+        body.simple-mode .deck-time { color: #888; text-shadow: none; }
+
         .system-container {
             width: 100vw; max-width: 1800px; margin: 0 auto;
             display: grid; grid-template-columns: 1fr 320px 1fr; grid-template-rows: auto 300px;
-            gap: 15px; padding: 15px; box-sizing: border-box;
+            gap: 15px; padding: 15px; padding-top: 50px; box-sizing: border-box;
             height: 100vh;
         }
 
@@ -100,7 +106,7 @@
         .hardware-btn {
             background: linear-gradient(180deg, #2a2a2a 0%, #151515 100%); border: 1px solid #333; border-radius: 6px; color: #aaa;
             font-family: 'Share Tech Mono', monospace; font-size: 12px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.5); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
         .hardware-btn:active, .hardware-btn.active { background: #111; transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.8); border-color: #555; }
         .btn-play-a.active { border-color: var(--neon-a); color: var(--neon-a); box-shadow: inset 0 0 10px var(--neon-a); }
@@ -116,7 +122,7 @@
             border: 8px solid #333; position: absolute; pointer-events: none; box-shadow: inset 0 0 15px #000;
         }
         .vinyl-disk::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.03) 3px); }
-        .jog-marker { position: absolute; top: 0; left: 50%; width: 4px; height: 20px; background: #fff; transform: translateX(-50%); border-radius: 2px; box-shadow: 0 0 10px #fff; z-index: 20; }
+        .jog-marker { position: absolute; top: 0; left: 50%; width: 4px; height: 20px; background: #fff; transform: translateX(-50%); border-radius: 2px; box-shadow: 0 0 10px #fff; z-index: 20; transition: transform 0.1s linear; }
         .art-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border-radius: 50%; border: 4px solid #222; background: #111; z-index: 10; overflow: hidden; pointer-events: none; }
         .cover-img { width: 100%; height: 100%; background-size: cover; background-position: center; }
         
@@ -141,9 +147,21 @@
         #boot-overlay { position: fixed; inset: 0; z-index: 1000; background: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .drop-overlay { position: absolute; inset: 0; background: rgba(0, 242, 255, 0.1); border: 4px dashed var(--neon-a); z-index: 50; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .drop-active .drop-overlay { display: flex; }
+        
+        /* 顶部控制栏 */
+        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 40px; background: #0a0a0a; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 100; }
     </style>
 </head>
 <body>
+
+    <!-- 顶部状态栏：性能与全屏控制 -->
+    <div class="top-bar">
+        <div class="text-[10px] text-gray-500 font-mono tracking-widest hidden sm:block">VOID DJ SYSTEM MK-VII</div>
+        <div class="flex gap-2">
+            <button id="mode-toggle" onclick="togglePerformanceMode()" class="hardware-btn px-4 py-1 text-[10px] border-cyan-500 text-cyan-400">⚡ 满血渲染模式</button>
+            <button onclick="toggleFullScreen()" class="hardware-btn px-4 py-1 text-[10px]">🔲 沉浸式全屏</button>
+        </div>
+    </div>
 
     <!-- 启动层 -->
     <div id="boot-overlay">
@@ -151,7 +169,10 @@
         <button onclick="bootSystem()" class="px-12 py-5 border-2 border-cyan-500 text-cyan-500 font-black hover:bg-cyan-500 hover:text-black transition-all duration-300 shadow-[0_0_30px_rgba(0,242,255,0.3)]">
             ENGAGE AUDIO CONTEXT
         </button>
-        <div class="mt-8 text-[10px] text-gray-600 font-mono">SUPPORT: BACKGROUND AUDIO & LOCKSCREEN (支持后台息屏播放)</div>
+        <div class="mt-8 text-[10px] text-gray-600 font-mono text-center">
+            SUPPORT: BACKGROUND AUDIO & LOCKSCREEN<br>
+            (包含智能息屏极简模式，解决后台断流问题)
+        </div>
     </div>
 
     <!-- 主界面 -->
@@ -322,15 +343,59 @@
 
     </div>
 
-    <!-- Web Audio API 后台播放的核心：必须要原生的 audio 标签持续播放才能维持手机后台唤醒 -->
     <audio id="audio-A" crossorigin="anonymous"></audio>
     <audio id="audio-B" crossorigin="anonymous"></audio>
 
     <script>
+        // ==========================================
+        // 全局模式与全屏控制
+        // ==========================================
+        window.appMode = 'full'; // 'full' 或 'simple'
+
+        function togglePerformanceMode() {
+            const btn = document.getElementById('mode-toggle');
+            if (window.appMode === 'full') {
+                window.appMode = 'simple';
+                document.body.classList.add('simple-mode');
+                btn.innerText = '🔋 节能/后台模式';
+                btn.classList.replace('text-cyan-400', 'text-green-400');
+                btn.classList.replace('border-cyan-500', 'border-green-500');
+            } else {
+                window.appMode = 'full';
+                document.body.classList.remove('simple-mode');
+                btn.innerText = '⚡ 满血渲染模式';
+                btn.classList.replace('text-green-400', 'text-cyan-400');
+                btn.classList.replace('border-green-500', 'border-cyan-500');
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e => console.log(e));
+                } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
+                    document.documentElement.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { /* Safari */
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        // 监听浏览器息屏/切后台事件：自动切断视觉渲染，保护音频主线程
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log("[System] Page hidden: Suspending heavy DOM/Canvas renders.");
+                // 浏览器隐藏时，不论当前是什么模式，代码逻辑中的 document.hidden 检查会强制阻断所有绘画循环
+            }
+        });
+
+
         const G = { user: 'zhangzhanhang855', repo: 'musiconly' };
         let audioCtx;
-        
-        // 手机端通用的默认锁屏封面占位符
         const fallbackCoverUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTExIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZpbGw9IiMwMGYyZmYiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNDgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5WT0lEIERKPC90ZXh0Pjwvc3ZnPg==';
 
         class Library {
@@ -401,18 +466,13 @@
                 this.render();
             }
 
-            getSelected() {
-                return this.filtered[this.selectedIndex];
-            }
-
-            // 新增：为手机端线控/锁屏界面的“下一首/上一首”提供逻辑
+            getSelected() { return this.filtered[this.selectedIndex]; }
             getNextTrack() {
                 if (this.filtered.length === 0) return null;
                 this.selectedIndex = (this.selectedIndex + 1) % this.filtered.length;
                 this.render();
                 return this.getSelected();
             }
-
             getPrevTrack() {
                 if (this.filtered.length === 0) return null;
                 this.selectedIndex = (this.selectedIndex - 1 + this.filtered.length) % this.filtered.length;
@@ -447,7 +507,8 @@
                     loop: { active: false, in: null, out: null }
                 };
 
-                this.currentTrackInfo = null; // 缓存当前音轨信息供息屏使用
+                this.lastTimeUpdated = 0; // 用于节能模式的时间节流
+                this.currentTrackInfo = null;
                 this.source = null; this.gainNode = null;
                 this.eqLow = null; this.eqMid = null; this.eqHigh = null;
                 this.filterNode = null; this.analyser = null;
@@ -478,8 +539,8 @@
                 if(this.state.playing) this.pause();
                 this.ui.modeTxt.innerText = "LOADING...";
                 
-                this.currentTrackInfo = track; // 缓存供锁屏使用
-                engine.setMediaSessionActiveDeck(this.id, track); // 更新锁屏状态
+                this.currentTrackInfo = track; 
+                engine.setMediaSessionActiveDeck(this.id, track); 
                 
                 this.audio.src = track.blob ? URL.createObjectURL(track.blob) : track.url;
                 this.audio.load(); 
@@ -501,8 +562,6 @@
                 this.state.playing = true; 
                 this.ui.btnPlay.classList.add('active'); 
                 this.ui.modeTxt.innerText = "PLAYING"; 
-                
-                // 将手机锁屏焦点转移到当前正在播放的轨道
                 engine.setMediaSessionActiveDeck(this.id, this.currentTrackInfo);
                 if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
             }
@@ -512,7 +571,6 @@
                 this.state.playing = false; 
                 this.ui.btnPlay.classList.remove('active'); 
                 this.ui.modeTxt.innerText = "PAUSED"; 
-                
                 if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
             }
 
@@ -547,7 +605,25 @@
             setupAudioEvents() {
                 this.audio.addEventListener('timeupdate', () => {
                     let cur = this.audio.currentTime;
+                    // 循环逻辑不可省略
                     if(this.state.loop.active && this.state.loop.out && cur >= this.state.loop.out) { this.audio.currentTime = this.state.loop.in; }
+                    
+                    // --- 核心：息屏/后台防冻结处理 ---
+                    // 如果页面完全被隐藏（切入后台或息屏），直接跳过所有 DOM 重绘
+                    if (document.hidden) return;
+
+                    // 如果处于“节能模式”，限制刷新率并关闭复杂动画
+                    if (window.appMode === 'simple') {
+                        // 只在秒数发生变化时才更新一次 DOM（大幅降低重绘负担）
+                        if (Math.floor(cur) > Math.floor(this.lastTimeUpdated)) {
+                            let m = Math.floor(cur/60).toString().padStart(2,'0'), s = Math.floor(cur%60).toString().padStart(2,'0');
+                            this.ui.time.innerText = `${m}:${s}:00`;
+                        }
+                        this.lastTimeUpdated = cur;
+                        return; // 跳过黑胶盘旋转
+                    }
+
+                    // --- 满血模式：最高帧率毫秒级刷新与黑胶顺滑旋转 ---
                     let m = Math.floor(cur/60).toString().padStart(2,'0'), s = Math.floor(cur%60).toString().padStart(2,'0'), ms = Math.floor((cur%1)*100).toString().padStart(2,'0');
                     this.ui.time.innerText = `${m}:${s}:${ms}`;
                     let r = (cur * 33.33) % 360; 
@@ -555,10 +631,7 @@
                     this.ui.jogMarker.style.transformOrigin = "bottom center"; this.ui.jogMarker.style.height = "130px"; 
                 });
                 
-                // 监听原生播放结束事件（可选：用于单轨自动播放下一首，但DJ系统通常是手动的）
-                this.audio.addEventListener('ended', () => {
-                    this.pause();
-                });
+                this.audio.addEventListener('ended', () => { this.pause(); });
             }
 
             setupUIEvents() {
@@ -587,7 +660,13 @@
             }
 
             drawCanvas() {
-                if(!this.analyser) return requestAnimationFrame(this.drawCanvas);
+                // 将 requestAnimationFrame 放在最开头，确保即便内部 return 也能维系循环本身
+                requestAnimationFrame(this.drawCanvas);
+                
+                // --- 核心：息屏/节能不绘制 Canvas ---
+                // Canvas 极度消耗 GPU/CPU，是导致后台进程被杀的罪魁祸首
+                if (window.appMode === 'simple' || document.hidden || !this.analyser) return;
+
                 const ctx = this.ui.canvas.getContext('2d');
                 const w = this.ui.canvas.width = this.ui.canvas.clientWidth, h = this.ui.canvas.height = this.ui.canvas.clientHeight;
                 const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
@@ -600,7 +679,6 @@
                     ctx.fillRect(x, h - barHeight, barWidth, barHeight);
                     x += barWidth + 1;
                 }
-                requestAnimationFrame(this.drawCanvas);
             }
         }
 
@@ -609,7 +687,7 @@
             deckB: new Deck('B'),
             masterGain: null,
             crossfader: 0.5,
-            activeMediaDeckId: 'A', // 记录当前拥有手机息屏控制权的焦点 Deck
+            activeMediaDeckId: 'A', 
             
             init() {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -623,33 +701,21 @@
                 this.updateCrossfader();
                 this.startVUMeter();
                 this.syncGitHub();
-                this.setupMediaSessionAPI(); // 激活后台息屏与硬件媒体控制
+                this.setupMediaSessionAPI(); 
             },
 
-            // 核心新增：接管系统级锁屏与媒体按键
             setupMediaSessionAPI() {
                 if ('mediaSession' in navigator) {
-                    // 当你在耳机按播放键或锁屏按播放
-                    navigator.mediaSession.setActionHandler('play', () => {
-                        this.getActiveMediaDeck().play();
-                    });
-                    
-                    // 当你在耳机按暂停键或锁屏按暂停
-                    navigator.mediaSession.setActionHandler('pause', () => {
-                        this.getActiveMediaDeck().pause();
-                    });
-                    
-                    // 当你在锁屏或耳机按下一首
+                    navigator.mediaSession.setActionHandler('play', () => { this.getActiveMediaDeck().play(); });
+                    navigator.mediaSession.setActionHandler('pause', () => { this.getActiveMediaDeck().pause(); });
                     navigator.mediaSession.setActionHandler('nexttrack', () => {
                         const nextTrack = lib.getNextTrack();
                         if (nextTrack) {
                             const deck = this.getActiveMediaDeck();
                             deck.loadTrack(nextTrack);
-                            deck.play(); // 自动续播
+                            deck.play(); 
                         }
                     });
-                    
-                    // 当你在锁屏或耳机按上一首
                     navigator.mediaSession.setActionHandler('previoustrack', () => {
                         const prevTrack = lib.getPrevTrack();
                         if (prevTrack) {
@@ -661,7 +727,6 @@
                 }
             },
 
-            // 核心新增：向手机操作系统汇报当前的曲目信息（显示封面和名字）
             setMediaSessionActiveDeck(deckId, trackInfo) {
                 this.activeMediaDeckId = deckId;
                 if ('mediaSession' in navigator && trackInfo) {
@@ -669,20 +734,12 @@
                         title: trackInfo.title || 'Unknown Track',
                         artist: trackInfo.artist || `Deck ${deckId}`,
                         album: trackInfo.playlist || 'VOID DJ Station',
-                        artwork: [
-                            { 
-                                src: trackInfo.cover || fallbackCoverUrl, 
-                                sizes: '512x512', 
-                                type: trackInfo.cover ? 'image/jpeg' : 'image/svg+xml' 
-                            }
-                        ]
+                        artwork: [ { src: trackInfo.cover || fallbackCoverUrl, sizes: '512x512', type: trackInfo.cover ? 'image/jpeg' : 'image/svg+xml' } ]
                     });
                 }
             },
 
-            getActiveMediaDeck() {
-                return this.activeMediaDeckId === 'A' ? this.deckA : this.deckB;
-            },
+            getActiveMediaDeck() { return this.activeMediaDeckId === 'A' ? this.deckA : this.deckB; },
 
             async syncGitHub() {
                 const status = document.getElementById('sync-status');
@@ -731,13 +788,9 @@
 
             autoLoadTrack(index) {
                 lib.select(index);
-                if (!this.deckA.state.playing) {
-                    this.loadToDeck('A');
-                } else if (!this.deckB.state.playing) {
-                    this.loadToDeck('B');
-                } else {
-                    this.loadToDeck('A');
-                }
+                if (!this.deckA.state.playing) { this.loadToDeck('A'); } 
+                else if (!this.deckB.state.playing) { this.loadToDeck('B'); } 
+                else { this.loadToDeck('A'); }
             },
 
             updateCrossfader() {
@@ -749,7 +802,10 @@
 
             startVUMeter() {
                 const drawVU = () => {
-                    if(!this.deckA.analyser) return requestAnimationFrame(drawVU);
+                    requestAnimationFrame(drawVU);
+                    // 核心：息屏/节能模式不计算电平以节省资源
+                    if(window.appMode === 'simple' || document.hidden || !this.deckA.analyser) return;
+                    
                     let dataA = new Uint8Array(this.deckA.analyser.frequencyBinCount);
                     let dataB = new Uint8Array(this.deckB.analyser.frequencyBinCount);
                     this.deckA.analyser.getByteFrequencyData(dataA);
@@ -758,7 +814,6 @@
                     let master = Math.max(maxA, maxB) * this.masterGain.gain.value;
                     document.getElementById('vu-l').style.height = (master * 100) + '%';
                     document.getElementById('vu-r').style.height = (master * 100 * 0.95) + '%'; 
-                    requestAnimationFrame(drawVU);
                 };
                 drawVU();
             },
