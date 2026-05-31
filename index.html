@@ -7,7 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://gs.jurieo.com/gemini/fonts-googleapis/css2?family=Share+Tech+Mono&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
         
     <style>
         :root { 
@@ -41,10 +41,13 @@
         @media (max-width: 768px) {
             #full-mode-app { grid-template-columns: 1fr; }
             #full-mode-app .deck-section { min-height: 500px; }
+            .crate-section { flex-direction: column !important; }
+            .playlist-col-fm { width: 100% !important; border-right: none !important; border-bottom: 1px solid #222; max-height: 150px; }
         }
         
         /* 满血模式专属样式 */
         .module { background: #0d0d0d; border: 1px solid #222; border-radius: 8px; display: flex; flex-direction: column; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05); }
+        .crate-section { grid-column: 1 / -1; flex-direction: row; } /* 修复：强制横向排列，并占满底部全部列 */
         .deck-a-border { border-top: 3px solid var(--neon-a); }
         .deck-b-border { border-top: 3px solid var(--neon-b); }
         .mixer-border { border-top: 3px solid #f59e0b; }
@@ -105,17 +108,14 @@
 </head>
 <body>
 
-    <!-- 顶部状态栏 -->
     <div class="top-bar">
         <div class="text-[10px] text-gray-500 font-mono tracking-widest hidden sm:block">VOID DJ SYSTEM | MK-VII + MK-VI</div>
         <div class="flex gap-2">
-            <!-- 默认启动为省电模式，点击切换满血模式 -->
             <button id="mode-toggle" onclick="togglePerformanceMode()" class="hardware-btn-fm px-4 py-1 text-[10px] border-green-500 text-green-400">🔋 节能/后台模式</button>
             <button onclick="toggleFullScreen()" class="hardware-btn-fm px-4 py-1 text-[10px]">🔲 全屏</button>
         </div>
     </div>
     
-    <!-- 启动层 -->
     <div id="boot-overlay">
         <div class="text-[12px] tracking-[1.5em] text-gray-500 mb-12 font-black text-center">VOID ENGINE<br><span class="text-xs tracking-normal">DUAL SYSTEM</span></div>
         <button onclick="bootSystem()" class="px-12 py-5 border-2 border-cyan-500 text-cyan-500 font-black hover:bg-cyan-500 hover:text-black transition-all duration-300 shadow-[0_0_30px_rgba(0,242,255,0.3)]">
@@ -126,11 +126,7 @@
         </div>
     </div>
     
-    <!-- ========================================== -->
-    <!-- 1. FULL MODE UI (原始双轨打碟机) -->
-    <!-- ========================================== -->
     <div id="full-mode-app" class="system-container" style="display: none; opacity: 0; transition: opacity 0.5s;">
-        <!-- DECK A -->
         <section class="module deck-section deck-a-border p-4" id="deck-a-ui">
             <div class="lcd-display lcd-a mb-4">
                 <div class="flex justify-between text-[10px] text-cyan-500 mb-1">
@@ -178,7 +174,6 @@
             </div>
         </section>
         
-        <!-- MIXER -->
         <section class="module mixer-section mixer-border p-4 flex flex-col">
             <div class="flex justify-between w-full flex-1">
                 <div class="flex flex-col items-center w-1/3 border-r border-gray-800">
@@ -214,7 +209,6 @@
             </div>
         </section>
         
-        <!-- DECK B -->
         <section class="module deck-section deck-b-border p-4" id="deck-b-ui">
             <div class="lcd-display lcd-b mb-4">
                 <div class="flex justify-between text-[10px] text-pink-500 mb-1">
@@ -257,7 +251,6 @@
             </div>
         </section>
         
-        <!-- LIBRARY CRATE (Full Mode) -->
         <section class="module crate-section" id="library-area-fm">
             <div class="drop-overlay text-2xl font-black text-cyan-400 tracking-widest">DROP AUDIO FILES HERE</div>
             <div class="playlist-col-fm bg-[#080808] p-4 flex flex-col">
@@ -275,14 +268,10 @@
         </section>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 2. SIMPLE MODE UI (原生无阻碍后台极简版) -->
-    <!-- ========================================== -->
     <div id="simple-mode-app">
         <div id="win-content-main" style="width: 100%; height: 100%; max-width: 1100px; max-height: 800px; padding: 15px;"></div>
     </div>
     
-    <!-- 音频引擎载体 -->
     <audio id="audio-A" crossorigin="anonymous" playsinline webkit-playsinline></audio>
     <audio id="audio-B" crossorigin="anonymous" playsinline webkit-playsinline></audio>
     
