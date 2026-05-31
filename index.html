@@ -74,7 +74,6 @@
            ========================================= */
         .hardware-panel { background: var(--metal-grad); box-shadow: inset 0 1px 1px rgba(255,255,255,0.05); }
         
-        /* 旋钮底座与实体 */
         .knob-wrapper { display: flex; flex-direction: column; align-items: center; cursor: ns-resize; touch-action: none; position: relative; margin: 8px 0; }
         .knob-label { font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700; color: #778; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px; }
         .knob-base {
@@ -86,14 +85,12 @@
             border-radius: 50%; position: absolute;
             background: conic-gradient(from 180deg at 50% 50%, #333 0deg, #555 45deg, #222 90deg, #444 135deg, #111 180deg, #444 225deg, #222 270deg, #555 315deg, #333 360deg);
             border: 2px solid #111; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-            transform: rotate(0deg); /* JS 控制 */
         }
         .knob-indicator {
             position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
             width: 3px; height: 30%; background: #fff; border-radius: 2px;
             box-shadow: 0 0 4px #fff;
         }
-        /* 旋钮尺寸变体 */
         .knob-eq .knob-base { width: 56px; height: 56px; } .knob-eq .knob-physical { width: 44px; height: 44px; }
         .knob-filter .knob-base { width: 64px; height: 64px; } .knob-filter .knob-physical { width: 52px; height: 52px; }
         .knob-trim .knob-base { width: 44px; height: 44px; } .knob-trim .knob-physical { width: 34px; height: 34px; }
@@ -101,7 +98,6 @@
         .knob-indicator.ind-b { background: var(--neon-b); box-shadow: 0 0 6px var(--neon-b); }
         .knob-indicator.ind-mix { background: var(--neon-mix); box-shadow: 0 0 6px var(--neon-mix); }
 
-        /* 推子 (Faders) */
         .fader-wrapper { position: relative; display: flex; flex-direction: column; align-items: center; touch-action: none; cursor: ns-resize; }
         .fader-track {
             width: 10px; background: #000; border-radius: 5px; position: relative;
@@ -125,7 +121,6 @@
         .fader-handle.handle-a::after { background: var(--neon-a); box-shadow: 0 0 8px var(--neon-a); }
         .fader-handle.handle-b::after { background: var(--neon-b); box-shadow: 0 0 8px var(--neon-b); }
 
-        /* 按钮与打击垫 */
         .btn-hw {
             background: linear-gradient(180deg, #2a2a30 0%, #151518 100%);
             border: 1px solid #000; border-top: 1px solid #445; border-radius: 4px;
@@ -173,7 +168,7 @@
             width: 86%; height: 86%; border-radius: 50%; background: radial-gradient(circle, #252525 0%, #0a0a0a 60%, #000 100%);
             border: 4px solid #333; position: relative; box-shadow: inset 0 0 20px #000;
         }
-        .jog-platter::after { /* 黑胶纹理 */
+        .jog-platter::after {
             content: ''; position: absolute; inset: 0; border-radius: 50%;
             background: repeating-radial-gradient(circle, transparent 0, transparent 3px, rgba(255,255,255,0.03) 4px);
         }
@@ -196,7 +191,7 @@
         .vu-led { flex: 1; background: #111; border-radius: 1px; transition: background 0.05s; }
         
         /* =========================================
-           启动动画
+           启动动画 & 辅助工具类
            ========================================= */
         #boot-screen {
             position: fixed; inset: 0; background: #050505; z-index: 9999;
@@ -207,29 +202,63 @@
         .term-line { margin: 2px 0; opacity: 0; animation: typeLine 0.1s forwards; }
         @keyframes typeLine { to { opacity: 1; } }
         
-        /* =========================================
-           辅助工具类
-           ========================================= */
         .text-glow-a { text-shadow: 0 0 10px var(--neon-a); }
         .text-glow-b { text-shadow: 0 0 10px var(--neon-b); }
         .truncate-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-        .glass-panel { background: rgba(17, 17, 20, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.05); }
 
+        /* =========================================
+           自适应响应式布局 (Media Queries)
+           ========================================= */
+        /* iPad 屏幕等横屏收缩布局 */
+        @media (max-width: 1250px) and (min-width: 768px) {
+            #app-container {
+                grid-template-columns: 240px 1fr 280px 1fr;
+            }
+            .jog-container { width: 220px; height: 220px; }
+            .jog-screen { width: 80px; height: 80px; }
+            .fader-track.cross { width: 180px; }
+        }
+
+        /* 手机竖屏排版 */
+        @media (max-width: 767px) {
+            body { height: auto; overflow-y: auto; overflow-x: hidden; }
+            #app-container {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                padding: 10px;
+                background: #000;
+            }
+            .area-header { flex-direction: column; height: auto; padding: 15px 10px; gap: 15px; }
+            .area-header > div { width: 100%; justify-content: space-between; }
+            #canvas-master-osc { display: none; } /* 移动端隐藏顶部示波器节省空间 */
+            
+            .area-lib { order: 4; height: 500px; border: 1px solid var(--panel-border); } /* 曲库放最底 */
+            .area-deck-a { order: 1; border-top: 3px solid var(--neon-a); border-radius: 8px; overflow: hidden; }
+            .area-mixer { order: 2; padding: 10px 0; border-radius: 8px; border: 1px solid var(--panel-border); border-top: 3px solid var(--neon-mix); }
+            .area-deck-b { order: 3; border-top: 3px solid var(--neon-b); border-radius: 8px; overflow: hidden; }
+            
+            /* 缩小核心部件尺寸适配竖屏 */
+            .jog-container { width: 200px; height: 200px; }
+            .jog-screen { width: 70px; height: 70px; }
+            .fader-track.vol { height: 160px; }
+            .fader-track.pitch { height: 180px; }
+            .fader-track.cross { width: 200px; }
+
+            .area-deck-a > .flex-1, .area-deck-b > .flex-1 { flex-wrap: wrap; justify-content: center; gap: 15px; padding: 20px 10px; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 硬核启动自检画面 -->
     <div id="boot-screen">
         <div class="text-4xl font-bold mb-8 text-white tracking-[0.5em] text-shadow-[0_0_20px_#fff]">VOID ENGINE <span class="text-xl text-red-500">PRO</span></div>
         <div class="term-text" id="term-output"></div>
         <button id="btn-engage" class="mt-8 px-12 py-4 border-2 border-[#0f0] text-[#0f0] font-bold text-xl hover:bg-[#0f0] hover:text-black transition-all hidden shadow-[0_0_20px_#0f0]">ENGAGE SYSTEM</button>
     </div>
 
-    <!-- 主控界面 -->
     <div id="app-container">
         
-        <!-- Header: 全局状态与波形预览 -->
         <header class="area-header flex items-center px-6 justify-between hardware-panel">
             <div class="flex items-center gap-6">
                 <div class="text-2xl font-black italic tracking-widest text-white">VOID<span class="text-gray-500 font-normal">PRO</span></div>
@@ -238,29 +267,26 @@
                     <span>MEM</span><span id="sys-mem">140MB</span>
                 </div>
             </div>
-            <!-- 顶栏全局示波器 -->
-            <div class="flex-1 mx-8 h-10 bg-black border border-gray-800 rounded relative overflow-hidden">
+            <div class="flex-1 mx-8 h-10 bg-black border border-gray-800 rounded relative overflow-hidden" id="osc-container">
                 <canvas id="canvas-master-osc" class="absolute inset-0 w-full h-full"></canvas>
             </div>
             <div class="flex gap-4">
                 <div class="lcd-screen px-4 h-8 flex items-center text-orange-400 text-sm font-bold" id="master-clock">00:00:00</div>
+                <button class="btn-hw px-4 text-red-500 active glow-b" id="btn-power">MAX POWER</button>
                 <button class="btn-hw px-4" onclick="document.documentElement.requestFullscreen()">FULLSCREEN</button>
             </div>
         </header>
 
-        <!-- 左侧: 曲库系统 (Library) -->
         <aside class="area-lib">
             <div class="h-10 border-b border-gray-800 flex items-center px-4 justify-between bg-[#0a0a0c]">
                 <span class="text-xs font-bold text-gray-400">BROWSER</span>
                 <span class="text-[10px] text-green-500 animate-pulse" id="net-status">NET: CONNECTED</span>
             </div>
             <div class="flex-1 flex flex-col overflow-hidden">
-                <!-- 目录树 -->
                 <div class="h-1/3 border-b border-gray-800 overflow-y-auto p-2" id="lib-tree">
                     <div class="text-xs text-gray-300 p-2 hover:bg-white/5 cursor-pointer flex items-center gap-2" onclick="lib.setPlaylist('GH-Root')">🗂️ All Tracks</div>
                     <div class="text-xs text-gray-300 p-2 hover:bg-white/5 cursor-pointer flex items-center gap-2" onclick="lib.setPlaylist('Local')">💻 Local Drop</div>
                 </div>
-                <!-- 搜索与列表 -->
                 <div class="p-2 border-b border-gray-800 bg-[#0a0a0c]">
                     <input type="text" id="lib-search" class="w-full bg-black border border-gray-700 text-white text-xs px-2 py-1 rounded outline-none focus:border-cyan-500" placeholder="Search Title, Artist, BPM...">
                 </div>
@@ -276,9 +302,7 @@
             </div>
         </aside>
 
-        <!-- DECK A -->
         <main class="area-deck-a relative">
-            <!-- 顶部波形与信息区 -->
             <div class="h-40 p-4 border-b border-gray-800 flex flex-col gap-2">
                 <div class="lcd-screen lcd-glow-a flex-1 p-2 flex flex-col relative">
                     <div class="flex justify-between items-start z-10 relative">
@@ -295,21 +319,17 @@
                         <div><span class="text-[9px] text-gray-500 block">BPM</span><span class="text-lg font-bold text-white" id="da-bpm">0.00</span></div>
                         <div><span class="text-[9px] text-gray-500 block">PITCH</span><span class="text-lg font-bold text-white" id="da-pitch-val">+0.00%</span></div>
                     </div>
-                    <!-- 波形画布 -->
                     <canvas id="canvas-wave-a" class="absolute inset-0 w-full h-full opacity-60"></canvas>
                 </div>
             </div>
 
-            <!-- 中部转盘与推子区 -->
             <div class="flex-1 flex p-4 items-center justify-between">
-                <!-- 走带控制 -->
                 <div class="flex flex-col gap-4 w-24">
                     <button class="btn-hw h-16 rounded-full text-2xl" id="da-btn-play" data-deck="A">▶</button>
                     <button class="btn-hw h-16 rounded-full text-xl text-cyan-500" id="da-btn-cue" data-deck="A">C</button>
                     <button class="btn-hw h-10 text-xs mt-4" id="da-btn-sync" data-deck="A">SYNC</button>
                 </div>
                 
-                <!-- 大转盘 -->
                 <div class="jog-container">
                     <div class="jog-wheel" id="da-jog" data-deck="A">
                         <div class="jog-ring-outer"></div>
@@ -322,7 +342,6 @@
                     </div>
                 </div>
 
-                <!-- Pitch 推子 -->
                 <div class="w-16 flex flex-col items-center">
                     <div class="text-[9px] text-gray-500 font-bold mb-2">TEMPO</div>
                     <div class="w-2 h-2 rounded-full bg-[#111] border border-gray-600 mb-1" id="da-pitch-zero"></div>
@@ -336,7 +355,6 @@
                 </div>
             </div>
 
-            <!-- 底部打击垫 -->
             <div class="h-40 p-4 pt-0">
                 <div class="text-[10px] text-gray-500 font-bold mb-2 flex justify-between">
                     <span>PERFORMANCE PADS</span><span>MODE: HOT CUE / LOOP</span>
@@ -354,10 +372,8 @@
             </div>
         </main>
 
-        <!-- MIXER (中央混音台) -->
         <main class="area-mixer hardware-panel">
             <div class="flex-1 flex">
-                <!-- CH A -->
                 <div class="flex-1 flex flex-col items-center pt-4 border-r border-gray-800">
                     <div class="text-xs font-bold text-gray-500 mb-4">CH A</div>
                     <div class="knob-wrapper knob-trim" data-deck="A" data-param="gain"><div class="knob-label">TRIM</div><div class="knob-base"><div class="knob-physical"><div class="knob-indicator ind-a"></div></div></div></div>
@@ -375,19 +391,16 @@
                     </div>
                 </div>
 
-                <!-- MASTER SECTION -->
                 <div class="w-24 flex flex-col items-center pt-4 bg-[#050505]">
                     <div class="text-xs font-bold text-gray-500 mb-4">MASTER</div>
                     <div class="knob-wrapper knob-trim" data-deck="M" data-param="master"><div class="knob-base"><div class="knob-physical"><div class="knob-indicator ind-mix"></div></div></div></div>
                     
-                    <!-- MASTER VU -->
                     <div class="flex gap-1 bg-black p-1 border border-gray-800 rounded mt-4 h-48">
                         <div class="vu-meter-vert"><div class="vu-leds" id="vu-l"></div></div>
                         <div class="vu-meter-vert"><div class="vu-leds" id="vu-r"></div></div>
                     </div>
                 </div>
 
-                <!-- CH B -->
                 <div class="flex-1 flex flex-col items-center pt-4 border-l border-gray-800">
                     <div class="text-xs font-bold text-gray-500 mb-4">CH B</div>
                     <div class="knob-wrapper knob-trim" data-deck="B" data-param="gain"><div class="knob-label">TRIM</div><div class="knob-base"><div class="knob-physical"><div class="knob-indicator ind-b"></div></div></div></div>
@@ -405,7 +418,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Crossfader -->
             <div class="h-24 border-t border-gray-800 flex items-center justify-center bg-[#070709] shadow-[inset_0_10px_20px_#000]">
                 <div class="text-[10px] text-gray-600 font-bold mr-4">A</div>
                 <div class="fader-wrapper">
@@ -415,9 +427,7 @@
             </div>
         </main>
 
-        <!-- DECK B -->
         <main class="area-deck-b relative">
-            <!-- 顶部波形与信息区 -->
             <div class="h-40 p-4 border-b border-gray-800 flex flex-col gap-2">
                 <div class="lcd-screen lcd-glow-b flex-1 p-2 flex flex-col relative">
                     <div class="flex justify-between items-start z-10 relative">
@@ -434,21 +444,17 @@
                         <div><span class="text-[9px] text-gray-500 block">BPM</span><span class="text-lg font-bold text-white" id="db-bpm">0.00</span></div>
                         <div><span class="text-[9px] text-gray-500 block">PITCH</span><span class="text-lg font-bold text-white" id="db-pitch-val">+0.00%</span></div>
                     </div>
-                    <!-- 波形画布 -->
                     <canvas id="canvas-wave-b" class="absolute inset-0 w-full h-full opacity-60"></canvas>
                 </div>
             </div>
 
-            <!-- 中部转盘与推子区 -->
             <div class="flex-1 flex p-4 items-center justify-between flex-row-reverse">
-                <!-- 走带控制 (对称布局) -->
                 <div class="flex flex-col gap-4 w-24 items-end">
                     <button class="btn-hw h-16 rounded-full text-2xl w-full" id="db-btn-play" data-deck="B">▶</button>
                     <button class="btn-hw h-16 rounded-full text-xl text-pink-500 w-full" id="db-btn-cue" data-deck="B">C</button>
                     <button class="btn-hw h-10 text-xs mt-4 w-full" id="db-btn-sync" data-deck="B">SYNC</button>
                 </div>
                 
-                <!-- 大转盘 -->
                 <div class="jog-container">
                     <div class="jog-wheel" id="db-jog" data-deck="B">
                         <div class="jog-ring-outer"></div>
@@ -461,7 +467,6 @@
                     </div>
                 </div>
 
-                <!-- Pitch 推子 -->
                 <div class="w-16 flex flex-col items-center">
                     <div class="text-[9px] text-gray-500 font-bold mb-2">TEMPO</div>
                     <div class="w-2 h-2 rounded-full bg-[#111] border border-gray-600 mb-1" id="db-pitch-zero"></div>
@@ -475,7 +480,6 @@
                 </div>
             </div>
 
-            <!-- 底部打击垫 -->
             <div class="h-40 p-4 pt-0">
                 <div class="text-[10px] text-gray-500 font-bold mb-2 flex justify-between">
                     <span>PERFORMANCE PADS</span><span>MODE: HOT CUE / LOOP</span>
@@ -495,7 +499,6 @@
 
     </div>
 
-    <!-- 隐藏的音频源 -->
     <audio id="audio-A" crossorigin="anonymous"></audio>
     <audio id="audio-B" crossorigin="anonymous"></audio>
 
@@ -504,8 +507,6 @@
         // 核心系统逻辑 (JS Engine)
         // ==========================================
 
-        /** * 启动自检动画 
-         */
         const bootSeq = [
             "INIT VOID KERNEL V8.0.1...",
             "LOADING MODULES: [WEB_AUDIO, CANVAS_GL, MEDIA_SESSION]",
@@ -524,7 +525,7 @@
                 const line = document.createElement('div');
                 line.className = 'term-line'; line.innerText = `> ${bootSeq[i]}`;
                 out.appendChild(line);
-                await new Promise(r => setTimeout(r, Math.random() * 200 + 100));
+                await new Promise(r => setTimeout(r, Math.random() * 100 + 50));
             }
             document.getElementById('btn-engage').style.display = 'block';
         }
@@ -535,13 +536,13 @@
             setTimeout(() => {
                 document.getElementById('boot-screen').style.display = 'none';
                 document.getElementById('app-container').style.opacity = '1';
-                sys.init(); // 唤醒 WebAudio
+                sys.init();
             }, 500);
         };
 
-        // ==========================================
-        // 音频路由架构 (Audio DSP Core)
-        // ==========================================
+        // 新增状态：性能模式
+        let powerMode = 'MAX'; // 'MAX' or 'ECO'
+
         let actx;
         class DeckDSP {
             constructor(id) {
@@ -549,7 +550,6 @@
                 this.audio = document.getElementById(`audio-${id}`);
                 this.audio.preservesPitch = false;
                 
-                // 状态
                 this.state = {
                     playing: false, bpm: 120, baseBpm: 120, pitch: 1.0, 
                     duration: 0, cues: [null, null, null, null],
@@ -557,7 +557,6 @@
                 };
                 this.trackInfo = null;
 
-                // UI 引用
                 this.ui = {
                     title: document.getElementById(`d${id.toLowerCase()}-title`),
                     artist: document.getElementById(`d${id.toLowerCase()}-artist`),
@@ -578,24 +577,17 @@
             buildNodes(masterCtx, dest) {
                 this.source = masterCtx.createMediaElementSource(this.audio);
                 
-                // 3-Band EQ
                 this.eqH = masterCtx.createBiquadFilter(); this.eqH.type = "highshelf"; this.eqH.frequency.value = 2400;
                 this.eqM = masterCtx.createBiquadFilter(); this.eqM.type = "peaking"; this.eqM.frequency.value = 1000; this.eqM.Q.value = 1;
                 this.eqL = masterCtx.createBiquadFilter(); this.eqL.type = "lowshelf"; this.eqL.frequency.value = 250;
                 
-                // HP/LP Filter
                 this.filter = masterCtx.createBiquadFilter(); this.filter.type = "lowpass"; this.filter.frequency.value = 20000;
-                
-                // Channel Gain
                 this.gain = masterCtx.createGain(); this.gain.gain.value = 0.8;
-                
-                // Analyser
                 this.analyser = masterCtx.createAnalyser(); this.analyser.fftSize = 512;
 
-                // Routing
                 this.source.connect(this.eqH); this.eqH.connect(this.eqM); this.eqM.connect(this.eqL);
                 this.eqL.connect(this.filter); this.filter.connect(this.gain);
-                this.gain.connect(this.analyser); this.analyser.connect(dest); // 到 Crossfader 增益节点
+                this.gain.connect(this.analyser); this.analyser.connect(dest);
             }
 
             load(track) {
@@ -614,7 +606,6 @@
                 this.state.loop.active = false;
                 this.renderPads();
                 
-                // 渲染静态波形 (使用假数据做炫酷视觉，因为真实解码 blob 比较耗时且代码冗长)
                 vis.drawStaticWave(this.id);
             }
 
@@ -628,8 +619,8 @@
                 this.renderPads();
             }
 
-            setPitch(val) { // val: 0.0 to 1.0 (Center is 0.5)
-                let pct = (0.5 - val) * 0.16; // +/- 8% range
+            setPitch(val) {
+                let pct = (0.5 - val) * 0.16;
                 this.state.pitch = 1.0 + pct;
                 this.audio.playbackRate = this.state.pitch;
                 this.updateBPM();
@@ -644,14 +635,14 @@
                 this.ui.bpm.innerText = txt; this.ui.jogBpm.innerText = txt;
             }
 
-            setParam(param, val) { // val: 0.0 to 1.0
+            setParam(param, val) {
                 if(!this.gain) return;
                 let v = val;
                 switch(param) {
                     case 'gain': this.gain.gain.value = v * 1.5; break;
-                    case 'high': this.eqH.gain.value = (v - 0.5) * 40; break; // -20dB to +20dB
+                    case 'high': this.eqH.gain.value = (v - 0.5) * 40; break;
                     case 'mid': this.eqM.gain.value = (v - 0.5) * 40; break;
-                    case 'low': this.eqL.gain.value = (v - 0.5) * 60; break; // Stronger kill for low
+                    case 'low': this.eqL.gain.value = (v - 0.5) * 60; break;
                     case 'filter':
                         if(v < 0.5) { this.filter.type = "lowpass"; this.filter.frequency.value = 200 + (v * 2) * 19800; }
                         else { this.filter.type = "highpass"; this.filter.frequency.value = 20 + ((v - 0.5) * 2) * 10000; }
@@ -697,11 +688,13 @@
                     let m = Math.floor(rem/60), s = Math.floor(rem%60), ms = Math.floor((rem%1)*100);
                     this.ui.time.innerText = `-${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${ms.toString().padStart(2,'0')}`;
                     
-                    // Jog wheel rotation (33.3 RPM simulation)
-                    let rot = (cur * 199.8) % 360; 
-                    this.ui.marker.style.transform = `translateX(-50%) rotate(${rot}deg)`;
-                    this.ui.marker.style.transformOrigin = "bottom center"; 
-                    this.ui.marker.style.height = "120px";
+                    // Jog 旋转 (节流优化：仅当页面有渲染时触发)
+                    if (powerMode === 'MAX' || Math.random() > 0.5) {
+                        let rot = (cur * 199.8) % 360; 
+                        this.ui.marker.style.transform = `translateX(-50%) rotate(${rot}deg)`;
+                        this.ui.marker.style.transformOrigin = "bottom center"; 
+                        this.ui.marker.style.height = "120px";
+                    }
                 });
             }
         }
@@ -711,11 +704,8 @@
             masterGain: null, crossA: null, crossB: null,
             init() {
                 actx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Master Routing
                 this.masterGain = actx.createGain(); this.masterGain.connect(actx.destination);
                 
-                // Crossfader nodes
                 this.crossA = actx.createGain(); this.crossA.connect(this.masterGain);
                 this.crossB = actx.createGain(); this.crossB.connect(this.masterGain);
 
@@ -726,22 +716,19 @@
                 vis.start();
                 lib.init();
             },
-            setCrossfader(val) { // val: 0.0 to 1.0 (A to B)
-                // Equal power crossfade curve
+            setCrossfader(val) {
                 this.crossA.gain.value = Math.cos(val * 0.5 * Math.PI);
                 this.crossB.gain.value = Math.cos((1.0 - val) * 0.5 * Math.PI);
             }
         };
 
-        // ==========================================
-        // 视觉渲染系统 (Canvas Visualizer)
-        // ==========================================
         const vis = {
             ctxA: document.getElementById('canvas-wave-a').getContext('2d'),
             ctxB: document.getElementById('canvas-wave-b').getContext('2d'),
             ctxOsc: document.getElementById('canvas-master-osc').getContext('2d'),
             vuL: document.getElementById('vu-l'),
             vuR: document.getElementById('vu-r'),
+            lastDraw: 0,
             
             start() {
                 this.loop = this.loop.bind(this);
@@ -750,7 +737,6 @@
             },
             
             drawVUGrid() {
-                // 生成物理VU表小格子
                 let leds = '';
                 for(let i=0; i<30; i++) {
                     let color = i > 25 ? '#f00' : (i > 20 ? '#fa0' : '#0f0');
@@ -760,7 +746,6 @@
             },
 
             drawStaticWave(id) {
-                // 绘制背景静态波形轮廓
                 let ctx = id === 'A' ? this.ctxA : this.ctxB;
                 let c = id === 'A' ? '#00f2ff' : '#ff0055';
                 let w = ctx.canvas.width = ctx.canvas.clientWidth;
@@ -784,26 +769,29 @@
                 requestAnimationFrame(this.loop);
                 if(!actx || actx.state === 'suspended') return;
 
-                // --- 1. 实时频谱绘制 (叠加在静态波形上) ---
+                // 省电模式帧率节流控制
+                let now = performance.now();
+                let fpsInterval = powerMode === 'ECO' ? 80 : 0; // ECO 限制约 12-15 帧
+                if (now - this.lastDraw < fpsInterval) return;
+                this.lastDraw = now;
+
                 const drawSpec = (deck, ctx, colorHex) => {
                     if(!deck.analyser || !deck.state.playing) return;
                     let w = ctx.canvas.width, h = ctx.canvas.height;
                     let data = new Uint8Array(deck.analyser.frequencyBinCount);
                     deck.analyser.getByteFrequencyData(data);
                     
-                    ctx.clearRect(0, 0, w, h); // 实际上需要保留静态波形，简化起见这里清空并只画动态频谱
-                    // 重新画一条中心线
+                    ctx.clearRect(0, 0, w, h);
                     ctx.fillStyle = colorHex; ctx.fillRect(0, h/2, w, 1);
                     
                     let bars = 64, step = w / bars;
                     for(let i=0; i<bars; i++) {
                         let v = data[i*2] / 255.0;
                         let bh = v * (h/2);
-                        ctx.fillStyle = colorHex + '80'; // 50% opacity
+                        ctx.fillStyle = colorHex + '80';
                         ctx.fillRect(i*step, h/2 - bh, step-1, bh*2);
                     }
                     
-                    // 画播放进度头
                     let pct = deck.audio.currentTime / (deck.audio.duration || 1);
                     ctx.fillStyle = '#fff';
                     ctx.fillRect(pct * w, 0, 2, h);
@@ -811,70 +799,79 @@
                 drawSpec(sys.deckA, this.ctxA, '#00f2ff');
                 drawSpec(sys.deckB, this.ctxB, '#ff0055');
 
-                // --- 2. 顶部全局示波器 ---
-                let oscW = this.ctxOsc.canvas.width = this.ctxOsc.canvas.clientWidth;
-                let oscH = this.ctxOsc.canvas.height = this.ctxOsc.canvas.clientHeight;
-                this.ctxOsc.clearRect(0,0,oscW,oscH);
-                
-                // 绘制扫描线网格
-                this.ctxOsc.strokeStyle = '#003300'; this.ctxOsc.lineWidth = 1;
-                for(let i=0; i<oscW; i+=20) { this.ctxOsc.beginPath(); this.ctxOsc.moveTo(i,0); this.ctxOsc.lineTo(i,oscH); this.ctxOsc.stroke(); }
-                for(let i=0; i<oscH; i+=10) { this.ctxOsc.beginPath(); this.ctxOsc.moveTo(0,i); this.ctxOsc.lineTo(oscW,i); this.ctxOsc.stroke(); }
+                // 省电模式下，如果屏幕较小（如手机竖屏隐藏了示波器），则跳过全局示波器的绘制计算
+                if (document.getElementById('osc-container').offsetParent !== null) {
+                    let oscW = this.ctxOsc.canvas.width = this.ctxOsc.canvas.clientWidth;
+                    let oscH = this.ctxOsc.canvas.height = this.ctxOsc.canvas.clientHeight;
+                    this.ctxOsc.clearRect(0,0,oscW,oscH);
+                    
+                    this.ctxOsc.strokeStyle = '#003300'; this.ctxOsc.lineWidth = 1;
+                    for(let i=0; i<oscW; i+=20) { this.ctxOsc.beginPath(); this.ctxOsc.moveTo(i,0); this.ctxOsc.lineTo(i,oscH); this.ctxOsc.stroke(); }
+                    for(let i=0; i<oscH; i+=10) { this.ctxOsc.beginPath(); this.ctxOsc.moveTo(0,i); this.ctxOsc.lineTo(oscW,i); this.ctxOsc.stroke(); }
 
-                let oscDataA = new Uint8Array(sys.deckA.analyser.frequencyBinCount);
-                let oscDataB = new Uint8Array(sys.deckB.analyser.frequencyBinCount);
-                sys.deckA.analyser.getByteTimeDomainData(oscDataA);
-                sys.deckB.analyser.getByteTimeDomainData(oscDataB);
+                    let oscDataA = new Uint8Array(sys.deckA.analyser.frequencyBinCount);
+                    let oscDataB = new Uint8Array(sys.deckB.analyser.frequencyBinCount);
+                    sys.deckA.analyser.getByteTimeDomainData(oscDataA);
+                    sys.deckB.analyser.getByteTimeDomainData(oscDataB);
 
-                this.ctxOsc.lineWidth = 2;
-                this.ctxOsc.strokeStyle = 'rgba(0,242,255,0.8)';
-                this.ctxOsc.beginPath();
-                for(let i=0; i<oscW; i++) {
-                    let v = oscDataA[i] / 128.0; let y = v * oscH/2;
-                    if(i===0) this.ctxOsc.moveTo(i,y); else this.ctxOsc.lineTo(i,y);
+                    this.ctxOsc.lineWidth = 2;
+                    this.ctxOsc.strokeStyle = 'rgba(0,242,255,0.8)';
+                    this.ctxOsc.beginPath();
+                    for(let i=0; i<oscW; i++) {
+                        let v = oscDataA[i] / 128.0; let y = v * oscH/2;
+                        if(i===0) this.ctxOsc.moveTo(i,y); else this.ctxOsc.lineTo(i,y);
+                    }
+                    this.ctxOsc.stroke();
+
+                    this.ctxOsc.strokeStyle = 'rgba(255,0,85,0.8)';
+                    this.ctxOsc.beginPath();
+                    for(let i=0; i<oscW; i++) {
+                        let v = oscDataB[i] / 128.0; let y = v * oscH/2;
+                        if(i===0) this.ctxOsc.moveTo(i,y); else this.ctxOsc.lineTo(i,y);
+                    }
+                    this.ctxOsc.stroke();
+
+                    // Master VU
+                    let maxA = Math.max(...oscDataA)-128, maxB = Math.max(...oscDataB)-128;
+                    let volA = (maxA/128) * sys.deckA.gain.gain.value * sys.crossA.gain.value;
+                    let volB = (maxB/128) * sys.deckB.gain.gain.value * sys.crossB.gain.value;
+                    let masterVol = (volA + volB) * sys.masterGain.gain.value * 2;
+                    
+                    let activeLeds = Math.min(30, Math.floor(masterVol * 30));
+                    let childsL = this.vuL.children, childsR = this.vuR.children;
+                    for(let i=0; i<30; i++) {
+                        let isOn = i < activeLeds;
+                        childsL[i].style.backgroundColor = isOn ? childsL[i].style.getPropertyValue('--c') : '#111';
+                        childsR[i].style.backgroundColor = i < activeLeds*0.9 ? childsR[i].style.getPropertyValue('--c') : '#111';
+                    }
                 }
-                this.ctxOsc.stroke();
 
-                this.ctxOsc.strokeStyle = 'rgba(255,0,85,0.8)';
-                this.ctxOsc.beginPath();
-                for(let i=0; i<oscW; i++) {
-                    let v = oscDataB[i] / 128.0; let y = v * oscH/2;
-                    if(i===0) this.ctxOsc.moveTo(i,y); else this.ctxOsc.lineTo(i,y);
-                }
-                this.ctxOsc.stroke();
-
-                // --- 3. Master VU Meter ---
-                let maxA = Math.max(...oscDataA)-128, maxB = Math.max(...oscDataB)-128;
-                let volA = (maxA/128) * sys.deckA.gain.gain.value * sys.crossA.gain.value;
-                let volB = (maxB/128) * sys.deckB.gain.gain.value * sys.crossB.gain.value;
-                let masterVol = (volA + volB) * sys.masterGain.gain.value * 2; // 放大一点视觉效果
-                
-                let activeLeds = Math.min(30, Math.floor(masterVol * 30));
-                let childsL = this.vuL.children, childsR = this.vuR.children;
-                for(let i=0; i<30; i++) {
-                    let isOn = i < activeLeds;
-                    childsL[i].style.backgroundColor = isOn ? childsL[i].style.getPropertyValue('--c') : '#111';
-                    childsR[i].style.backgroundColor = i < activeLeds*0.9 ? childsR[i].style.getPropertyValue('--c') : '#111'; // 右侧略抖动
-                }
-
-                // 系统时间
                 document.getElementById('master-clock').innerText = new Date().toLocaleTimeString('en-US', {hour12:false});
             }
         };
 
-        // ==========================================
-        // 交互控制器 (UI/Interaction Binder)
-        // ==========================================
         const ui = {
             bindAll() {
-                // 1. 旋钮交互 (Knobs)
+                // 电源模式切换
+                document.getElementById('btn-power').addEventListener('click', (e) => {
+                    if (powerMode === 'MAX') {
+                        powerMode = 'ECO';
+                        e.target.innerText = 'ECO MODE';
+                        e.target.className = 'btn-hw px-4 text-green-500 shadow-[0_0_10px_#0f0]';
+                    } else {
+                        powerMode = 'MAX';
+                        e.target.innerText = 'MAX POWER';
+                        e.target.className = 'btn-hw px-4 text-red-500 active glow-b';
+                    }
+                });
+
                 document.querySelectorAll('.knob-wrapper').forEach(el => {
-                    let currentVal = 0.5; // 0.0 to 1.0
+                    let currentVal = 0.5;
                     const phys = el.querySelector('.knob-physical');
                     const dId = el.dataset.deck, param = el.dataset.param;
                     
                     const updatePhys = (v) => {
-                        let deg = (v - 0.5) * 270; // -135 to +135
+                        let deg = (v - 0.5) * 270;
                         phys.style.transform = `rotate(${deg}deg)`;
                         if(dId === 'M') sys.masterGain.gain.value = v * 2;
                         else if(dId === 'A') sys.deckA.setParam(param, v);
@@ -883,17 +880,23 @@
                     updatePhys(currentVal);
 
                     let isDragging = false, startY = 0;
-                    el.addEventListener('mousedown', e => { isDragging=true; startY=e.clientY; });
-                    window.addEventListener('mousemove', e => {
+                    el.addEventListener('mousedown', e => { isDragging=true; startY=e.clientY || e.touches?.[0].clientY; });
+                    el.addEventListener('touchstart', e => { isDragging=true; startY=e.touches[0].clientY; }, {passive: true});
+                    
+                    const moveHandler = (e) => {
                         if(!isDragging) return;
-                        let delta = (startY - e.clientY) * 0.005; startY = e.clientY;
+                        let clientY = e.clientY || e.touches?.[0].clientY;
+                        let delta = (startY - clientY) * 0.005; startY = clientY;
                         currentVal = Math.max(0, Math.min(1, currentVal + delta));
                         updatePhys(currentVal);
-                    });
+                    };
+                    window.addEventListener('mousemove', moveHandler);
+                    window.addEventListener('touchmove', moveHandler, {passive: true});
+                    
                     window.addEventListener('mouseup', () => isDragging=false);
+                    window.addEventListener('touchend', () => isDragging=false);
                 });
 
-                // 2. 推子交互 (Faders)
                 document.querySelectorAll('.fader-wrapper').forEach(el => {
                     const track = el.querySelector('.fader-track');
                     const handle = el.querySelector('.fader-handle');
@@ -910,7 +913,7 @@
                                 if(dId === 'B') sys.deckB.setParam('gain', v);
                             }
                             if(track.classList.contains('pitch')) {
-                                if(dId === 'A') sys.deckA.setPitch(1.0 - v); // 下滑加速
+                                if(dId === 'A') sys.deckA.setPitch(1.0 - v);
                                 if(dId === 'B') sys.deckB.setPitch(1.0 - v);
                             }
                         }
@@ -920,62 +923,77 @@
                     updateFader(currentVal);
 
                     let isDragging = false;
-                    el.addEventListener('mousedown', e => { isDragging=true; });
-                    window.addEventListener('mousemove', e => {
+                    el.addEventListener('mousedown', () => isDragging=true);
+                    el.addEventListener('touchstart', () => isDragging=true, {passive: true});
+                    
+                    const moveHandler = (e) => {
                         if(!isDragging) return;
                         const rect = track.getBoundingClientRect();
+                        let clientX = e.clientX || e.touches?.[0].clientX;
+                        let clientY = e.clientY || e.touches?.[0].clientY;
+                        
                         if(isCross) {
-                            currentVal = (e.clientX - rect.left) / rect.width;
+                            currentVal = (clientX - rect.left) / rect.width;
                         } else {
-                            currentVal = 1.0 - ((e.clientY - rect.top) / rect.height);
+                            currentVal = 1.0 - ((clientY - rect.top) / rect.height);
                         }
                         currentVal = Math.max(0, Math.min(1, currentVal));
                         updateFader(currentVal);
-                    });
+                    };
+                    window.addEventListener('mousemove', moveHandler);
+                    window.addEventListener('touchmove', moveHandler, {passive: true});
+                    
                     window.addEventListener('mouseup', () => isDragging=false);
+                    window.addEventListener('touchend', () => isDragging=false);
                 });
 
-                // 3. 按钮交互
                 const bindBtn = (id, fn) => document.getElementById(id)?.addEventListener('click', fn);
                 bindBtn('da-btn-play', () => sys.deckA.toggle());
                 bindBtn('db-btn-play', () => sys.deckB.toggle());
                 bindBtn('da-btn-cue', () => sys.deckA.cue());
                 bindBtn('db-btn-cue', () => sys.deckB.cue());
 
-                // 打击垫
                 document.querySelectorAll('.pad-hw').forEach(pad => {
-                    pad.addEventListener('mousedown', () => {
+                    const trig = () => {
                         const dId = pad.dataset.deck; const d = dId === 'A' ? sys.deckA : sys.deckB;
                         if(pad.classList.contains('btn-hc')) d.handlePad(parseInt(pad.dataset.idx), 'cue');
                         if(pad.classList.contains('btn-loop')) d.handlePad(null, 'loop', parseInt(pad.dataset.beats));
-                    });
+                    };
+                    pad.addEventListener('mousedown', trig);
+                    pad.addEventListener('touchstart', (e) => { e.preventDefault(); trig(); }, {passive: false});
                 });
 
-                // 搓盘控制
                 ['A', 'B'].forEach(id => {
                     const jog = document.getElementById(`d${id.toLowerCase()}-jog`);
                     const deck = id === 'A' ? sys.deckA : sys.deckB;
                     let isDragging = false, lastY = 0;
-                    jog.addEventListener('mousedown', e => { isDragging = true; lastY = e.clientY; if(deck.state.playing) deck.audio.pause(); });
-                    window.addEventListener('mouseup', () => { if(isDragging && deck.state.playing) deck.audio.play(); isDragging = false; });
-                    window.addEventListener('mousemove', e => {
-                        if(!isDragging || !deck.audio.src) return;
-                        let delta = lastY - e.clientY; lastY = e.clientY;
-                        deck.audio.currentTime = Math.max(0, deck.audio.currentTime + (delta * 0.05));
-                    });
                     
-                    // Pitch Bend 按钮
+                    const startScrub = (y) => { isDragging = true; lastY = y; if(deck.state.playing) deck.audio.pause(); };
+                    jog.addEventListener('mousedown', e => startScrub(e.clientY));
+                    jog.addEventListener('touchstart', e => startScrub(e.touches[0].clientY), {passive: true});
+                    
+                    const endScrub = () => { if(isDragging && deck.state.playing) deck.audio.play(); isDragging = false; };
+                    window.addEventListener('mouseup', endScrub);
+                    window.addEventListener('touchend', endScrub);
+                    
+                    const moveScrub = (y) => {
+                        if(!isDragging || !deck.audio.src) return;
+                        let delta = lastY - y; lastY = y;
+                        deck.audio.currentTime = Math.max(0, deck.audio.currentTime + (delta * 0.05));
+                    };
+                    window.addEventListener('mousemove', e => moveScrub(e.clientY));
+                    window.addEventListener('touchmove', e => moveScrub(e.touches?.[0].clientY), {passive: true});
+                    
                     document.querySelectorAll(`button[data-deck="${id}"][data-bend]`).forEach(btn => {
-                        btn.addEventListener('mousedown', () => { deck.audio.playbackRate = deck.state.pitch + (btn.dataset.bend === '+' ? 0.05 : -0.05); });
-                        btn.addEventListener('mouseup', () => { deck.audio.playbackRate = deck.state.pitch; });
+                        const bendTrig = () => { deck.audio.playbackRate = deck.state.pitch + (btn.dataset.bend === '+' ? 0.05 : -0.05); };
+                        const bendEnd = () => { deck.audio.playbackRate = deck.state.pitch; };
+                        btn.addEventListener('mousedown', bendTrig); btn.addEventListener('touchstart', bendTrig, {passive: true});
+                        btn.addEventListener('mouseup', bendEnd); btn.addEventListener('touchend', bendEnd);
                     });
                 });
             }
         };
 
-        // ==========================================
-        // 曲库管理系统 (Library Manager)
-        // ==========================================
         const lib = {
             db: [], currentList: [], selectedIdx: -1,
             ui: { list: document.getElementById('lib-list'), search: document.getElementById('lib-search') },
@@ -1016,8 +1034,8 @@
                         <td class="p-2 text-gray-400 truncate max-w-[80px]">${t.artist}</td>
                         <td class="p-2 font-mono text-cyan-600">${t.bpm}</td>
                         <td class="p-2 flex gap-1">
-                            <button onclick="event.stopPropagation(); lib.loadTo('A', ${i})" class="px-2 py-0.5 bg-cyan-900 border border-cyan-500 text-cyan-400 rounded text-[9px] hover:bg-cyan-500 hover:text-black">A</button>
-                            <button onclick="event.stopPropagation(); lib.loadTo('B', ${i})" class="px-2 py-0.5 bg-pink-900 border border-pink-500 text-pink-400 rounded text-[9px] hover:bg-pink-500 hover:text-black">B</button>
+                            <button onclick="event.stopPropagation(); lib.loadTo('A', ${i})" class="px-3 py-1 bg-cyan-900 border border-cyan-500 text-cyan-400 rounded text-[10px] font-bold hover:bg-cyan-500 hover:text-black">A</button>
+                            <button onclick="event.stopPropagation(); lib.loadTo('B', ${i})" class="px-3 py-1 bg-pink-900 border border-pink-500 text-pink-400 rounded text-[10px] font-bold hover:bg-pink-500 hover:text-black">B</button>
                         </td>
                     </tr>
                 `).join('');
@@ -1028,6 +1046,10 @@
             loadTo(deckId, i) {
                 let t = this.currentList[i];
                 if(deckId === 'A') sys.deckA.load(t); else sys.deckB.load(t);
+                // 移动端加载歌曲后，自动滚动到相应 Deck
+                if(window.innerWidth < 768) {
+                    document.querySelector(deckId === 'A' ? '.area-deck-a' : '.area-deck-b').scrollIntoView({behavior: 'smooth', block: 'start'});
+                }
             },
 
             setupDragDrop() {
@@ -1060,9 +1082,10 @@
             }
         };
 
-        // 随机更新系统状态
         setInterval(() => {
-            document.getElementById('sys-cpu').innerText = (10 + Math.random()*20).toFixed(1) + '%';
+            // 省电模式下模拟的 CPU 开销显示下降
+            let baseCpu = powerMode === 'ECO' ? 3 : 15;
+            document.getElementById('sys-cpu').innerText = (baseCpu + Math.random()*10).toFixed(1) + '%';
             document.getElementById('sys-mem').innerText = (140 + Math.random()*50).toFixed(0) + 'MB';
         }, 2000);
 
