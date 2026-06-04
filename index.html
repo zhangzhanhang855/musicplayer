@@ -155,6 +155,15 @@
             </section>
 
             <aside class="module crate-section flex flex-col flex-1 min-h-[300px]">
+                <div class="p-2 bg-[#0a0a0a] border-b border-white/5 flex flex-col gap-2">
+                    <div class="text-[9px] text-cyan-600 font-mono font-bold uppercase tracking-wider">GitHub Repo Sync</div>
+                    <div class="flex gap-1">
+                        <input class="flex-1 bg-black border border-white/10 p-1.5 text-[10px] outline-none focus:border-cyan-500/50 text-white font-mono rounded-sm" id="gh-user" placeholder="User Name" type="text">
+                        <input class="flex-1 bg-black border border-white/10 p-1.5 text-[10px] outline-none focus:border-cyan-500/50 text-white font-mono rounded-sm" id="gh-repo" placeholder="Repo Name" type="text">
+                        <button class="px-3 bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold hover:bg-cyan-900/60 transition-colors rounded-sm" id="btn-sync">SYNC</button>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-4 gap-1 p-2">
                     <div class="pad">CUE 1</div><div class="pad">CUE 2</div><div class="pad">LOOP</div><div class="pad">FX</div>
                 </div>
@@ -166,7 +175,7 @@
                     <ul id="track-list"></ul>
                 </div>
                 <div class="p-2 bg-black/60 border-t border-white/5">
-                    <p class="text-[8px] text-cyan-600/50 font-mono italic uppercase" id="net-status">Broadcast Active</p>
+                    <p class="text-[8px] text-cyan-600/50 font-mono italic uppercase" id="net-status">System Standby</p>
                 </div>
             </aside>
         </div>
@@ -190,14 +199,24 @@
         const emjEl = content.querySelector('#cover-emoji');
         const pads = content.querySelectorAll('.pad');
         const netStatus = content.querySelector('#net-status');
+        
+        // 新增的 DOM 引用
+        const ghUserInp = content.querySelector('#gh-user');
+        const ghRepoInp = content.querySelector('#gh-repo');
+        const btnSync = content.querySelector('#btn-sync');
 
-        const G = { user: 'zhangzhanhang855', repo: 'musiconly' };
         let playlists = {};
         let currentPlaylist = 'Root';
         let filteredTracks = [];
         let curIdx = 0;
         let loopMode = 'list';
         let currentCoverObjectURL = null;
+
+        // 初始化加载记忆的账号配置，如果没有则使用默认值
+        const savedUser = localStorage.getItem('jrmusic_gh_user') || 'zhangzhanhang855';
+        const savedRepo = localStorage.getItem('jrmusic_gh_repo') || 'musiconly';
+        ghUserInp.value = savedUser;
+        ghRepoInp.value = savedRepo;
 
         // 安全加载 jsmediatags 用于解析封面
         if (!window.jsmediatags) {
@@ -417,18 +436,27 @@
         // ==========================================
         // 6. 核心逻辑: GitHub API 同步抓取
         // ==========================================
-        async function loadLibrary() {
+        async function loadLibrary(user, repo) {
             try {
-                titleEl.innerText = 'SYNCING GITHUB...';
-                netStatus.innerText = 'CONNECTING TO REPO...';
+                // 重置播放器和列表状态
+                audio.pause();
+                audio.src = '';
+                curTimeEl.innerText = '00:00:00';
+                playlists = {};
+                filteredTracks = [];
+                listContainer.innerHTML = '';
+                navContainer.innerHTML = '';
                 
-                const res = await fetch(`https://api.github.com/repos/${G.user}/${G.repo}/contents/`);
+                titleEl.innerText = 'SYNCING GITHUB...';
+                netStatus.innerText = `CONNECTING TO ${user}/${repo}...`;
+                
+                const res = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/`);
                 if (!res.ok) throw new Error('API LIMIT OR REPO NOT FOUND');
                 
                 const items = await res.json();
                 playlists['Root'] = filterAudio(items);
                 
-                // 获取根目录下的文件夹（如果文件非常多可能会触发 Github API 限流，请注意）
+                // 获取根目录下的文件夹
                 const folders = items.filter(i => i.type === 'dir');
                 for (let f of folders) {
                     netStatus.innerText = `FETCHING DIR: ${f.name}`;
@@ -438,14 +466,30 @@
                 }
                 
                 netStatus.innerText = 'SYNC COMPLETE. SYSTEM ONLINE.';
+                
+                // 同步成功后保存至本地，下次打开直接读取
+                localStorage.setItem('jrmusic_gh_user', user);
+                localStorage.setItem('jrmusic_gh_repo', repo);
+                
                 renderNav();
                 switchPlaylist('Root');
             } catch (e) {
                 titleEl.innerText = 'IO ERROR';
-                netStatus.innerText = 'SYNC FAILED - CHECK NETWORK OR API LIMITS';
+                netStatus.innerText = 'SYNC FAILED - CHECK REPO OR API LIMITS';
             }
         }
-        loadLibrary();
+        
+        // 绑定同步按钮点击事件
+        btnSync.onclick = () => {
+            const u = ghUserInp.value.trim();
+            const r = ghRepoInp.value.trim();
+            if(u && r) {
+                loadLibrary(u, r);
+            }
+        };
+
+        // 页面初始化时根据缓存的账号启动抓取
+        loadLibrary(savedUser, savedRepo);
 
         // 卸载机制防污染
         winObj.onDestroy = () => {
