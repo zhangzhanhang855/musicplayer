@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>JRmusic</title>
+    <title>JRmusic - Deep Lyrics Scan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://gs.jurieo.com/gemini/fonts-googleapis/css2?family=Inter:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         body { background: #050505; color: #fff; font-family: 'Inter', sans-serif; min-height: 100vh; margin: 0; overflow: hidden; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* 移除写死的宽高，改为全屏视口 */
         #app-container { width: 100vw; height: 100vh; padding: 10px; box-sizing: border-box; }
         #win-content-main { width: 100%; height: 100%; }
     </style>
@@ -22,85 +21,58 @@
     </div>
 
     <script>
-        // 模拟宿主窗口对象
         const winObj = { id: 'main', onDestroy: () => {} };
         const content = document.getElementById('win-content-' + winObj.id);
 
         // ==========================================
-        // 1. 注入自适应组件样式 (Responsive CSS)
+        // 1. 样式表注入 (包含歌词遮罩与激活态)
         // ==========================================
         const styleEl = document.createElement('style');
         styleEl.innerHTML = `
             #win-content-${winObj.id} { --neon: #00f2ff; font-family: 'Inter', sans-serif; background: #050505; color: #fff; height: 100%; }
-            
-            /* 默认手机布局：垂直排列并允许内部滚动 */
-            #win-content-${winObj.id} .dj-system { 
-                display: flex; 
-                flex-direction: column; 
-                gap: 10px; 
-                height: 100%; 
-                width: 100%; 
-                box-sizing: border-box; 
-                overflow-y: auto; 
-                overflow-x: hidden;
-            }
-            
-            /* 桌面与 iPad 横屏布局：三列网格 */
-            @media (min-width: 900px) {
-                #win-content-${winObj.id} .dj-system { 
-                    display: grid; 
-                    grid-template-columns: 1.5fr 200px 1.2fr; 
-                    overflow: hidden; 
-                }
-            }
-
+            #win-content-${winObj.id} .dj-system { display: flex; flex-direction: column; gap: 10px; height: 100%; width: 100%; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; }
+            @media (min-width: 900px) { #win-content-${winObj.id} .dj-system { display: grid; grid-template-columns: 1.4fr 120px 1fr 1.2fr; overflow: hidden; } }
             #win-content-${winObj.id} .module { background: #0d0d0d; border: 1px solid #222; border-radius: 6px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-            
-            /* 移动端混音台横向排版，PC 端纵向 */
             #win-content-${winObj.id} .mixer-section { flex-direction: row; flex-wrap: wrap; justify-content: space-around; padding: 15px; }
-            @media (min-width: 900px) {
-                #win-content-${winObj.id} .mixer-section { flex-direction: column; }
-            }
-
+            @media (min-width: 900px) { #win-content-${winObj.id} .mixer-section { flex-direction: column; align-items: center; justify-content: center; } }
             #win-content-${winObj.id} .knob-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; cursor: ns-resize; touch-action: none; }
             #win-content-${winObj.id} .knob-physical { width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #444, #111); border: 3px solid #000; position: relative; transform: rotate(0deg); transition: transform 0.05s linear; }
             #win-content-${winObj.id} .knob-physical::after { content: ''; position: absolute; top: 5px; left: 50%; width: 3px; height: 8px; background: var(--neon); transform: translateX(-50%); border-radius: 2px; }
-            
             #win-content-${winObj.id} .fader-track { width: 14px; height: 160px; background: #000; border-radius: 7px; position: relative; border: 1px solid #222; cursor: ns-resize; touch-action: none; }
             #win-content-${winObj.id} .fader-handle { width: 40px; height: 44px; background: linear-gradient(180deg, #444 0%, #222 100%); border-radius: 4px; position: absolute; left: -13px; bottom: 50%; border: 1px solid #000; box-shadow: 0 8px 16px rgba(0,0,0,0.5); transition: bottom 0.05s linear; }
-            
             #win-content-${winObj.id} .pad { height: 42px; background: #1a1a1a; border-radius: 4px; border-bottom: 4px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; color: #555; transition: all 0.05s; }
             #win-content-${winObj.id} .pad.lit { background: var(--neon); color: #000; border-bottom: 0; transform: translateY(3px); box-shadow: 0 0 25px var(--neon); }
-            
             #win-content-${winObj.id} .hardware-btn { background: linear-gradient(180deg, #252525 0%, #111 100%); border: 1px solid #333; border-radius: 4px; color: #aaa; font-family: 'Share Tech Mono', monospace; font-size: 10px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: all 0.1s; }
             #win-content-${winObj.id} .hardware-btn:active { transform: translateY(2px); background: #111; }
-            
-            /* 黑胶唱片自适应缩小 */
             #win-content-${winObj.id} .vinyl-wrap { width: min(280px, 60vw); height: min(280px, 60vw); border-radius: 50%; background: #050505; display: flex; align-items: center; justify-content: center; cursor: grab; position: relative; touch-action: none; margin: 0 auto; }
             #win-content-${winObj.id} .vinyl-disk { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, #252525 0%, #0a0a0a 60%, #000 100%); border: 10px solid #2a2a2a; position: relative; pointer-events: none; box-shadow: inset 0 0 15px #000, 0 10px 30px rgba(0,0,0,0.8); }
             #win-content-${winObj.id} .vinyl-disk::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0, transparent 2px, rgba(255,255,255,0.02) 3px); }
             #win-content-${winObj.id} .art-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 35%; height: 35%; border-radius: 50%; border: 4px solid #333; background: #111; z-index: 10; overflow: hidden; pointer-events: none; box-shadow: 0 0 0 1px #000, 0 0 0 2.5px var(--neon), 0 8px 20px rgba(0,0,0,0.6); }
             #win-content-${winObj.id} #cover-art-${winObj.id} { width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 0.4s ease; }
             #win-content-${winObj.id} #cover-art-${winObj.id}.loaded { opacity: 1; }
-            
             #win-content-${winObj.id}.is-playing .vinyl-disk { animation: rotate-v-${winObj.id} 6s linear infinite; }
             #win-content-${winObj.id}.is-playing .art-center { animation: rotate-a-${winObj.id} 6s linear infinite; }
             @keyframes rotate-v-${winObj.id} { to { transform: rotate(360deg); } }
             @keyframes rotate-a-${winObj.id} { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-            
             #win-content-${winObj.id} .lcd-main { background: #050a05; border-radius: 4px; padding: 12px; font-family: 'Share Tech Mono', monospace; box-shadow: inset 0 0 40px #000; border: 2px solid #000; }
+            
+            /* 歌词特效样式 */
+            #win-content-${winObj.id} .lyrics-mask { -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 85%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 85%, transparent 100%); }
+            #win-content-${winObj.id} .lyric-line { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: rgba(255, 255, 255, 0.3); text-align: center; padding: 8px 12px; font-size: 11px; line-height: 1.6; cursor: pointer; border-radius: 4px; }
+            #win-content-${winObj.id} .lyric-line:hover { color: rgba(255, 255, 255, 0.8); background: rgba(255, 255, 255, 0.05); }
+            #win-content-${winObj.id} .lyric-line.active { color: var(--neon); font-size: 15px; font-weight: 700; text-shadow: 0 0 12px rgba(0, 242, 255, 0.4); transform: scale(1.05); cursor: default; background: transparent; }
         `;
         content.appendChild(styleEl);
 
         // ==========================================
-        // 2. 构造 HTML 核心骨架 (采用模板字符串重写)
+        // 2. HTML 骨架
         // ==========================================
         content.innerHTML += `
         <div class="dj-system p-3 bg-[#161616] border-4 border-[#222] rounded-xl font-sans select-none no-scrollbar">
             <section class="module deck-section p-4 flex-shrink-0">
                 <div class="lcd-main">
                     <div class="flex justify-between text-[9px] opacity-30 mb-1 uppercase">
-                        <span>Engine v2 [<span class="text-cyan-400" id="lcd-mode">LIST</span>]</span>
+                        <span>Engine v3.2 [<span class="text-cyan-400" id="lcd-mode">LIST</span>]</span>
                         <span>Deck A</span>
                     </div>
                     <div class="text-xl font-bold tracking-tighter text-cyan-400 truncate" id="title">READY</div>
@@ -154,6 +126,19 @@
                 </div>
             </section>
 
+            <section class="module lyrics-section flex-shrink-0 flex flex-col h-[280px] md:h-[350px] lg:h-auto border border-[#333] shadow-inner">
+                <div class="p-2 bg-[#0a0a0a] border-b border-[#222] flex flex-col gap-2 relative z-10">
+                    <div class="text-[9px] text-cyan-600 font-mono font-bold uppercase tracking-wider text-center" id="lyrics-status">LYRICS SYSTEM</div>
+                </div>
+                <div class="flex-1 relative bg-[#060606] overflow-hidden lyrics-mask w-full">
+                    <div id="lyrics-container-${winObj.id}" class="absolute inset-0 overflow-y-auto no-scrollbar" style="scroll-behavior: smooth;">
+                        <div id="lyrics-content-${winObj.id}" class="w-full pb-[60%] pt-[60%] flex flex-col items-center px-2">
+                            <div class="text-center text-gray-500 text-[11px] mt-10 tracking-widest font-mono">纯音乐 / 加载中...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <aside class="module crate-section flex flex-col flex-1 min-h-[300px]">
                 <div class="p-2 bg-[#0a0a0a] border-b border-white/5 flex flex-col gap-2">
                     <div class="text-[9px] text-cyan-600 font-mono font-bold uppercase tracking-wider">GitHub Repo Sync</div>
@@ -163,7 +148,6 @@
                         <button class="px-3 bg-cyan-900/30 text-cyan-400 border border-cyan-500/30 text-[10px] font-bold hover:bg-cyan-900/60 transition-colors rounded-sm" id="btn-sync">SYNC</button>
                     </div>
                 </div>
-                
                 <div class="grid grid-cols-4 gap-1 p-2">
                     <div class="pad">CUE 1</div><div class="pad">CUE 2</div><div class="pad">LOOP</div><div class="pad">FX</div>
                 </div>
@@ -182,7 +166,7 @@
         <audio id="player-audio-${winObj.id}" playsinline></audio>`;
 
         // ==========================================
-        // 3. 获取 DOM 引用与状态初始化
+        // 3. 状态初始化
         // ==========================================
         const audio = content.querySelector('#player-audio-' + winObj.id);
         const titleEl = content.querySelector('#title');
@@ -199,11 +183,13 @@
         const emjEl = content.querySelector('#cover-emoji');
         const pads = content.querySelectorAll('.pad');
         const netStatus = content.querySelector('#net-status');
-        
-        // 新增的 DOM 引用
         const ghUserInp = content.querySelector('#gh-user');
         const ghRepoInp = content.querySelector('#gh-repo');
         const btnSync = content.querySelector('#btn-sync');
+        
+        const lyricsContainerEl = content.querySelector(`#lyrics-container-${winObj.id}`);
+        const lyricsContentEl = content.querySelector(`#lyrics-content-${winObj.id}`);
+        const lyricsStatusEl = content.querySelector('#lyrics-status');
 
         let playlists = {};
         let currentPlaylist = 'Root';
@@ -211,14 +197,16 @@
         let curIdx = 0;
         let loopMode = 'list';
         let currentCoverObjectURL = null;
+        
+        let parsedLyrics = [];
+        let currentLyricIndex = -1;
+        let isSyncedLyrics = false;
 
-        // 初始化加载记忆的账号配置，如果没有则使用默认值
         const savedUser = localStorage.getItem('jrmusic_gh_user') || 'zhangzhanhang855';
         const savedRepo = localStorage.getItem('jrmusic_gh_repo') || 'musiconly';
         ghUserInp.value = savedUser;
         ghRepoInp.value = savedRepo;
 
-        // 安全加载 jsmediatags 用于解析封面
         if (!window.jsmediatags) {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js';
@@ -226,89 +214,133 @@
         }
 
         // ==========================================
-        // 4. 交互底层逻辑 (Interaction Binding)
+        // 4. 暴力解析底层：寻找被隐藏的私有帧歌词
         // ==========================================
-        const activeListeners = [];
-        function bindScopedInteraction(targets, type, callback) {
-            targets.forEach(el => {
-                let isMoving = false;
-                let startPos = 0;
-                const start = (e) => {
-                    isMoving = true;
-                    startPos = e.clientY || e.touches?.[0]?.clientY || 0;
-                };
-                const move = (e) => {
-                    if (!isMoving) return;
-                    let currentPos = e.clientY || e.touches?.[0]?.clientY || 0;
-                    let delta = startPos - currentPos;
-                    callback(el, delta, currentPos);
-                    if (type === 'fader') startPos = currentPos;
-                };
-                const end = () => { isMoving = false; };
+        function aggressivelyFindLyrics(tags) {
+            if (!tags) return "";
 
-                el.addEventListener('mousedown', start);
-                el.addEventListener('touchstart', start, { passive: true });
-                window.addEventListener('mousemove', move);
-                window.addEventListener('touchmove', move, { passive: true });
-                window.addEventListener('mouseup', end);
-                window.addEventListener('touchend', end);
+            // 万能文本提取器：无论它嵌套多深，强行拔出文本
+            const extract = (obj) => {
+                if (!obj) return "";
+                if (typeof obj === 'string') return obj;
+                if (typeof obj.text === 'string') return obj.text;
+                if (typeof obj.lyrics === 'string') return obj.lyrics;
+                if (obj.data) {
+                    if (typeof obj.data === 'string') return obj.data;
+                    if (typeof obj.data.text === 'string') return obj.data.text;
+                }
+                return "";
+            };
 
-                activeListeners.push(
-                    { target: el, event: 'mousedown', handler: start },
-                    { target: el, event: 'touchstart', handler: start },
-                    { target: window, event: 'mousemove', handler: move },
-                    { target: window, event: 'touchmove', handler: move },
-                    { target: window, event: 'mouseup', handler: end },
-                    { target: window, event: 'touchend', handler: end }
-                );
-            });
+            // 1. 常规手段：检查标准帧 USLT / SYLT / lyrics
+            let primary = extract(tags.lyrics) || extract(tags.USLT) || extract(tags.SYLT);
+            if (primary && primary.includes('[')) return primary;
+
+            // 2. 暴力扫描：遍历所有的 ID3 帧（针对国内平台魔改帧）
+            for (let key in tags) {
+                const item = tags[key];
+                const arr = Array.isArray(item) ? item : [item];
+                
+                for (let i of arr) {
+                    let txt = extract(i);
+                    // 只要发现任意一段文本里带有 "[00:" 这种时间戳的痕迹，直接判定为歌词！
+                    if (typeof txt === 'string' && txt.includes('[00:')) return txt;
+                    
+                    // 继续往下挖深层嵌套
+                    if (i && i.data) {
+                        let deepTxt = extract(i.data.data) || extract(i.data);
+                        if (typeof deepTxt === 'string' && deepTxt.includes('[00:')) return deepTxt;
+                    }
+                }
+            }
+            return primary; // 就算没有时间戳，只要捞到了文本也当歌词用
         }
 
-        bindScopedInteraction(content.querySelectorAll('.knob-container'), 'knob', (el, delta) => {
-            const knob = el.querySelector('.knob-physical');
-            let currentRotation = parseInt(knob.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-            let newRot = Math.max(-150, Math.min(150, currentRotation + delta));
-            knob.style.transform = 'rotate(' + newRot + 'deg)';
-        });
-
-        bindScopedInteraction(content.querySelectorAll('.fader-track'), 'fader', (el, delta, currentY) => {
-            const handle = el.querySelector('.fader-handle');
-            const rect = el.getBoundingClientRect();
-            let percent = 1 - ((currentY - rect.top) / rect.height);
-            percent = Math.max(0, Math.min(1, percent));
-            handle.style.bottom = (percent * 100) + '%';
-        });
-
-        pads.forEach(pad => {
-            pad.onclick = () => {
-                pad.classList.add('lit');
-                setTimeout(() => pad.classList.remove('lit'), 100);
-            };
-        });
-
-        btnMode.onclick = () => {
-            const modes = ['list', 'random', 'single'];
-            loopMode = modes[(modes.indexOf(loopMode) + 1) % modes.length];
-            btnMode.innerText = 'MODE: ' + loopMode.toUpperCase();
-            lcdMode.innerText = loopMode === 'random' ? 'RAND' : (loopMode === 'single' ? 'SGLE' : 'LIST');
-            btnMode.style.borderColor = 'var(--neon)';
-            btnMode.style.boxShadow = '0 0 15px var(--neon)';
-            setTimeout(() => { btnMode.style.borderColor = 'rgba(6, 182, 212, 0.3)'; btnMode.style.boxShadow = 'none'; }, 150);
-        };
+        // ==========================================
+        // 5. 歌词时间轴处理引擎
+        // ==========================================
+        function processLyrics(rawText, source) {
+            if (!rawText || typeof rawText !== 'string') {
+                parsedLyrics = [];
+                isSyncedLyrics = false;
+                lyricsStatusEl.innerText = "PURE MUSIC";
+                lyricsContentEl.innerHTML = '<div class="text-center text-gray-500 text-[11px] mt-10 tracking-widest font-mono">纯音乐</div>';
+                return;
+            }
+            
+            // 处理异常空字符，兼容不同系统换行符
+            const cleanText = rawText.replace(/\0/g, '').trim();
+            const lines = cleanText.split(/\r?\n/);
+            
+            // 超强正则：兼容 [00:00] [00:00.0] [00:00.00] [00:00.000] 甚至 [100:00]
+            const timeReg = /\[(\d{1,3}):(\d{1,2})(?:[.:](\d{1,3}))?\]/g;
+            parsedLyrics = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                let match;
+                let timeTags = [];
+                timeReg.lastIndex = 0; // 重置正则状态
+                
+                // 支持在一行内写多个时间戳（如 [00:10][00:20]我爱你）
+                while ((match = timeReg.exec(line)) !== null) {
+                    const m = parseInt(match[1], 10);
+                    const s = parseInt(match[2], 10);
+                    const msStr = match[3] || '0';
+                    // 补齐或截断毫秒为统一的 3 位数以便正确运算
+                    const ms = parseInt(msStr.padEnd(3, '0').slice(0, 3), 10);
+                    timeTags.push(m * 60 + s + ms / 1000);
+                }
+                
+                if (timeTags.length > 0) {
+                    // 把提取完的纯净文字抠出来
+                    const text = line.replace(/\[\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?\]/g, '').trim();
+                    for (let t of timeTags) {
+                        // 如果空行但有时间戳，保留为 '...' 作为间奏指示
+                        parsedLyrics.push({ time: t, text: text || '...' });
+                    }
+                }
+            }
+            
+            if (parsedLyrics.length > 0) {
+                isSyncedLyrics = true;
+                lyricsStatusEl.innerText = `LYRICS SYNC [${source}]`;
+                
+                // 按时间线强制升序（应对部分乱序的歌词文件）
+                parsedLyrics.sort((a, b) => a.time - b.time);
+                
+                lyricsContentEl.innerHTML = parsedLyrics.map((l, i) => 
+                    `<div class="lyric-line w-full" id="lyric-${i}" data-time="${l.time}">${l.text}</div>`
+                ).join('');
+                
+                lyricsContentEl.style.paddingTop = '60%';
+                lyricsContentEl.style.paddingBottom = '60%';
+                
+                // 点击歌词实现歌曲跳转
+                lyricsContentEl.querySelectorAll('.lyric-line').forEach(el => {
+                    el.onclick = () => {
+                        audio.currentTime = parseFloat(el.getAttribute('data-time'));
+                        if (audio.paused) audio.play();
+                    };
+                });
+            } else {
+                // 如果只找到了文本但是没发现时间轴，直接当普通纯文本处理
+                isSyncedLyrics = false;
+                lyricsStatusEl.innerText = `TEXT MODE [${source}]`;
+                lyricsContentEl.style.paddingTop = '10%';
+                lyricsContentEl.style.paddingBottom = '10%';
+                lyricsContentEl.innerHTML = `<div class="text-center text-gray-400 text-[11px] whitespace-pre-wrap leading-loose px-2">${cleanText}</div>`;
+            }
+        }
 
         // ==========================================
-        // 5. 核心播放控制 & MediaSession 后台播放
+        // 6. 核心播放与抓取控制
         // ==========================================
-        
-        // 更新设备系统级的媒体控制中心 (锁屏可见)
         const updateMediaSession = (title, album, coverUrl) => {
             if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: title,
-                    artist: 'JRmusic',
-                    album: album,
-                    artwork: coverUrl ? [{ src: coverUrl, sizes: '512x512', type: 'image/jpeg' }] : []
-                });
+                navigator.mediaSession.metadata = new MediaMetadata({ title: title, artist: 'JRmusic', album: album, artwork: coverUrl ? [{ src: coverUrl, sizes: '512x512', type: 'image/jpeg' }] : [] });
                 navigator.mediaSession.setActionHandler('play', () => audio.play());
                 navigator.mediaSession.setActionHandler('pause', () => audio.pause());
                 navigator.mediaSession.setActionHandler('previoustrack', () => executeLoad((curIdx - 1 + filteredTracks.length) % filteredTracks.length, true));
@@ -325,9 +357,7 @@
         };
 
         const renderNav = () => {
-            navContainer.innerHTML = Object.keys(playlists).map(name => 
-                `<button class="text-[9px] px-2 py-0.5 border border-white/10 hover:bg-white/5 uppercase whitespace-nowrap btn-nav" data-name="${name}">${name}</button>`
-            ).join('');
+            navContainer.innerHTML = Object.keys(playlists).map(name => `<button class="text-[9px] px-2 py-0.5 border border-white/10 hover:bg-white/5 uppercase whitespace-nowrap btn-nav" data-name="${name}">${name}</button>`).join('');
             navContainer.querySelectorAll('.btn-nav').forEach(btn => btn.onclick = () => switchPlaylist(btn.dataset.name));
         };
 
@@ -358,24 +388,41 @@
             artEl.classList.remove('loaded');
             artEl.style.backgroundImage = 'none';
             emjEl.style.opacity = '1';
+            
+            currentLyricIndex = -1;
+            processLyrics(null, '');
+            lyricsContainerEl.scrollTo({ top: 0, behavior: 'auto' });
 
             if (currentCoverObjectURL) {
                 URL.revokeObjectURL(currentCoverObjectURL);
                 currentCoverObjectURL = null;
             }
 
-            // 初步推送到系统控制器，封面留空
             updateMediaSession(song.t, currentPlaylist, null);
-
             if (auto) audio.play().catch(e => console.log('Wait gesture:', e));
 
-            // 解析 ID3 标签获取封面
+            let lyricsFound = false;
+
+            // 优先查询 GitHub 同级目录下的独立 .lrc 外挂歌词文件
+            const lrcUrl = song.u.replace(/\.(mp3|flac|wav|m4a)$/i, '.lrc');
+            fetch(lrcUrl)
+                .then(res => { if (res.ok) return res.text(); throw new Error(); })
+                .then(lrcText => {
+                    if (lrcText && lrcText.trim()) {
+                        lyricsFound = true;
+                        processLyrics(lrcText, 'EXT LRC');
+                    }
+                })
+                .catch(e => {});
+
+            // 如果没外挂文件，抓取音频本身剥离 ID3 元数据
             fetch(song.u)
                 .then(res => { if (!res.ok) throw new Error(); return res.blob(); })
                 .then(audioBlob => {
                     if (!window.jsmediatags) return;
                     new window.jsmediatags.Reader(audioBlob).read({
                         onSuccess: (tag) => {
+                            // 加载封面图片
                             const pic = tag.tags.picture;
                             if (pic) {
                                 const byteArray = new Uint8Array(pic.data);
@@ -384,15 +431,21 @@
                                 artEl.style.backgroundImage = `url(${currentCoverObjectURL})`;
                                 artEl.classList.add('loaded');
                                 emjEl.style.opacity = '0';
-                                
-                                // 有封面后，再次更新给系统后台
                                 updateMediaSession(song.t, currentPlaylist, currentCoverObjectURL);
                             }
+                            
+                            // 调用我们的暴力搜查引擎搜寻歌词
+                            if (!lyricsFound) {
+                                const aggressiveLrcText = aggressivelyFindLyrics(tag.tags);
+                                if (aggressiveLrcText) {
+                                    processLyrics(aggressiveLrcText, 'ID3 DATA');
+                                }
+                            }
                         },
-                        onError: () => console.log('No metadata cover')
+                        onError: () => {}
                     });
                 })
-                .catch(err => console.log('Cover fetch suspended...'));
+                .catch(err => {});
 
             renderList();
         };
@@ -412,19 +465,38 @@
         btnPlay.onclick = () => { audio.paused ? audio.play() : audio.pause(); };
         btnNext.onclick = () => { executeLoad((curIdx + 1 + filteredTracks.length) % filteredTracks.length, true); };
 
-        audio.onplay = () => {
-            content.classList.add('is-playing');
-            playIcon.style.borderLeftColor = '#00f2ff';
-        };
-        audio.onpause = () => {
-            content.classList.remove('is-playing');
-            playIcon.style.borderLeftColor = '#fff';
-        };
+        audio.onplay = () => { content.classList.add('is-playing'); playIcon.style.borderLeftColor = '#00f2ff'; };
+        audio.onpause = () => { content.classList.remove('is-playing'); playIcon.style.borderLeftColor = '#fff'; };
+        
         audio.ontimeupdate = () => {
             let s = audio.currentTime;
             if (isNaN(s)) { curTimeEl.innerText = '00:00:00'; return; }
             let m = Math.floor(s / 60), sec = Math.floor(s % 60), ms = Math.floor((s % 1) * 100);
             curTimeEl.innerText = m.toString().padStart(2, '0') + ':' + sec.toString().padStart(2, '0') + ':' + ms.toString().padStart(2, '0');
+            
+            if (isSyncedLyrics && parsedLyrics.length > 0) {
+                let activeIdx = -1;
+                // 遍历查找当前所处的最后一句歌词区间
+                for (let i = 0; i < parsedLyrics.length; i++) {
+                    if (s >= parsedLyrics[i].time) activeIdx = i;
+                    else break;
+                }
+                
+                // 只有处于新的一行时，才驱动 UI 更新，减少性能损耗
+                if (activeIdx !== currentLyricIndex) {
+                    lyricsContentEl.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
+                    if (activeIdx !== -1) {
+                        const currEl = lyricsContentEl.querySelector(`#lyric-${activeIdx}`);
+                        if (currEl) {
+                            currEl.classList.add('active');
+                            const container = lyricsContainerEl;
+                            const scrollPos = currEl.offsetTop - (container.clientHeight / 2) + (currEl.clientHeight / 2);
+                            container.scrollTo({ top: scrollPos, behavior: 'smooth' });
+                        }
+                    }
+                    currentLyricIndex = activeIdx;
+                }
+            }
         };
 
         searchInput.oninput = () => {
@@ -433,22 +505,33 @@
             renderList();
         };
 
-        // ==========================================
-        // 6. 核心逻辑: GitHub API 同步抓取
-        // ==========================================
+        // UI 物理交互绑定逻辑
+        const activeListeners = [];
+        function bindScopedInteraction(targets, type, callback) {
+            targets.forEach(el => {
+                let isMoving = false;
+                let startPos = 0;
+                const start = (e) => { isMoving = true; startPos = e.clientY || e.touches?.[0]?.clientY || 0; };
+                const move = (e) => { if (!isMoving) return; let currentPos = e.clientY || e.touches?.[0]?.clientY || 0; let delta = startPos - currentPos; callback(el, delta, currentPos); if (type === 'fader') startPos = currentPos; };
+                const end = () => { isMoving = false; };
+
+                el.addEventListener('mousedown', start); el.addEventListener('touchstart', start, { passive: true });
+                window.addEventListener('mousemove', move); window.addEventListener('touchmove', move, { passive: true });
+                window.addEventListener('mouseup', end); window.addEventListener('touchend', end);
+
+                activeListeners.push({ target: el, event: 'mousedown', handler: start }, { target: el, event: 'touchstart', handler: start }, { target: window, event: 'mousemove', handler: move }, { target: window, event: 'touchmove', handler: move }, { target: window, event: 'mouseup', handler: end }, { target: window, event: 'touchend', handler: end });
+            });
+        }
+        bindScopedInteraction(content.querySelectorAll('.knob-container'), 'knob', (el, delta) => { const knob = el.querySelector('.knob-physical'); let currentRotation = parseInt(knob.style.transform.replace('rotate(', '').replace('deg)', '')) || 0; let newRot = Math.max(-150, Math.min(150, currentRotation + delta)); knob.style.transform = 'rotate(' + newRot + 'deg)'; });
+        bindScopedInteraction(content.querySelectorAll('.fader-track'), 'fader', (el, delta, currentY) => { const handle = el.querySelector('.fader-handle'); const rect = el.getBoundingClientRect(); let percent = 1 - ((currentY - rect.top) / rect.height); percent = Math.max(0, Math.min(1, percent)); handle.style.bottom = (percent * 100) + '%'; });
+        pads.forEach(pad => { pad.onclick = () => { pad.classList.add('lit'); setTimeout(() => pad.classList.remove('lit'), 100); }; });
+        btnMode.onclick = () => { const modes = ['list', 'random', 'single']; loopMode = modes[(modes.indexOf(loopMode) + 1) % modes.length]; btnMode.innerText = 'MODE: ' + loopMode.toUpperCase(); lcdMode.innerText = loopMode === 'random' ? 'RAND' : (loopMode === 'single' ? 'SGLE' : 'LIST'); btnMode.style.borderColor = 'var(--neon)'; btnMode.style.boxShadow = '0 0 15px var(--neon)'; setTimeout(() => { btnMode.style.borderColor = 'rgba(6, 182, 212, 0.3)'; btnMode.style.boxShadow = 'none'; }, 150); };
+
         async function loadLibrary(user, repo) {
             try {
-                // 重置播放器和列表状态
-                audio.pause();
-                audio.src = '';
-                curTimeEl.innerText = '00:00:00';
-                playlists = {};
-                filteredTracks = [];
-                listContainer.innerHTML = '';
-                navContainer.innerHTML = '';
-                
-                titleEl.innerText = 'SYNCING GITHUB...';
-                netStatus.innerText = `CONNECTING TO ${user}/${repo}...`;
+                audio.pause(); audio.src = ''; curTimeEl.innerText = '00:00:00';
+                playlists = {}; filteredTracks = []; listContainer.innerHTML = ''; navContainer.innerHTML = '';
+                titleEl.innerText = 'SYNCING...'; netStatus.innerText = `CONNECTING TO ${user}/${repo}...`;
                 
                 const res = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/`);
                 if (!res.ok) throw new Error('API LIMIT OR REPO NOT FOUND');
@@ -456,7 +539,6 @@
                 const items = await res.json();
                 playlists['Root'] = filterAudio(items);
                 
-                // 获取根目录下的文件夹
                 const folders = items.filter(i => i.type === 'dir');
                 for (let f of folders) {
                     netStatus.innerText = `FETCHING DIR: ${f.name}`;
@@ -465,36 +547,21 @@
                     if(tracks.length > 0) playlists[f.name] = tracks;
                 }
                 
-                netStatus.innerText = 'SYNC COMPLETE. SYSTEM ONLINE.';
-                
-                // 同步成功后保存至本地，下次打开直接读取
+                netStatus.innerText = 'SYNC COMPLETE.';
                 localStorage.setItem('jrmusic_gh_user', user);
                 localStorage.setItem('jrmusic_gh_repo', repo);
                 
-                renderNav();
-                switchPlaylist('Root');
+                renderNav(); switchPlaylist('Root');
             } catch (e) {
-                titleEl.innerText = 'IO ERROR';
-                netStatus.innerText = 'SYNC FAILED - CHECK REPO OR API LIMITS';
+                titleEl.innerText = 'IO ERROR'; netStatus.innerText = 'SYNC FAILED - CHECK REPO OR API LIMITS';
             }
         }
         
-        // 绑定同步按钮点击事件
-        btnSync.onclick = () => {
-            const u = ghUserInp.value.trim();
-            const r = ghRepoInp.value.trim();
-            if(u && r) {
-                loadLibrary(u, r);
-            }
-        };
-
-        // 页面初始化时根据缓存的账号启动抓取
+        btnSync.onclick = () => { const u = ghUserInp.value.trim(); const r = ghRepoInp.value.trim(); if(u && r) loadLibrary(u, r); };
         loadLibrary(savedUser, savedRepo);
 
-        // 卸载机制防污染
         winObj.onDestroy = () => {
-            audio.pause();
-            audio.src = '';
+            audio.pause(); audio.src = '';
             if (currentCoverObjectURL) URL.revokeObjectURL(currentCoverObjectURL);
             activeListeners.forEach(item => item.target.removeEventListener(item.event, item.handler));
         };
