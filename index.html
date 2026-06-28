@@ -363,9 +363,18 @@
                 }
                 
                 if (timeTags.length > 0) {
-                    const text = line.replace(/\[\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?\]/g, '').trim();
+                    let text = line.replace(/\[\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?\]/g, '').trim();
+                    let translation = '';
+                    
+                    // 匹配诸如 "（翻译：你好）" 或 "(翻译: hello)" 的格式
+                    const transMatch = text.match(/[（(]翻译[：:]\s*(.*?)[）)]/);
+                    if (transMatch) {
+                        translation = transMatch[1].trim(); // 提取翻译内容
+                        text = text.replace(transMatch[0], '').trim(); // 从主歌词中剔除翻译标签
+                    }
+                    
                     for (let t of timeTags) {
-                        parsedLyrics.push({ time: t, text: text || '...' });
+                        parsedLyrics.push({ time: t, text: text || '...', translation: translation });
                     }
                 }
             }
@@ -377,7 +386,10 @@
                 parsedLyrics.sort((a, b) => a.time - b.time);
                 
                 lyricsContentEl.innerHTML = parsedLyrics.map((l, i) => 
-                    `<div class="lyric-line" id="lyric-${i}" data-time="${l.time}">${l.text}</div>`
+                    `<div class="lyric-line" id="lyric-${i}" data-time="${l.time}">
+                        <span class="block">${l.text}</span>
+                        ${l.translation ? `<span class="block text-[0.65em] opacity-75 mt-2 font-normal">${l.translation}</span>` : ''}
+                    </div>`
                 ).join('');
                 
                 lyricsContentEl.style.paddingTop = '40vh';
@@ -597,8 +609,10 @@
                             const scrollPos = currEl.offsetTop - (container.clientHeight / 2) + (currEl.clientHeight / 2);
                             container.scrollTo({ top: scrollPos, behavior: 'smooth' });
                             
-                            // NEW: 将当前歌词实时推送到系统控制中心（替换歌手名位置）
-                            updateMediaSession(parsedLyrics[activeIdx].text);
+                            // NEW: 将当前歌词和翻译实时推送到系统控制中心（替换歌手名位置）
+                            const currentLine = parsedLyrics[activeIdx];
+                            const displayText = currentLine.translation ? `${currentLine.text} - ${currentLine.translation}` : currentLine.text;
+                            updateMediaSession(displayText);
                         }
                     } else {
                         // 间奏或无歌词时恢复显示原始歌手名
