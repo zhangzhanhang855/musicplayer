@@ -5,12 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Musicplayer</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Load Google Sans / Product Sans Webfonts -->
     <style>
+        @font-face {
+            font-family: 'Google Sans';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('https://fonts.gstatic.com/s/googlesans/v58/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Google Sans';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url('https://fonts.gstatic.com/s/googlesans/v58/4UabrENHsxJlGDuGo1OIlLU94YtzCwM.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Google Sans';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url('https://fonts.gstatic.com/s/googlesans/v58/4UabrENHsxJlGDuGo1OIlLV14YtzCwM.woff2') format('woff2');
+        }
+
         body { 
             background: #000; 
             color: #fff; 
-            font-family: 'Product Sans', 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            font-family: 'Google Sans', 'Product Sans', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
             min-height: 100vh; 
             margin: 0; 
             overflow: hidden; 
