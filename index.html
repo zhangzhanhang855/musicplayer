@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Music Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Google Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Google Sans Webfonts -->
+    <!-- Load Google Sans Webfonts -->
     <style>
         @font-face {
             font-family: 'Google Sans';
@@ -30,14 +41,26 @@
             src: url('https://fonts.gstatic.com/s/googlesans/v58/4UabrENHsxJlGDuGo1OIlLV14YtzCwM.woff2') format('woff2');
         }
 
-        *, *::before, *::after, input, button, select, textarea {
+        /* Enforce Google Sans everywhere */
+        *, *::before, *::after, html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed, 
+        figure, figcaption, footer, header, hgroup, 
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video, input, button, select, textarea {
             font-family: 'Google Sans', sans-serif !important;
         }
 
         body { 
             background: #000; 
             color: #fff; 
-            font-family: 'Google Sans', sans-serif; 
             min-height: 100vh; 
             margin: 0; 
             overflow: hidden; 
@@ -68,7 +91,7 @@
                 --am-red: #fa233b;
                 --am-bg: rgba(0, 0, 0, 0.4);
                 height: 100%; 
-                font-family: 'Google Sans', sans-serif;
+                font-family: 'Google Sans', sans-serif !important;
             }
             
             /* Dynamic Gaussian Blur Background */
@@ -93,7 +116,7 @@
                 overflow-y: auto;
                 overflow-x: hidden;
                 scroll-snap-type: y proximity;
-                font-family: 'Google Sans', sans-serif;
+                font-family: 'Google Sans', sans-serif !important;
             }
             @media (min-width: 768px) {
                 .am-layout { 
@@ -141,7 +164,7 @@
 
             /* Immersive Lyrics Typography */
             .lyric-line { 
-                font-family: 'Google Sans', sans-serif;
+                font-family: 'Google Sans', sans-serif !important;
                 transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
                 color: rgba(255, 255, 255, 0.4); 
                 padding: 10px 0; 
@@ -184,13 +207,13 @@
         content.appendChild(styleEl);
 
         // ==========================================
-        // 2. HTML Markup
+        // 2. HTML Structure
         // ==========================================
         content.innerHTML += `
         <div id="dynamic-bg" class="am-bg-blur"></div>
         
         <div class="am-layout no-scrollbar">
-            <!-- Left: Player & Library -->
+            <!-- Left Panel: Controls & Library -->
             <section class="am-player-panel w-full md:w-[380px] lg:w-[420px] flex-shrink-0 p-5 md:p-8 flex flex-col min-h-[100dvh] md:min-h-0 md:h-full z-10">
                 
                 <!-- Album Artwork -->
@@ -201,70 +224,70 @@
 
                 <!-- Track Info -->
                 <div class="mb-4 md:mb-6 text-center md:text-left">
-                    <h2 class="text-xl md:text-2xl font-bold text-white truncate tracking-tight" id="title">Not Playing</h2>
+                    <h2 class="text-xl md:text-2xl font-bold text-white truncate tracking-tight font-sans" id="title">Not Playing</h2>
                     <div class="flex items-center justify-center md:justify-start gap-2 mt-1 md:mt-2">
-                        <span class="text-[10px] md:text-sm font-semibold text-white/50 bg-white/10 px-2 py-0.5 rounded" id="lcd-mode">LIST</span>
-                        <span class="text-[10px] md:text-sm font-medium text-white/60">JRmusic Engine</span>
+                        <span class="text-[10px] md:text-sm font-semibold text-white/50 bg-white/10 px-2 py-0.5 rounded font-sans" id="lcd-mode">LIST</span>
+                        <span class="text-[10px] md:text-sm font-medium text-white/60 font-sans">JRmusic Engine</span>
                     </div>
                 </div>
 
                 <!-- Controls -->
                 <div class="flex flex-col mb-4 md:mb-6">
-                    <div class="flex justify-between text-[10px] md:text-xs text-white/50 font-medium mb-3 md:mb-4 px-2">
+                    <div class="flex justify-between text-[10px] md:text-xs text-white/50 font-medium mb-3 md:mb-4 px-2 font-sans">
                         <span id="cur-time">00:00</span>
-                        <button id="mode-btn" class="hover:text-white transition-colors">MODE</button>
+                        <button id="mode-btn" class="hover:text-white transition-colors font-sans">MODE</button>
                     </div>
                     
                     <div class="flex justify-center items-center gap-6 md:gap-8">
-                        <button class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white/50 hover:text-white transition-colors" onclick="btnMode.click()">
+                        <button class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white/50 hover:text-white transition-colors font-sans" onclick="btnMode.click()">
                             <svg width="20" height="20" class="md:w-6 md:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                         </button>
                         
-                        <button class="w-14 h-14 md:w-16 md:h-16 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg" id="btn-play">
+                        <button class="w-14 h-14 md:w-16 md:h-16 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg font-sans" id="btn-play">
                             <div class="w-0 h-0 border-y-[8px] border-y-transparent border-l-[14px] border-l-black ml-1" id="play-icon"></div>
                         </button>
                         
-                        <button class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white hover:text-white/70 transition-colors" id="btn-next">
+                        <button class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white hover:text-white/70 transition-colors font-sans" id="btn-next">
                             <svg width="20" height="20" class="md:w-6 md:h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4l10 8-10 8V4z"/><path d="M15 4h4v16h-4z"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <!-- Playlist Library -->
+                <!-- Playlist Section -->
                 <div class="flex-1 flex flex-col min-h-[300px] md:min-h-0 bg-black/20 rounded-xl overflow-hidden border border-white/5">
                     <div class="p-2 md:p-3 border-b border-white/5 bg-black/20">
                         <div class="flex gap-2">
-                            <input class="flex-1 min-w-0 bg-white/10 border border-transparent rounded px-2 py-1.5 text-[10px] md:text-xs outline-none focus:border-white/20 text-white transition-colors placeholder-white/30" id="gh-user" placeholder="GitHub User" type="text">
-                            <input class="flex-1 min-w-0 bg-white/10 border border-transparent rounded px-2 py-1.5 text-[10px] md:text-xs outline-none focus:border-white/20 text-white transition-colors placeholder-white/30" id="gh-repo" placeholder="Repository" type="text">
-                            <button class="px-2 md:px-3 bg-[#fa233b] text-white rounded text-[10px] md:text-xs font-semibold hover:bg-rose-600 transition-colors shrink-0" id="btn-sync">SYNC</button>
+                            <input class="flex-1 min-w-0 bg-white/10 border border-transparent rounded px-2 py-1.5 text-[10px] md:text-xs outline-none focus:border-white/20 text-white transition-colors placeholder-white/30 font-sans" id="gh-user" placeholder="GitHub User" type="text">
+                            <input class="flex-1 min-w-0 bg-white/10 border border-transparent rounded px-2 py-1.5 text-[10px] md:text-xs outline-none focus:border-white/20 text-white transition-colors placeholder-white/30 font-sans" id="gh-repo" placeholder="Repository" type="text">
+                            <button class="px-2 md:px-3 bg-[#fa233b] text-white rounded text-[10px] md:text-xs font-semibold hover:bg-rose-600 transition-colors shrink-0 font-sans" id="btn-sync">SYNC</button>
                         </div>
                     </div>
                     
                     <div class="px-2 md:px-3 pt-2 md:pt-3">
-                        <input class="w-full bg-white/5 border border-transparent rounded-lg p-2 text-xs outline-none focus:bg-white/10 text-white placeholder-white/30 transition-colors" id="search-input" placeholder="Search tracks..." type="text">
+                        <input class="w-full bg-white/5 border border-transparent rounded-lg p-2 text-xs outline-none focus:bg-white/10 text-white placeholder-white/30 transition-colors font-sans" id="search-input" placeholder="Search tracks..." type="text">
                         <div class="flex gap-2 overflow-x-auto no-scrollbar mt-2 md:mt-3 pb-1" id="playlist-nav"></div>
                     </div>
                     
                     <div class="flex-1 overflow-y-auto no-scrollbar p-2">
-                        <ul id="track-list" class="space-y-1"></ul>
+                        <ul id="track-list" class="space-y-1 font-sans"></ul>
                     </div>
                     
                     <div class="p-2 text-center bg-black/40">
-                        <p class="text-[10px] text-white/40 font-medium flex justify-center items-center gap-1" id="net-status">System Standby</p>
+                        <p class="text-[10px] text-white/40 font-medium flex justify-center items-center gap-1 font-sans" id="net-status">System Standby</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Right: Immersive Lyrics -->
+            <!-- Right Panel: Immersive Lyrics -->
             <section class="am-lyrics-panel flex-1 flex flex-col min-h-[100dvh] md:min-h-0 md:h-full relative z-10 p-5 md:pl-12 md:pr-12 md:pt-8">
                 <div class="absolute top-6 right-5 md:top-8 md:right-12 z-20">
-                    <span class="text-[9px] md:text-xs font-bold text-white/30 uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm" id="lyrics-status">LYRICS SYSTEM</span>
+                    <span class="text-[9px] md:text-xs font-bold text-white/30 uppercase tracking-widest bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm font-sans" id="lyrics-status">LYRICS SYSTEM</span>
                 </div>
                 
                 <div class="flex-1 relative w-full overflow-hidden lyrics-mask">
                     <div id="lyrics-container-${winObj.id}" class="absolute inset-0 overflow-y-auto no-scrollbar" style="scroll-behavior: smooth;">
                         <div id="lyrics-content-${winObj.id}" class="w-full max-w-3xl mx-auto pb-[60vh] pt-[40vh] flex flex-col px-0 md:px-4">
-                            <div class="text-left text-white/30 text-lg md:text-xl font-medium mt-10 tracking-widest">
+                            <div class="text-left text-white/30 text-lg md:text-xl font-medium mt-10 tracking-widest font-sans">
                                 Loading Lyrics...
                             </div>
                         </div>
@@ -325,7 +348,7 @@
         }
 
         // ==========================================
-        // 4. Robust ID3 Lyric Extractor
+        // 4. ID3 Lyric Parser
         // ==========================================
         function aggressivelyFindLyrics(tags) {
             if (!tags) return "";
@@ -363,14 +386,14 @@
         }
 
         // ==========================================
-        // 5. Lyrics Processing Engine (No Chinese Translations)
+        // 5. Lyrics Processing (Pure Lyrics Only)
         // ==========================================
         function processLyrics(rawText, source) {
             if (!rawText || typeof rawText !== 'string') {
                 parsedLyrics = [];
                 isSyncedLyrics = false;
                 lyricsStatusEl.innerText = "INSTRUMENTAL";
-                lyricsContentEl.innerHTML = '<div class="text-left text-white/30 text-xl font-medium mt-10 tracking-widest">Instrumental</div>';
+                lyricsContentEl.innerHTML = '<div class="text-left text-white/30 text-xl font-medium mt-10 tracking-widest font-sans">Instrumental</div>';
                 return;
             }
             
@@ -398,7 +421,6 @@
                 
                 if (timeTags.length > 0) {
                     let text = line.replace(/\[\d{1,3}:\d{1,2}(?:[.:]\d{1,3})?\]/g, '').trim();
-                    // Strip any inline translation brackets
                     text = text.replace(/[（(](?:翻译|translation)[：:].*?[）)]/gi, '').trim();
                     
                     for (let t of timeTags) {
@@ -414,7 +436,7 @@
                 parsedLyrics.sort((a, b) => a.time - b.time);
                 
                 lyricsContentEl.innerHTML = parsedLyrics.map((l, i) => 
-                    `<div class="lyric-line" id="lyric-${i}" data-time="${l.time}">
+                    `<div class="lyric-line font-sans" id="lyric-${i}" data-time="${l.time}">
                         <span class="block">${l.text}</span>
                     </div>`
                 ).join('');
@@ -433,7 +455,7 @@
                 lyricsStatusEl.innerText = `TEXT [${source}]`;
                 lyricsContentEl.style.paddingTop = '10vh';
                 lyricsContentEl.style.paddingBottom = '10vh';
-                lyricsContentEl.innerHTML = `<div class="text-left text-white/50 text-xl whitespace-pre-wrap leading-loose px-2">${cleanText}</div>`;
+                lyricsContentEl.innerHTML = `<div class="text-left text-white/50 text-xl whitespace-pre-wrap leading-loose px-2 font-sans">${cleanText}</div>`;
             }
         }
 
@@ -467,7 +489,7 @@
         };
 
         const renderNav = () => {
-            navContainer.innerHTML = Object.keys(playlists).map(name => `<button class="text-[10px] md:text-xs px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 transition-colors whitespace-nowrap btn-nav" data-name="${name}">${name}</button>`).join('');
+            navContainer.innerHTML = Object.keys(playlists).map(name => `<button class="text-[10px] md:text-xs px-3 py-1 bg-white/10 rounded-full hover:bg-white/20 transition-colors whitespace-nowrap btn-nav font-sans" data-name="${name}">${name}</button>`).join('');
             navContainer.querySelectorAll('.btn-nav').forEach(btn => btn.onclick = () => switchPlaylist(btn.dataset.name));
         };
 
@@ -476,8 +498,8 @@
                 const isActive = curIdx === i;
                 const activeClass = isActive ? 'track-active' : 'text-white/60 hover:bg-white/5';
                 const playingAnim = isActive && !audio.paused ? `<span class="inline-block w-1.5 h-1.5 bg-[#fa233b] rounded-full animate-pulse ml-2"></span>` : '';
-                return `<li class="p-2 md:p-3 text-xs md:text-sm rounded-lg cursor-pointer transition-colors ${activeClass}" data-idx="${i}">
-                    <span class="opacity-50 mr-2">${String(i + 1).padStart(2, '0')}</span>${s.t} ${playingAnim}
+                return `<li class="p-2 md:p-3 text-xs md:text-sm rounded-lg cursor-pointer transition-colors font-sans ${activeClass}" data-idx="${i}">
+                    <span class="opacity-50 mr-2 font-sans">${String(i + 1).padStart(2, '0')}</span>${s.t} ${playingAnim}
                 </li>`;
             }).join('');
             listContainer.querySelectorAll('li').forEach(item => item.onclick = () => executeLoad(parseInt(item.dataset.idx), true));
